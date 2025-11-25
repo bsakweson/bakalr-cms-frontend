@@ -16,6 +16,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Bakalr CMS - Headless Content Management System",
   description: "Modern headless CMS with multi-language support and dark chocolate brown theme",
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/bakalr-icon.svg',
+  },
 };
 
 export default function RootLayout({

@@ -1,0 +1,15 @@
+<svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="30" cy="30" r="30" fill="url(#gradient)" />
+  
+  <!-- Letter B -->
+  <text x="30" y="42" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="32" font-weight="bold" fill="white">B</text>
+  
+  <!-- Gradient Definition -->
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b4513;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#b08968;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+</svg>
