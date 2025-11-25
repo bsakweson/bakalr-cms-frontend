@@ -1,0 +1,47 @@
+/* Mobile-specific responsive utilities */
+
+/* Responsive table wrapper for mobile */
+.responsive-table-wrapper {
+  @apply overflow-x-auto -mx-4 sm:mx-0;
+}
+
+.responsive-table-wrapper table {
+  @apply min-w-full;
+}
+
+/* Mobile-friendly card stacking */
+@media (max-width: 640px) {
+  .mobile-stack > * {
+    @apply w-full mb-4;
+  }
+}
+
+/* Touch-friendly buttons on mobile */
+@media (max-width: 768px) {
+  .touch-target {
+    @apply min-h-11 min-w-11;
+  }
+  
+  button, a[role="button"] {
+    @apply min-h-11;
+  }
+}
+
+/* Mobile navigation improvements */
+@media (max-width: 1024px) {
+  .mobile-nav-item {
+    @apply py-3 text-base;
+  }
+}
+
+/* Prevent horizontal scroll on mobile */
+body {
+  @apply overflow-x-hidden;
+}
+
+/* Mobile-optimized form inputs */
+@media (max-width: 640px) {
+  input, textarea, select {
+    @apply text-base;
+  }
+}

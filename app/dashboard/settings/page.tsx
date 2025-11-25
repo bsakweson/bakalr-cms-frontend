@@ -1,0 +1,408 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/auth-context';
+import { authApi } from '@/lib/api';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+
+interface TwoFactorStatus {
+  enabled: boolean;
+  verified: boolean;
+  backup_codes_remaining: number;
+  required: boolean;
+}
+
+interface TwoFactorSetup {
+  secret: string;
+  qr_code: string;
+  backup_codes: string[];
+  message: string;
+}
+
+export default function SettingsPage() {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Profile state
+  const [profileForm, setProfileForm] = useState({
+    full_name: '',
+    email: '',
+  });
+
+  // Password change state
+  const [passwordForm, setPasswordForm] = useState({
+    current_password: '',
+    new_password: '',
+    confirm_password: '',
+  });
+
+  // 2FA state
+  const [twoFactorStatus, setTwoFactorStatus] = useState<TwoFactorStatus | null>(null);
+  const [setupDialogOpen, setSetupDialogOpen] = useState(false);
+  const [twoFactorSetup, setTwoFactorSetup] = useState<TwoFactorSetup | null>(null);
+  const [verifyCode, setVerifyCode] = useState('');
+  const [disablePassword, setDisablePassword] = useState('');
+
+  useEffect(() => {
+    if (user) {
+      setProfileForm({
+        full_name: user.full_name || '',
+        email: user.email || '',
+      });
+      loadTwoFactorStatus();
+    }
+  }, [user]);
+
+  const loadTwoFactorStatus = async () => {
+    try {
+      const response = await fetch('/api/v1/auth/2fa/status', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setTwoFactorStatus(data);
+      }
+    } catch (error) {
+      console.error('Failed to load 2FA status:', error);
+    }
+  };
+
+  const handleUpdateProfile = async () => {
+    setMessage(null);
+    setLoading(true);
+    try {
+      await authApi.updateProfile(profileForm);
+      setMessage({ type: 'success', text: 'Profile updated successfully' });
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.response?.data?.detail || 'Failed to update profile' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (passwordForm.new_password !== passwordForm.confirm_password) {
+      setMessage({ type: 'error', text: 'Passwords do not match' });
+      return;
+    }
+
+    setMessage(null);
+    setLoading(true);
+    try {
+      const response = await authApi.changePassword(
+        passwordForm.current_password,
+        passwordForm.new_password
+      );
+      setMessage({ type: 'success', text: response.message });
+      setPasswordForm({ current_password: '', new_password: '', confirm_password: '' });
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.response?.data?.detail || 'Failed to change password' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEnable2FA = async () => {
+    setMessage(null);
+    setLoading(true);
+    try {
+      const response = await fetch('/api/v1/auth/2fa/enable', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      });
+
+      if (response.ok) {
+        const data: TwoFactorSetup = await response.json();
+        setTwoFactorSetup(data);
+        setSetupDialogOpen(true);
+      } else {
+        const error = await response.json();
+        setMessage({ type: 'error', text: error.detail || 'Failed to enable 2FA' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Failed to enable 2FA' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerify2FA = async () => {
+    if (!verifyCode) return;
+
+    setMessage(null);
+    setLoading(true);
+    try {
+      const response = await fetch('/api/v1/auth/2fa/verify-setup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+        body: JSON.stringify({ code: verifyCode }),
+      });
+
+      if (response.ok) {
+        setMessage({ type: 'success', text: '2FA enabled successfully' });
+        setSetupDialogOpen(false);
+        setTwoFactorSetup(null);
+        setVerifyCode('');
+        loadTwoFactorStatus();
+      } else {
+        const error = await response.json();
+        setMessage({ type: 'error', text: error.detail || 'Invalid verification code' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Failed to verify code' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDisable2FA = async () => {
+    if (!disablePassword) return;
+
+    setMessage(null);
+    setLoading(true);
+    try {
+      const response = await fetch('/api/v1/auth/2fa/disable', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+        body: JSON.stringify({ password: disablePassword }),
+      });
+
+      if (response.ok) {
+        setMessage({ type: 'success', text: '2FA disabled successfully' });
+        setDisablePassword('');
+        loadTwoFactorStatus();
+      } else {
+        const error = await response.json();
+        setMessage({ type: 'error', text: error.detail || 'Failed to disable 2FA' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Failed to disable 2FA' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="container mx-auto py-8 space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">Account Settings</h1>
+        <p className="text-muted-foreground">Manage your account preferences and security</p>
+      </div>
+
+      {message && (
+        <Alert variant={message.type === 'error' ? 'destructive' : 'default'}>
+          <AlertDescription>{message.text}</AlertDescription>
+        </Alert>
+      )}
+
+      <Tabs defaultValue="profile" className="w-full">
+        <TabsList>
+          <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsTrigger value="password">Password</TabsTrigger>
+          <TabsTrigger value="security">Security</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="profile" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Profile Information</CardTitle>
+              <CardDescription>Update your personal details</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="full_name">Full Name</Label>
+                <Input
+                  id="full_name"
+                  value={profileForm.full_name}
+                  onChange={(e) => setProfileForm({ ...profileForm, full_name: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={profileForm.email}
+                  onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                />
+              </div>
+              <Button onClick={handleUpdateProfile} disabled={loading}>
+                {loading ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="password" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Change Password</CardTitle>
+              <CardDescription>Update your account password</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="current_password">Current Password</Label>
+                <Input
+                  id="current_password"
+                  type="password"
+                  value={passwordForm.current_password}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, current_password: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new_password">New Password</Label>
+                <Input
+                  id="new_password"
+                  type="password"
+                  value={passwordForm.new_password}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, new_password: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm_password">Confirm New Password</Label>
+                <Input
+                  id="confirm_password"
+                  type="password"
+                  value={passwordForm.confirm_password}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, confirm_password: e.target.value })}
+                />
+              </div>
+              <Button onClick={handleChangePassword} disabled={loading}>
+                {loading ? 'Changing...' : 'Change Password'}
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="security" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Two-Factor Authentication</CardTitle>
+              <CardDescription>Add an extra layer of security to your account</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {twoFactorStatus && (
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <p className="font-medium">2FA Status</p>
+                    <p className="text-sm text-muted-foreground">
+                      {twoFactorStatus.enabled ? 'Enabled' : 'Disabled'}
+                    </p>
+                    {twoFactorStatus.enabled && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Backup codes remaining: {twoFactorStatus.backup_codes_remaining}
+                      </p>
+                    )}
+                  </div>
+                  <Badge variant={twoFactorStatus.enabled ? 'default' : 'secondary'}>
+                    {twoFactorStatus.enabled ? 'Active' : 'Inactive'}
+                  </Badge>
+                </div>
+              )}
+
+              {!twoFactorStatus?.enabled ? (
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Protect your account with two-factor authentication using an authenticator app
+                  </p>
+                  <Button onClick={handleEnable2FA} disabled={loading}>
+                    {loading ? 'Setting up...' : 'Enable 2FA'}
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="disable_password">Enter password to disable 2FA</Label>
+                    <Input
+                      id="disable_password"
+                      type="password"
+                      value={disablePassword}
+                      onChange={(e) => setDisablePassword(e.target.value)}
+                      placeholder="Your password"
+                    />
+                  </div>
+                  <Button
+                    variant="destructive"
+                    onClick={handleDisable2FA}
+                    disabled={loading || !disablePassword}
+                  >
+                    {loading ? 'Disabling...' : 'Disable 2FA'}
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* 2FA Setup Dialog */}
+      <Dialog open={setupDialogOpen} onOpenChange={setSetupDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Set Up Two-Factor Authentication</DialogTitle>
+            <DialogDescription>
+              Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.)
+            </DialogDescription>
+          </DialogHeader>
+          {twoFactorSetup && (
+            <div className="space-y-4 py-4">
+              <div className="flex justify-center">
+                <img src={twoFactorSetup.qr_code} alt="QR Code" className="border rounded-lg p-2" />
+              </div>
+              <div className="space-y-2">
+                <Label>Or enter this code manually:</Label>
+                <code className="block p-2 bg-muted rounded text-sm">{twoFactorSetup.secret}</code>
+              </div>
+              <div className="space-y-2">
+                <Label>Backup Codes (Save these in a safe place):</Label>
+                <div className="p-3 bg-muted rounded space-y-1">
+                  {twoFactorSetup.backup_codes.map((code, i) => (
+                    <code key={i} className="block text-sm">
+                      {code}
+                    </code>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="verify_code">Enter verification code from your app:</Label>
+                <Input
+                  id="verify_code"
+                  value={verifyCode}
+                  onChange={(e) => setVerifyCode(e.target.value)}
+                  placeholder="6-digit code"
+                  maxLength={6}
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSetupDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleVerify2FA} disabled={loading || !verifyCode || verifyCode.length !== 6}>
+              {loading ? 'Verifying...' : 'Verify & Enable'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
