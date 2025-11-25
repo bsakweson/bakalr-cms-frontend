@@ -9,3 +9,5 @@ export { auditLogApi } from './audit-logs';
 export { contentApi } from './content';
 export { mediaApi } from './media';
 export { translationApi } from './translation';
+export { templateApi } from './templates';
+export { themeApi } from './themes';

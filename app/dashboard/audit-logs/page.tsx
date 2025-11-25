@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { auditLogApi } from '@/lib/api';
 import type { AuditLogItem, AuditLogStats } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,11 +24,7 @@ export default function AuditLogsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [daysFilter, setDaysFilter] = useState<number>(7);
 
-  useEffect(() => {
-    loadData();
-  }, [page, actionFilter, resourceFilter, severityFilter, statusFilter, daysFilter]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       const [logsData, statsData] = await Promise.all([
@@ -51,7 +47,11 @@ export default function AuditLogsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, actionFilter, resourceFilter, severityFilter, statusFilter, daysFilter]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('en-US', {
@@ -138,12 +138,12 @@ export default function AuditLogsPage() {
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
               <label className="text-sm font-medium mb-2 block">Action</label>
-              <Select value={actionFilter} onValueChange={setActionFilter}>
+              <Select value={actionFilter || 'all'} onValueChange={(v) => setActionFilter(v === 'all' ? '' : v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="All actions" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All actions</SelectItem>
+                  <SelectItem value="all">All actions</SelectItem>
                   <SelectItem value="create">Create</SelectItem>
                   <SelectItem value="update">Update</SelectItem>
                   <SelectItem value="delete">Delete</SelectItem>
@@ -155,12 +155,12 @@ export default function AuditLogsPage() {
 
             <div>
               <label className="text-sm font-medium mb-2 block">Resource</label>
-              <Select value={resourceFilter} onValueChange={setResourceFilter}>
+              <Select value={resourceFilter || 'all'} onValueChange={(v) => setResourceFilter(v === 'all' ? '' : v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="All resources" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All resources</SelectItem>
+                  <SelectItem value="all">All resources</SelectItem>
                   <SelectItem value="user">User</SelectItem>
                   <SelectItem value="role">Role</SelectItem>
                   <SelectItem value="content">Content</SelectItem>
@@ -172,12 +172,12 @@ export default function AuditLogsPage() {
 
             <div>
               <label className="text-sm font-medium mb-2 block">Severity</label>
-              <Select value={severityFilter} onValueChange={setSeverityFilter}>
+              <Select value={severityFilter || 'all'} onValueChange={(v) => setSeverityFilter(v === 'all' ? '' : v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="All levels" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All levels</SelectItem>
+                  <SelectItem value="all">All levels</SelectItem>
                   <SelectItem value="info">Info</SelectItem>
                   <SelectItem value="warning">Warning</SelectItem>
                   <SelectItem value="error">Error</SelectItem>
@@ -188,12 +188,12 @@ export default function AuditLogsPage() {
 
             <div>
               <label className="text-sm font-medium mb-2 block">Status</label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select value={statusFilter || 'all'} onValueChange={(v) => setStatusFilter(v === 'all' ? '' : v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All statuses</SelectItem>
+                  <SelectItem value="all">All statuses</SelectItem>
                   <SelectItem value="success">Success</SelectItem>
                   <SelectItem value="failure">Failure</SelectItem>
                 </SelectContent>

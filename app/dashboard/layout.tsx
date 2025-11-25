@@ -35,8 +35,76 @@ const navigation = [
   { name: 'Themes', href: '/dashboard/themes', icon: '🎨' },
   { name: 'Organization', href: '/dashboard/organization', icon: '🏢' },
   { name: 'Audit Logs', href: '/dashboard/audit-logs', icon: '📋' },
+  { name: 'API Docs', href: 'http://localhost:8000/api/docs', icon: '📖', external: true },
   { name: 'Settings', href: '/dashboard/settings', icon: '⚙️' },
 ];
+
+// Sidebar component defined outside render
+function Sidebar({ 
+  user, 
+  pathname, 
+  setIsMobileMenuOpen 
+}: { 
+  user: any; 
+  pathname: string | null; 
+  setIsMobileMenuOpen: (open: boolean) => void;
+}) {
+  return (
+    <div className="flex h-full flex-col gap-4">
+      <div className="flex h-16 items-center border-b px-6">
+        <h1 className="text-2xl font-bold text-primary">Bakalr CMS</h1>
+      </div>
+      <nav className="flex-1 space-y-1 px-4">
+        {navigation.map((item) => {
+          const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
+          
+          // External links (like API docs)
+          if (item.external) {
+            return (
+              <a
+                key={item.name}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                <span className="text-xl">{item.icon}</span>
+                {item.name}
+                <span className="ml-auto text-xs">↗</span>
+              </a>
+            );
+          }
+          
+          // Internal links
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                isActive
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+              }`}
+            >
+              <span className="text-xl">{item.icon}</span>
+              {item.name}
+            </Link>
+          );
+        })}
+      </nav>
+      <Separator />
+      <div className="px-4 pb-4">
+        <div className="rounded-lg border bg-card p-4">
+          <p className="text-sm font-medium">Organization</p>
+          <p className="text-xs text-muted-foreground">
+            {user?.organization?.name || 'Default Org'}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function DashboardLayout({
   children,
@@ -108,42 +176,30 @@ export default function DashboardLayout({
       .slice(0, 2);
   };
 
-  const Sidebar = () => (
-    <div className="flex h-full flex-col gap-4">
-      <div className="flex h-16 items-center border-b px-6">
-        <h1 className="text-2xl font-bold text-primary">Bakalr CMS</h1>
-      </div>
-      <nav className="flex-1 space-y-1 px-4">
-        {navigation.map((item) => {
-          const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              onClick={() => setIsMobileMenuOpen(false)}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-              }`}
-            >
-              <span className="text-xl">{item.icon}</span>
-              {item.name}
-            </Link>
-          );
-        })}
-      </nav>
-      <Separator />
-      <div className="px-4 pb-4">
-        <div className="rounded-lg border bg-card p-4">
-          <p className="text-sm font-medium">Organization</p>
-          <p className="text-xs text-muted-foreground">
-            {user?.organization?.name || 'Default Org'}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
+  const getUserDisplayName = () => {
+    if (user?.first_name && user?.last_name) {
+      return `${user.first_name} ${user.last_name}`;
+    }
+    if (user?.first_name) return user.first_name;
+    if (user?.last_name) return user.last_name;
+    if (user?.username) return user.username;
+    if (user?.email) return user.email.split('@')[0];
+    return 'User';
+  };
+
+  const getUserInitialsFromUser = () => {
+    if (user?.first_name && user?.last_name) {
+      return (user.first_name[0] + user.last_name[0]).toUpperCase();
+    }
+    if (user?.first_name) return user.first_name.slice(0, 2).toUpperCase();
+    if (user?.last_name) return user.last_name.slice(0, 2).toUpperCase();
+    if (user?.username) return getUserInitials(user.username);
+    if (user?.email) {
+      const emailName = user.email.split('@')[0];
+      return getUserInitials(emailName);
+    }
+    return 'U';
+  };
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -159,13 +215,13 @@ export default function DashboardLayout({
       ]} />
       {/* Desktop Sidebar */}
       <aside className="hidden w-64 border-r bg-card lg:block">
-        <Sidebar />
+        <Sidebar user={user} pathname={pathname} setIsMobileMenuOpen={setIsMobileMenuOpen} />
       </aside>
 
       {/* Mobile Menu */}
       <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
         <SheetContent side="left" className="w-64 p-0">
-          <Sidebar />
+          <Sidebar user={user} pathname={pathname} setIsMobileMenuOpen={setIsMobileMenuOpen} />
         </SheetContent>
       </Sheet>
 
@@ -194,7 +250,7 @@ export default function DashboardLayout({
               <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                 <Avatar>
                   <AvatarFallback className="bg-primary text-primary-foreground">
-                    {user?.full_name ? getUserInitials(user.full_name) : 'U'}
+                    {getUserInitialsFromUser()}
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -202,16 +258,13 @@ export default function DashboardLayout({
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium">{user?.full_name}</p>
+                  <p className="text-sm font-medium">{getUserDisplayName()}</p>
                   <p className="text-xs text-muted-foreground">{user?.email}</p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/dashboard/settings/profile">Profile Settings</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/dashboard/settings">Account Settings</Link>
+                <Link href="/dashboard/settings">Settings</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="text-destructive">

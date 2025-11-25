@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { contentApi } from '@/lib/api';
@@ -18,13 +18,7 @@ export default function ContentTypeDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (id) {
-      loadContentType();
-    }
-  }, [id]);
-
-  const loadContentType = async () => {
+  const loadContentType = useCallback(async () => {
     try {
       setIsLoading(true);
       const data = await contentApi.getContentType(id);
@@ -35,7 +29,13 @@ export default function ContentTypeDetailPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      loadContentType();
+    }
+  }, [id, loadContentType]);
 
   const handleDelete = async () => {
     if (!confirm('Are you sure you want to delete this content type? This action cannot be undone.')) {

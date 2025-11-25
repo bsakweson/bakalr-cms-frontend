@@ -2,7 +2,10 @@
 export interface User {
   id: number;
   email: string;
-  full_name: string;
+  username?: string;
+  first_name?: string;
+  last_name?: string;
+  full_name?: string; // Computed field for backward compatibility
   is_active: boolean;
   organization_id: number;
   organization?: Organization;
@@ -149,8 +152,14 @@ export interface Locale {
   id: number;
   code: string;
   name: string;
+  native_name?: string;
   is_default: boolean;
+  is_enabled: boolean;
   is_active: boolean;
+  auto_translate: boolean;
+  organization_id: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface LocaleListResponse {

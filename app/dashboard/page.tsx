@@ -47,11 +47,40 @@ export default function DashboardPage() {
     try {
       setLoading(true);
       const [content, users, media, activity, trendsData] = await Promise.all([
-        analyticsApi.getContentStats(),
-        analyticsApi.getUserStats(),
-        analyticsApi.getMediaStats(),
-        analyticsApi.getActivityStats(),
-        analyticsApi.getTrends(30),
+        analyticsApi.getContentStats().catch(() => ({ 
+          total_entries: 0, 
+          published_entries: 0, 
+          draft_entries: 0, 
+          total_types: 0, 
+          entries_by_type: [], 
+          recent_entries: [] 
+        })),
+        analyticsApi.getUserStats().catch(() => ({ 
+          total_users: 0, 
+          active_users_7d: 0, 
+          active_users_30d: 0, 
+          new_users_7d: 0, 
+          new_users_30d: 0, 
+          top_contributors: [] 
+        })),
+        analyticsApi.getMediaStats().catch(() => ({ 
+          total_media: 0, 
+          total_size_mb: 0, 
+          media_by_type: [], 
+          recent_uploads: [] 
+        })),
+        analyticsApi.getActivityStats().catch(() => ({ 
+          actions_today: 0,
+          actions_7d: 0,
+          actions_30d: 0,
+          recent_activities: [],
+          actions_by_type: []
+        })),
+        analyticsApi.getTrends(30).catch(() => ({ 
+          content_trend: [],
+          user_trend: [],
+          activity_trend: []
+        })),
       ]);
 
       setContentStats(content);
@@ -60,6 +89,7 @@ export default function DashboardPage() {
       setActivityStats(activity);
       setTrends(trendsData);
     } catch (err: any) {
+      console.error('Analytics error:', err);
       setError(err.response?.data?.detail || 'Failed to load analytics');
     } finally {
       setLoading(false);
@@ -76,8 +106,41 @@ export default function DashboardPage() {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">{error}</p>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <p className="text-muted-foreground mt-1">Welcome back, {user?.full_name || user?.email}</p>
+        </div>
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <p className="text-yellow-800">Analytics data is currently unavailable. Please check your API connection.</p>
+          <p className="text-sm text-yellow-600 mt-2">{error}</p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Content</CardTitle>
+              <CardDescription>Manage your content</CardDescription>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Users</CardTitle>
+              <CardDescription>Manage users</CardDescription>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Media</CardTitle>
+              <CardDescription>Manage media files</CardDescription>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Settings</CardTitle>
+              <CardDescription>Configure your CMS</CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
       </div>
     );
   }

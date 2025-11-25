@@ -68,6 +68,8 @@ apiClient.interceptors.response.use(
   }
 );
 
+// Export both default and named export for compatibility
+export { apiClient };
 export default apiClient;
 
 // GraphQL client

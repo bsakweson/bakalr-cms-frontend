@@ -12,12 +12,12 @@ export const auditLogApi = {
     status?: string;
     days?: number;
   }): Promise<AuditLogListResponse> {
-    const response = await apiClient.get('/audit-logs/', { params });
+    const response = await apiClient.get('/api/v1/audit-logs/', { params });
     return response.data;
   },
 
   async getStats(): Promise<AuditLogStats> {
-    const response = await apiClient.get('/audit-logs/stats');
+    const response = await apiClient.get('/api/v1/audit-logs/stats');
     return response.data;
   },
 };

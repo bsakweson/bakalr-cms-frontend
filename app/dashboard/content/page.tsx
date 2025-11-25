@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { contentApi } from '@/lib/api';
@@ -30,24 +30,16 @@ export default function ContentPage() {
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
-    loadContentTypes();
-  }, []);
-
-  useEffect(() => {
-    loadContent();
-  }, [selectedType, selectedStatus, currentPage]);
-
-  const loadContentTypes = async () => {
+  const loadContentTypes = useCallback(async () => {
     try {
       const data = await contentApi.getContentTypes();
       setContentTypes(data);
     } catch (err) {
       console.error('Failed to load content types:', err);
     }
-  };
+  }, []);
 
-  const loadContent = async () => {
+  const loadContent = useCallback(async () => {
     try {
       setIsLoading(true);
       const params: any = { page: currentPage, per_page: 20 };
@@ -67,7 +59,15 @@ export default function ContentPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedType, selectedStatus, currentPage]);
+
+  useEffect(() => {
+    loadContentTypes();
+  }, [loadContentTypes]);
+
+  useEffect(() => {
+    loadContent();
+  }, [loadContent]);
 
   const handleSearch = () => {
     // TODO: Integrate with search API

@@ -33,7 +33,8 @@ export default function SettingsPage() {
 
   // Profile state
   const [profileForm, setProfileForm] = useState({
-    full_name: '',
+    first_name: '',
+    last_name: '',
     email: '',
   });
 
@@ -54,7 +55,8 @@ export default function SettingsPage() {
   useEffect(() => {
     if (user) {
       setProfileForm({
-        full_name: user.full_name || '',
+        first_name: user.first_name || '',
+        last_name: user.last_name || '',
         email: user.email || '',
       });
       loadTwoFactorStatus();
@@ -228,11 +230,19 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="full_name">Full Name</Label>
+                <Label htmlFor="first_name">First Name</Label>
                 <Input
-                  id="full_name"
-                  value={profileForm.full_name}
-                  onChange={(e) => setProfileForm({ ...profileForm, full_name: e.target.value })}
+                  id="first_name"
+                  value={profileForm.first_name}
+                  onChange={(e) => setProfileForm({ ...profileForm, first_name: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="last_name">Last Name</Label>
+                <Input
+                  id="last_name"
+                  value={profileForm.last_name}
+                  onChange={(e) => setProfileForm({ ...profileForm, last_name: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
