@@ -23,21 +23,27 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
+      console.log('Attempting login with:', email);
       await login({ email, password });
+      console.log('Login successful, redirecting to dashboard');
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err?.response?.data?.detail || 'Login failed. Please check your credentials.');
+      console.error('Login error:', err);
+      console.error('Error response:', err?.response?.data);
+      const errorMessage = err?.response?.data?.detail || err?.message || 'Login failed. Please check your credentials.';
+      console.log('Setting error message:', errorMessage);
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
+    <main className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-3xl font-bold text-primary">Bakalr CMS</CardTitle>
-          <CardDescription>Sign in to your account</CardDescription>
+          <h1 className="text-2xl font-semibold">Sign in to your account</h1>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -45,6 +51,7 @@ export default function LoginPage() {
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
+                name="email"
                 type="email"
                 placeholder="you@example.com"
                 value={email}
@@ -54,9 +61,18 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-primary hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <Input
                 id="password"
+                name="password"
                 type="password"
                 placeholder="••••••••"
                 value={password}
@@ -82,6 +98,6 @@ export default function LoginPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </main>
   );
 }

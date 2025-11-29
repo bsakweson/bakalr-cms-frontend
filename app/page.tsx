@@ -32,27 +32,30 @@ export default function Home() {
           </Button>
         </div>
 
-        <div className="mt-12 grid gap-6 sm:grid-cols-3">
-          <div className="space-y-2 rounded-lg border bg-card p-6">
-            <div className="text-3xl">🌍</div>
-            <h3 className="font-semibold">Multi-Language</h3>
-            <p className="text-sm text-muted-foreground">
-              Automatic translation to multiple languages
-            </p>
-          </div>
-          <div className="space-y-2 rounded-lg border bg-card p-6">
-            <div className="text-3xl">🎨</div>
-            <h3 className="font-semibold">Custom Theming</h3>
-            <p className="text-sm text-muted-foreground">
-              Beautiful dark chocolate brown theme
-            </p>
-          </div>
-          <div className="space-y-2 rounded-lg border bg-card p-6">
-            <div className="text-3xl">⚡</div>
-            <h3 className="font-semibold">GraphQL API</h3>
-            <p className="text-sm text-muted-foreground">
-              Flexible querying with REST & GraphQL
-            </p>
+        <div className="mt-12 w-full max-w-4xl">
+          <h2 className="mb-6 text-2xl font-semibold">Key Features</h2>
+          <div className="grid gap-6 sm:grid-cols-3">
+            <div className="space-y-2 rounded-lg border bg-card p-6">
+              <div className="text-3xl">🌍</div>
+              <h2 className="font-semibold text-lg">Multi-Language</h2>
+              <p className="text-sm text-muted-foreground">
+                Automatic translation to multiple languages
+              </p>
+            </div>
+            <div className="space-y-2 rounded-lg border bg-card p-6">
+              <div className="text-3xl">🎨</div>
+              <h2 className="font-semibold text-lg">Custom Theming</h2>
+              <p className="text-sm text-muted-foreground">
+                Beautiful dark chocolate brown theme
+              </p>
+            </div>
+            <div className="space-y-2 rounded-lg border bg-card p-6">
+              <div className="text-3xl">⚡</div>
+              <h2 className="font-semibold text-lg">GraphQL API</h2>
+              <p className="text-sm text-muted-foreground">
+                Flexible querying with REST & GraphQL
+              </p>
+            </div>
           </div>
         </div>
       </main>

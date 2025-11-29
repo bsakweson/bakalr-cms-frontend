@@ -4,28 +4,20 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { contentApi } from '@/lib/api';
-import { ContentType } from '@/types';
 import { FIELD_TYPES, getFieldTypeDefinition, generateFieldKey } from '@/lib/field-types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Plus, Trash2, GripVertical, Save, X, ArrowLeft } from 'lucide-react';
+import { Trash2, GripVertical, Save, X, ArrowLeft } from 'lucide-react';
 
 interface FieldConfig {
   id: string;
   key: string;
-  config: Record<string, any>;
+  config: Record<string, unknown>;
 }
 
 export default function ContentTypeBuilderPage() {
@@ -38,9 +30,11 @@ export default function ContentTypeBuilderPage() {
   const [apiName, setApiName] = useState('');
   const [description, setDescription] = useState('');
   const [fields, setFields] = useState<FieldConfig[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [selectedField, setSelectedField] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [isLoading, setIsLoading] = useState(isEdit);
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiNameManuallyEdited, setApiNameManuallyEdited] = useState(false);
 
   useEffect(() => {
     if (isEdit && editId) {
@@ -49,10 +43,10 @@ export default function ContentTypeBuilderPage() {
   }, [isEdit, editId]);
 
   useEffect(() => {
-    if (!isEdit && name && !apiName) {
+    if (!isEdit && name && !apiNameManuallyEdited) {
       setApiName(generateFieldKey(name));
     }
-  }, [name, isEdit, apiName]);
+  }, [name, isEdit, apiNameManuallyEdited]);
 
   const loadContentType = async (id: number) => {
     try {
@@ -64,10 +58,10 @@ export default function ContentTypeBuilderPage() {
       
       // Convert schema to fields array
       const schemaFields: FieldConfig[] = Object.entries(data.schema || {}).map(
-        ([key, config]: [string, any], index) => ({
+        ([key, config]: [string, unknown], index) => ({
           id: `field-${index}`,
           key,
-          config,
+          config: config as Record<string, unknown>,
         })
       );
       setFields(schemaFields);
@@ -93,15 +87,24 @@ export default function ContentTypeBuilderPage() {
     setSelectedField(newField.id);
   };
 
-  const updateField = (id: string, updates: Partial<FieldConfig>) => {
+  const updateFieldKey = (id: string, newKey: string) => {
+    // Check for duplicate keys (but allow empty during typing)
+    if (newKey && newKey.trim()) {
+      const existingField = fields.find(f => f.id !== id && f.key === newKey);
+      if (existingField) {
+        setError(`Field key "${newKey}" already exists`);
+        return;
+      }
+    }
+    setError(null);
     setFields(
       fields.map((field) =>
-        field.id === id ? { ...field, ...updates } : field
+        field.id === id ? { ...field, key: newKey } : field
       )
     );
   };
 
-  const updateFieldConfig = (id: string, configKey: string, value: any) => {
+  const updateFieldConfig = (id: string, configKey: string, value: unknown) => {
     setFields(
       fields.map((field) =>
         field.id === id
@@ -160,7 +163,8 @@ export default function ContentTypeBuilderPage() {
         alert('All fields must have a key');
         return false;
       }
-      if (!field.config.label?.trim()) {
+      const label = field.config.label;
+      if (typeof label !== 'string' || !label.trim()) {
         alert(`Field "${field.key}" must have a label`);
         return false;
       }
@@ -175,9 +179,9 @@ export default function ContentTypeBuilderPage() {
     try {
       setIsSaving(true);
 
-      // Convert fields array to schema object
-      const schema: Record<string, any> = {};
-      fields.forEach((field) => {
+    // Convert fields array to schema object
+    const schema: Record<string, Record<string, unknown>> = {};
+    fields.forEach((field) => {
         schema[field.key] = field.config;
       });
 
@@ -192,12 +196,13 @@ export default function ContentTypeBuilderPage() {
         await contentApi.updateContentType(parseInt(editId), payload);
         alert('Content type updated successfully');
       } else {
-        const created = await contentApi.createContentType(payload);
+        await contentApi.createContentType(payload);
         alert('Content type created successfully');
-        router.push(`/dashboard/content-types/${created.id}`);
+        router.push('/dashboard/content-types');
       }
-    } catch (err: any) {
-      alert('Failed to save: ' + (err.response?.data?.detail || err.message));
+    } catch (err) {
+      const error = err as Error & { response?: { data?: { detail?: string } } };
+      setError('Failed to create content type: ' + (error.response?.data?.detail || error.message));
     } finally {
       setIsSaving(false);
     }
@@ -205,7 +210,7 @@ export default function ContentTypeBuilderPage() {
 
   const selectedFieldData = fields.find((f) => f.id === selectedField);
   const selectedFieldType = selectedFieldData
-    ? getFieldTypeDefinition(selectedFieldData.config.type)
+    ? getFieldTypeDefinition(selectedFieldData.config.type as string)
     : null;
 
   if (isLoading) {
@@ -218,6 +223,13 @@ export default function ContentTypeBuilderPage() {
 
   return (
     <div className="space-y-6">
+      {/* Error Display */}
+      {error && (
+        <div className="bg-destructive/15 text-destructive px-4 py-3 rounded-md">
+          {error}
+        </div>
+      )}
+      
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -275,11 +287,14 @@ export default function ContentTypeBuilderPage() {
                 <Input
                   id="apiName"
                   value={apiName}
-                  onChange={(e) => setApiName(e.target.value)}
+                  onChange={(e) => {
+                    setApiName(e.target.value);
+                    setApiNameManuallyEdited(true);
+                  }}
                   placeholder="e.g., blog_post, product, author"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Used in API endpoints and queries. Use lowercase and underscores.
+                  Used in API endpoints and database
                 </p>
               </div>
 
@@ -329,6 +344,7 @@ export default function ContentTypeBuilderPage() {
                             moveField(field.id, 'up');
                           }}
                           disabled={index === 0}
+                          aria-label="Move up"
                         >
                           ↑
                         </Button>
@@ -341,6 +357,7 @@ export default function ContentTypeBuilderPage() {
                             moveField(field.id, 'down');
                           }}
                           disabled={index === fields.length - 1}
+                          aria-label="Move down"
                         >
                           ↓
                         </Button>
@@ -348,9 +365,9 @@ export default function ContentTypeBuilderPage() {
                       <GripVertical className="h-4 w-4 text-muted-foreground" />
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">{field.config.label || field.key}</span>
-                          <Badge variant="outline">{field.config.type}</Badge>
-                          {field.config.required && (
+                          <span className="font-medium">{String(field.config.label || field.key)}</span>
+                          <Badge variant="outline">{String(field.config.type)}</Badge>
+                          {Boolean(field.config.required) && (
                             <Badge variant="destructive" className="text-xs">Required</Badge>
                           )}
                         </div>
@@ -430,7 +447,7 @@ export default function ContentTypeBuilderPage() {
                     id="fieldKey"
                     value={selectedFieldData.key}
                     onChange={(e) =>
-                      updateField(selectedField, { key: e.target.value })
+                      updateFieldKey(selectedField, e.target.value)
                     }
                     placeholder="field_key"
                   />
@@ -448,7 +465,7 @@ export default function ContentTypeBuilderPage() {
                     {prop.type === 'text' ? (
                       <Input
                         id={prop.name}
-                        value={selectedFieldData.config[prop.name] || ''}
+                        value={String(selectedFieldData.config[prop.name] || '')}
                         onChange={(e) =>
                           updateFieldConfig(selectedField, prop.name, e.target.value)
                         }
@@ -456,7 +473,7 @@ export default function ContentTypeBuilderPage() {
                     ) : prop.type === 'textarea' ? (
                       <Textarea
                         id={prop.name}
-                        value={selectedFieldData.config[prop.name] || ''}
+                        value={String(selectedFieldData.config[prop.name] || '')}
                         onChange={(e) =>
                           updateFieldConfig(selectedField, prop.name, e.target.value)
                         }
@@ -466,7 +483,7 @@ export default function ContentTypeBuilderPage() {
                       <Input
                         id={prop.name}
                         type="number"
-                        value={selectedFieldData.config[prop.name] ?? ''}
+                        value={selectedFieldData.config[prop.name] != null ? String(selectedFieldData.config[prop.name]) : ''}
                         onChange={(e) =>
                           updateFieldConfig(
                             selectedField,
