@@ -3,14 +3,21 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { AuthProvider, useAuth } from '@/contexts/auth-context'
 
-// Mock the API module
-vi.mock('@/lib/api/auth', () => ({
-  login: vi.fn().mockResolvedValue({
-    access_token: 'fake-token',
-    refresh_token: 'fake-refresh',
-    user: { email: 'test@example.com', id: 1 }
-  }),
-  logout: vi.fn().mockResolvedValue({}),
+// Mock the entire API module
+vi.mock('@/lib/api', () => ({
+  authApi: {
+    login: vi.fn().mockResolvedValue({
+      access_token: 'fake-token',
+      refresh_token: 'fake-refresh',
+      user: { email: 'test@example.com', id: 1, full_name: 'Test User' }
+    }),
+    logout: vi.fn().mockResolvedValue({}),
+    register: vi.fn().mockResolvedValue({
+      access_token: 'fake-token',
+      refresh_token: 'fake-refresh',
+      user: { email: 'test@example.com', id: 1, full_name: 'Test User' }
+    }),
+  },
 }))
 
 // Test component that uses the auth context
