@@ -29,6 +29,7 @@ describe('OrganizationSettingsPage', () => {
     email: 'contact@acme.com',
     website: 'https://acme.com',
     logo_url: 'https://acme.com/logo.png',
+    is_active: true,
     plan_type: 'professional',
     created_at: '2024-01-15T10:00:00Z',
     updated_at: '2024-11-20T15:30:00Z',
@@ -40,27 +41,36 @@ describe('OrganizationSettingsPage', () => {
       code: 'en',
       name: 'English',
       is_default: true,
+      is_enabled: true,
       is_active: true,
+      auto_translate: false,
       organization_id: 1,
       created_at: '2024-01-15T10:00:00Z',
+      updated_at: '2024-01-15T10:00:00Z',
     },
     {
       id: 2,
       code: 'fr',
       name: 'French',
       is_default: false,
+      is_enabled: true,
       is_active: true,
+      auto_translate: true,
       organization_id: 1,
       created_at: '2024-03-20T14:30:00Z',
+      updated_at: '2024-03-20T14:30:00Z',
     },
     {
       id: 3,
       code: 'es',
       name: 'Spanish',
       is_default: false,
+      is_enabled: false,
       is_active: false,
+      auto_translate: false,
       organization_id: 1,
       created_at: '2024-06-10T09:15:00Z',
+      updated_at: '2024-06-10T09:15:00Z',
     },
   ];
 
@@ -74,9 +84,14 @@ describe('OrganizationSettingsPage', () => {
   });
 
   describe('Initial Rendering', () => {
-    it('should show loading state initially', () => {
+    it('should show loading state initially', async () => {
       render(<OrganizationSettingsPage />);
       expect(screen.getByText('Loading settings...')).toBeInTheDocument();
+      
+      // Wait for loading to complete to avoid act() warnings
+      await waitFor(() => {
+        expect(screen.queryByText('Loading settings...')).not.toBeInTheDocument();
+      });
     });
 
     it('should load organization data on mount', async () => {
@@ -288,7 +303,7 @@ describe('OrganizationSettingsPage', () => {
     it('should show saving state when saving', async () => {
       const user = userEvent.setup();
       let resolveUpdate: any;
-      const updatePromise = new Promise((resolve) => {
+      const updatePromise = new Promise<OrganizationProfile>((resolve) => {
         resolveUpdate = resolve;
       });
       vi.mocked(organizationApi.updateProfile).mockReturnValue(updatePromise);
