@@ -36,7 +36,6 @@ const navigation = [
   { name: 'Organization', href: '/dashboard/organization', icon: '🏢' },
   { name: 'Audit Logs', href: '/dashboard/audit-logs', icon: '📋' },
   { name: 'Documentation', href: '/dashboard/documentation', icon: '📚' },
-  { name: 'API Docs', href: 'http://localhost:8000/api/docs', icon: '📖', external: true },
   { name: 'Settings', href: '/dashboard/settings', icon: '⚙️' },
 ];
 

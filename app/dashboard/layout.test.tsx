@@ -276,19 +276,6 @@ describe('DashboardLayout', () => {
     expect(screen.getByText('Onboarding Tour')).toBeInTheDocument();
   });
 
-  it('should render external links correctly', () => {
-    render(
-      <DashboardLayout>
-        <div>Test Content</div>
-      </DashboardLayout>
-    );
-
-    const apiDocsLink = screen.getByRole('link', { name: /API Docs/i });
-    expect(apiDocsLink).toHaveAttribute('href', 'http://localhost:8000/api/docs');
-    expect(apiDocsLink).toHaveAttribute('target', '_blank');
-    expect(apiDocsLink).toHaveAttribute('rel', 'noopener noreferrer');
-  });
-
   it('should update page title based on current route', () => {
     (usePathname as any).mockReturnValue('/dashboard/users');
 

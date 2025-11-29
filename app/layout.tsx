@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: "Bakalr CMS - Headless Content Management System",
   description: "Modern headless CMS with multi-language support and dark chocolate brown theme",
   icons: {
-    icon: '/favicon.ico',
+    icon: '/bakalr-icon.svg',
     apple: '/bakalr-icon.svg',
   },
 };

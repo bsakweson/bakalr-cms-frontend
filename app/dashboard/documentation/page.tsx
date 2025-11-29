@@ -6,8 +6,7 @@ import {
   Search, 
   Bell, 
   Palette, 
-  Shield, 
-  TrendingUp,
+  Shield,
   Webhook,
   FileText,
   Key,
@@ -33,7 +32,7 @@ const docSections: DocSection[] = [
     title: 'search',
     description: 'Full-text search with Meilisearch',
     icon: Search,
-    href: 'https://github.com/bsakweson/bakalr-cms-frontend/blob/main/docs/search.md',
+    href: 'https://github.com/bsakweson/bakalr-cms/blob/main/docs/search.md',
     external: true,
   },
   {
@@ -41,7 +40,7 @@ const docSections: DocSection[] = [
     title: 'webhooks',
     description: 'Webhook configuration and logs',
     icon: Webhook,
-    href: 'https://github.com/bsakweson/bakalr-cms-frontend/blob/main/docs/webhooks.md',
+    href: 'https://github.com/bsakweson/bakalr-cms/blob/main/docs/webhooks.md',
     external: true,
   },
   {
@@ -49,38 +48,31 @@ const docSections: DocSection[] = [
     title: 'notifications',
     description: 'In-app notifications',
     icon: Bell,
-    href: 'https://github.com/bsakweson/bakalr-cms-frontend/blob/main/docs/notifications.md',
-    external: true,
+    href: '/dashboard/notifications',
+    external: false,
   },
   {
     id: 'themes',
     title: 'themes',
     description: 'Custom theming',
     icon: Palette,
-    href: 'https://github.com/bsakweson/bakalr-cms-frontend/blob/main/docs/themes.md',
-    external: true,
+    href: '/dashboard/themes',
+    external: false,
   },
   {
     id: 'audit',
     title: 'audit',
     description: 'Audit log viewer',
     icon: Shield,
-    href: 'https://github.com/bsakweson/bakalr-cms-frontend/blob/main/docs/audit-logs.md',
-    external: true,
-  },
-  {
-    id: 'analytics',
-    title: 'analytics',
-    description: 'Content and user analytics',
-    icon: TrendingUp,
-    href: '/dashboard',
+    href: '/dashboard/audit-logs',
+    external: false,
   },
   {
     id: 'getting-started',
     title: 'getting started',
     description: 'Installation and first steps',
     icon: Book,
-    href: 'https://github.com/bsakweson/bakalr-cms-frontend/blob/main/docs/getting-started.md',
+    href: 'https://github.com/bsakweson/bakalr-cms/blob/main/docs/getting-started.md',
     external: true,
   },
   {
@@ -88,7 +80,7 @@ const docSections: DocSection[] = [
     title: 'authentication',
     description: 'JWT, 2FA, API keys, password reset',
     icon: Lock,
-    href: 'https://github.com/bsakweson/bakalr-cms-frontend/blob/main/docs/authentication.md',
+    href: 'https://github.com/bsakweson/bakalr-cms/blob/main/docs/authentication.md',
     external: true,
   },
   {
@@ -96,7 +88,7 @@ const docSections: DocSection[] = [
     title: 'API reference',
     description: 'Interactive OpenAPI documentation',
     icon: FileText,
-    href: '/api/docs',
+    href: 'http://localhost:8000/api/docs',
     external: true,
   },
   {
@@ -104,7 +96,7 @@ const docSections: DocSection[] = [
     title: 'developer guide',
     description: 'Architecture and development',
     icon: Zap,
-    href: 'https://github.com/bsakweson/bakalr-cms-frontend/blob/main/docs/developer-guide.md',
+    href: 'https://github.com/bsakweson/bakalr-cms/blob/main/docs/developer-guide.md',
     external: true,
   },
   {
@@ -112,7 +104,7 @@ const docSections: DocSection[] = [
     title: 'deployment',
     description: 'Docker and production setup',
     icon: Globe,
-    href: 'https://github.com/bsakweson/bakalr-cms-frontend/blob/main/docs/deployment.md',
+    href: 'https://github.com/bsakweson/bakalr-cms/blob/main/docs/deployment.md',
     external: true,
   },
   {
@@ -120,7 +112,7 @@ const docSections: DocSection[] = [
     title: 'security',
     description: 'Best practices and hardening',
     icon: Key,
-    href: 'https://github.com/bsakweson/bakalr-cms-frontend/blob/main/docs/security.md',
+    href: 'https://github.com/bsakweson/bakalr-cms/blob/main/docs/security.md',
     external: true,
   },
 ];
@@ -195,7 +187,7 @@ export default function DocumentationPage() {
         <CardContent>
           <div className="space-y-2">
             <a
-              href="https://github.com/bsakweson/bakalr-cms-frontend"
+              href="https://github.com/bsakweson/bakalr-cms"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 text-sm hover:underline text-primary"
@@ -204,7 +196,7 @@ export default function DocumentationPage() {
               GitHub Repository
             </a>
             <a
-              href="https://github.com/bsakweson/bakalr-cms-frontend/blob/main/CHANGELOG.md"
+              href="https://github.com/bsakweson/bakalr-cms/blob/main/CHANGELOG.md"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 text-sm hover:underline text-primary"
@@ -213,16 +205,7 @@ export default function DocumentationPage() {
               Changelog
             </a>
             <a
-              href="https://github.com/bsakweson/bakalr-cms-frontend/blob/main/CONTRIBUTING.md"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-sm hover:underline text-primary"
-            >
-              <ExternalLink className="h-4 w-4" />
-              Contributing Guide
-            </a>
-            <a
-              href="https://github.com/bsakweson/bakalr-cms-frontend/issues"
+              href="https://github.com/bsakweson/bakalr-cms/issues"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 text-sm hover:underline text-primary"
