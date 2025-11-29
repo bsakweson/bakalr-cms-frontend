@@ -35,6 +35,7 @@ const navigation = [
   { name: 'Themes', href: '/dashboard/themes', icon: '🎨' },
   { name: 'Organization', href: '/dashboard/organization', icon: '🏢' },
   { name: 'Audit Logs', href: '/dashboard/audit-logs', icon: '📋' },
+  { name: 'Documentation', href: '/dashboard/documentation', icon: '📚' },
   { name: 'API Docs', href: 'http://localhost:8000/api/docs', icon: '📖', external: true },
   { name: 'Settings', href: '/dashboard/settings', icon: '⚙️' },
 ];
@@ -157,7 +158,11 @@ export default function DashboardLayout({
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="text-lg">Loading...</div>
+        <title>Loading Dashboard - Bakalr CMS</title>
+        <main className="text-center">
+          <h1 className="sr-only">Dashboard Loading</h1>
+          <div className="text-lg">Loading...</div>
+        </main>
       </div>
     );
   }

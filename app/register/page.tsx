@@ -37,11 +37,11 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
+    <main className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-3xl font-bold text-primary">Bakalr CMS</CardTitle>
-          <CardDescription>Create your account</CardDescription>
+          <h1 className="text-2xl font-semibold">Create account</h1>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -49,6 +49,7 @@ export default function RegisterPage() {
               <Label htmlFor="full_name">Full Name</Label>
               <Input
                 id="full_name"
+                name="full_name"
                 type="text"
                 placeholder="John Doe"
                 value={formData.full_name}
@@ -61,6 +62,7 @@ export default function RegisterPage() {
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
+                name="email"
                 type="email"
                 placeholder="you@example.com"
                 value={formData.email}
@@ -73,6 +75,7 @@ export default function RegisterPage() {
               <Label htmlFor="organization_name">Organization Name</Label>
               <Input
                 id="organization_name"
+                name="organization_name"
                 type="text"
                 placeholder="My Company"
                 value={formData.organization_name}
@@ -85,6 +88,7 @@ export default function RegisterPage() {
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
+                name="password"
                 type="password"
                 placeholder="••••••••"
                 value={formData.password}
@@ -110,6 +114,6 @@ export default function RegisterPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </main>
   );
 }

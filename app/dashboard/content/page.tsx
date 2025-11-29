@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { contentApi } from '@/lib/api';
+import { contentApi, searchApi } from '@/lib/api';
 import { ContentEntry, ContentType, PaginatedResponse } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -69,9 +69,51 @@ export default function ContentPage() {
     loadContent();
   }, [loadContent]);
 
-  const handleSearch = () => {
-    // TODO: Integrate with search API
-    loadContent();
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) {
+      // If search is empty, just reload content
+      loadContent();
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const params: any = { q: searchQuery, limit: 20 };
+      
+      if (selectedType !== 'all') {
+        params.content_type_id = parseInt(selectedType);
+      }
+      if (selectedStatus !== 'all') {
+        params.status = selectedStatus;
+      }
+
+      const searchResults = await searchApi.search(params);
+      
+      // Convert search results to content format
+      setContent({
+        items: searchResults.results.map(result => ({
+          id: result.id,
+          content_type_id: result.content_type_id,
+          slug: result.slug,
+          status: result.status as any,
+          content_data: result.content_data,
+          version: 1,
+          author_id: 0,
+          created_at: '',
+          updated_at: '',
+        })),
+        total: searchResults.total,
+        page: 1,
+        per_page: 20,
+        total_pages: Math.ceil(searchResults.total / 20),
+      });
+    } catch (error) {
+      console.error('Search failed:', error);
+      // Fall back to regular content loading
+      loadContent();
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -169,9 +211,10 @@ export default function ContentPage() {
         </CardContent>
       </Card>
 
-      {content && content.items.length > 0 ? (
-        <div className="grid gap-4">
-          {content.items.map((entry) => (
+      {/* Always render the grid container for test compatibility */}
+      <div className="grid gap-4" role="grid" data-testid="content-list">
+        {content && content.items.length > 0 ? (
+          content.items.map((entry) => (
             <Card key={entry.id}>
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -184,7 +227,7 @@ export default function ContentPage() {
                     </CardDescription>
                   </div>
                   <Button variant="outline" size="sm" asChild>
-                    <Link href={`/dashboard/content/${entry.id}`}>Edit</Link>
+                    <Link href={`/dashboard/content/${entry.id}/edit`}>Edit</Link>
                   </Button>
                 </div>
               </CardHeader>
@@ -196,22 +239,22 @@ export default function ContentPage() {
                 </CardContent>
               )}
             </Card>
-          ))}
-        </div>
-      ) : (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <span className="text-6xl mb-4">📝</span>
-            <h3 className="text-xl font-semibold mb-2">No content yet</h3>
-            <p className="text-muted-foreground mb-4 text-center max-w-md">
-              Get started by creating your first content entry
-            </p>
-            <Button asChild>
-              <Link href="/dashboard/content/new">Create Your First Content</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+          ))
+        ) : (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <span className="text-6xl mb-4">📝</span>
+              <h3 className="text-xl font-semibold mb-2">No content yet</h3>
+              <p className="text-muted-foreground mb-4 text-center max-w-md">
+                Get started by creating your first content entry
+              </p>
+              <Button asChild>
+                <Link href="/dashboard/content/new">Create Your First Content</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       {content && content.total_pages > 1 && (
         <div className="flex items-center justify-center gap-2">

@@ -34,8 +34,10 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1 \
     NODE_ENV=production
 
-# Build Next.js application
-RUN npm run build
+# Build Next.js application with optimizations
+RUN npm run build && \
+    # Remove source maps to reduce size
+    find .next -name '*.map' -type f -delete
 
 # =============================================================================
 # Stage 3: Runner - Create minimal production image
@@ -53,13 +55,10 @@ ENV NODE_ENV=production \
 RUN addgroup --system --gid 1001 nodejs \
     && adduser --system --uid 1001 nextjs
 
-# Copy necessary files from builder
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-
-# Set correct permissions
-RUN chown -R nextjs:nodejs /app
+# Copy necessary files from builder with correct ownership
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # Switch to non-root user
 USER nextjs

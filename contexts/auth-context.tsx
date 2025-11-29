@@ -71,10 +71,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       await authApi.logout();
-      setUser(null);
     } catch (error) {
       console.error('Logout failed:', error);
-      throw error;
+    } finally {
+      // Always clear local storage and user state
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('user');
+      setUser(null);
     }
   };
 

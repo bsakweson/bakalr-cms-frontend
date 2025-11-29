@@ -10,14 +10,14 @@ export interface FieldTypeDefinition {
     type: string;
     required: boolean;
     description?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   configurableProperties: {
     name: string;
     label: string;
     type: 'text' | 'number' | 'boolean' | 'select' | 'textarea' | 'array';
     options?: { value: string; label: string }[];
-    default?: any;
+    default?: unknown;
   }[];
 }
 
@@ -255,6 +255,6 @@ export function getFieldTypeDefinition(type: string): FieldTypeDefinition | unde
 export function generateFieldKey(label: string): string {
   return label
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_|_$/g, '');
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
 }

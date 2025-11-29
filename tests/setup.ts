@@ -1,11 +1,21 @@
 import '@testing-library/jest-dom'
 import { cleanup } from '@testing-library/react'
-import { afterEach } from 'vitest'
+import { afterEach, vi } from 'vitest'
 
 // Cleanup after each test
 afterEach(() => {
   cleanup()
 })
+
+// Mock ResizeObserver (used by cmdk library)
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+// Mock scrollIntoView (used by cmdk library)
+Element.prototype.scrollIntoView = vi.fn()
 
 // Mock Next.js router
 vi.mock('next/navigation', () => ({

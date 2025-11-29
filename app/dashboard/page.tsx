@@ -39,6 +39,8 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // SEO and accessibility
+
   useEffect(() => {
     loadAnalytics();
   }, []);
@@ -149,7 +151,7 @@ export default function DashboardPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
+        <h1 className="text-3xl font-bold">Dashboard</h1>
         <p className="text-muted-foreground mt-1">
           Overview of your content, users, and activity
         </p>
@@ -167,7 +169,7 @@ export default function DashboardPage() {
             <div className="text-2xl font-bold">{contentStats?.total_entries || 0}</div>
             <div className="mt-2 flex gap-3 text-xs">
               <div>
-                <span className="text-green-600 font-medium">
+                <span className="text-green-700 font-medium">
                   {contentStats?.published_entries || 0}
                 </span>{' '}
                 <span className="text-muted-foreground">published</span>
@@ -198,7 +200,7 @@ export default function DashboardPage() {
                 <span className="text-muted-foreground">active (7d)</span>
               </div>
               <div className="mt-1">
-                <span className="text-green-600 font-medium">
+                <span className="text-green-700 font-medium">
                   +{userStats?.new_users_7d || 0}
                 </span>{' '}
                 <span className="text-muted-foreground">new this week</span>

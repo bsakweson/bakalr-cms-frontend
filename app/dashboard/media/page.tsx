@@ -1,6 +1,9 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { mediaApi } from '@/lib/api';
+import { MediaDetailsModal } from '@/components/media/MediaDetailsModal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -26,31 +29,76 @@ interface MediaFile {
 }
 
 export default function MediaPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [media, setMedia] = useState<MediaFile[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedType, setSelectedType] = useState('all');
+  const [selectedType, setSelectedType] = useState(searchParams?.get('type') || 'all');
   const [isDragging, setIsDragging] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+  const [selectedMedia, setSelectedMedia] = useState<MediaFile | null>(null);
+  const [showMediaModal, setShowMediaModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadMedia();
-  }, [selectedType]);
+    // Update URL with type parameter
+    if (selectedType !== 'all') {
+      router.push(`/dashboard/media?type=${selectedType}`);
+    } else {
+      router.push('/dashboard/media');
+    }
+  }, [selectedType, router]);
 
   const loadMedia = async () => {
-    setIsLoading(true);
-    // TODO: Implement API call to fetch media
-    // For now, showing placeholder
-    setTimeout(() => {
+    try {
+      setIsLoading(true);
+      const params: any = {};
+      
+      if (selectedType !== 'all') {
+        params.file_type = selectedType;
+      }
+      if (searchQuery) {
+        params.search = searchQuery;
+      }
+      
+      const response = await mediaApi.getMedia(params);
+      setMedia(response.items || []);
+    } catch (error) {
+      console.error('Failed to load media:', error);
       setMedia([]);
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
 
-  const handleFileSelect = (files: FileList | null) => {
-    if (!files) return;
-    // TODO: Implement file upload
-    console.log('Files selected:', Array.from(files).map(f => f.name));
+  const handleFileSelect = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    
+    try {
+      setUploadStatus('uploading');
+      
+      // Upload each file
+      for (const file of Array.from(files)) {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        await mediaApi.uploadMedia(formData);
+      }
+      
+      setUploadStatus('success');
+      
+      // Reload media list
+      await loadMedia();
+      
+      // Reset status after 3 seconds
+      setTimeout(() => setUploadStatus('idle'), 3000);
+    } catch (error) {
+      console.error('Upload failed:', error);
+      setUploadStatus('error');
+      setTimeout(() => setUploadStatus('idle'), 3000);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -102,6 +150,29 @@ export default function MediaPage() {
           onChange={(e) => handleFileSelect(e.target.files)}
         />
       </div>
+
+      {/* Upload Status Messages */}
+      {uploadStatus === 'uploading' && (
+        <Card className="border-blue-500 bg-blue-50 dark:bg-blue-950">
+          <CardContent className="py-4">
+            <p className="text-sm font-medium text-blue-900 dark:text-blue-100">Uploading files...</p>
+          </CardContent>
+        </Card>
+      )}
+      {uploadStatus === 'success' && (
+        <Card className="border-green-500 bg-green-50 dark:bg-green-950">
+          <CardContent className="py-4">
+            <p className="text-sm font-medium text-green-900 dark:text-green-100">Upload successful!</p>
+          </CardContent>
+        </Card>
+      )}
+      {uploadStatus === 'error' && (
+        <Card className="border-red-500 bg-red-50 dark:bg-red-950">
+          <CardContent className="py-4">
+            <p className="text-sm font-medium text-red-900 dark:text-red-100">Upload failed. Please try again.</p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Upload Area */}
       <Card
@@ -158,58 +229,79 @@ export default function MediaPage() {
         </CardContent>
       </Card>
 
-      {/* Media Grid */}
+      {/* Media Grid - Always render container for test compatibility */}
       {isLoading ? (
         <div className="flex h-64 items-center justify-center">
           <div className="text-lg">Loading media...</div>
         </div>
-      ) : media.length > 0 ? (
-        <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
-          {media.map((file) => (
-            <Card key={file.id} className="overflow-hidden">
-              <div className="aspect-video bg-muted flex items-center justify-center">
-                {file.thumbnail_url ? (
-                  <img
-                    src={file.thumbnail_url}
-                    alt={file.alt_text || file.filename}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="text-4xl">
-                    {file.file_type.startsWith('image') ? '🖼️' : 
-                     file.file_type.startsWith('video') ? '🎥' :
-                     file.file_type.startsWith('audio') ? '🎵' : '📄'}
-                  </span>
-                )}
-              </div>
-              <CardContent className="p-4">
-                <p className="text-sm font-medium truncate mb-1">{file.filename}</p>
-                <div className="flex items-center gap-2">
-                  <Badge variant={getFileTypeColor(file.file_type)} className="text-xs">
-                    {file.file_type.split('/')[0]}
-                  </Badge>
-                  <span className="text-xs text-muted-foreground">
-                    {formatFileSize(file.file_size)}
-                  </span>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4" data-testid="media-grid">
+          {media.length > 0 ? (
+            media.map((file) => (
+              <Card 
+                key={file.id} 
+                className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => {
+                  setSelectedMedia(file);
+                  setShowMediaModal(true);
+                }}
+              >
+                <div className="aspect-video bg-muted flex items-center justify-center">
+                  {file.thumbnail_url ? (
+                    <img
+                      src={file.thumbnail_url}
+                      alt={file.alt_text || file.filename}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-4xl">
+                      {file.file_type.startsWith('image') ? '🖼️' : 
+                       file.file_type.startsWith('video') ? '🎥' :
+                       file.file_type.startsWith('audio') ? '🎵' : '📄'}
+                    </span>
+                  )}
                 </div>
+                <CardContent className="p-4">
+                  <p className="text-sm font-medium truncate mb-1">{file.filename}</p>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={getFileTypeColor(file.file_type)} className="text-xs">
+                      {file.file_type.split('/')[0]}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">
+                      {formatFileSize(file.file_size)}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <Card className="col-span-full">
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <div className="text-6xl mb-4">🖼️</div>
+                <h3 className="text-lg font-semibold mb-2">No media files yet</h3>
+                <p className="text-sm text-muted-foreground text-center mb-4 max-w-md">
+                  Upload your first media file by dragging and dropping or using the upload button
+                </p>
+                <Button onClick={() => fileInputRef.current?.click()}>
+                  Upload Your First File
+                </Button>
               </CardContent>
             </Card>
-          ))}
+          )}
         </div>
-      ) : (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <div className="text-6xl mb-4">🖼️</div>
-            <h3 className="text-lg font-semibold mb-2">No media files yet</h3>
-            <p className="text-sm text-muted-foreground text-center mb-4 max-w-md">
-              Upload your first media file by dragging and dropping or using the upload button
-            </p>
-            <Button onClick={() => fileInputRef.current?.click()}>
-              Upload Your First File
-            </Button>
-          </CardContent>
-        </Card>
       )}
+
+      {/* Media Details Modal */}
+      <MediaDetailsModal
+        media={selectedMedia}
+        open={showMediaModal}
+        onClose={() => {
+          setShowMediaModal(false);
+          setSelectedMedia(null);
+        }}
+        onUpdate={loadMedia}
+        onDelete={loadMedia}
+      />
     </div>
   );
 }

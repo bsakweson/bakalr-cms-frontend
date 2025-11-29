@@ -11,3 +11,5 @@ export { mediaApi } from './media';
 export { translationApi } from './translation';
 export { templateApi } from './templates';
 export { themeApi } from './themes';
+export { searchApi } from './search';
+export { passwordResetApi } from './password-reset';
