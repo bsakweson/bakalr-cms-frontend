@@ -217,6 +217,41 @@ export default function EditContentPage() {
           </div>
         );
 
+      case 'json':
+      case 'array':
+      case 'object':
+        return (
+          <div key={fieldName}>
+            <Label htmlFor={fieldName}>
+              {fieldSchema.label || fieldName}
+              {isRequired && <span className="text-destructive ml-1">*</span>}
+            </Label>
+            <Textarea
+              id={fieldName}
+              value={typeof fieldValue === 'string' ? fieldValue : JSON.stringify(fieldValue, null, 2)}
+              onChange={(e) => {
+                try {
+                  const parsed = JSON.parse(e.target.value);
+                  handleFieldChange(fieldName, parsed);
+                } catch {
+                  // Keep the raw string value if parsing fails (while typing)
+                  handleFieldChange(fieldName, e.target.value);
+                }
+              }}
+              placeholder={fieldSchema.description || 'Enter JSON array or object'}
+              required={isRequired}
+              rows={6}
+              className="font-mono text-sm"
+            />
+            {fieldSchema.description && (
+              <p className="text-xs text-muted-foreground mt-1">{fieldSchema.description}</p>
+            )}
+            <p className="text-xs text-muted-foreground mt-1">
+              Format: JSON array or object (e.g., ["url1", "url2"] or {'{'}"key": "value"{'}'})
+            </p>
+          </div>
+        );
+
       default:
         return (
           <div key={fieldName}>
@@ -296,12 +331,12 @@ export default function EditContentPage() {
             </div>
 
             {/* Dynamic Fields */}
-            {contentType?.schema && (
+            {contentType?.fields && contentType.fields.length > 0 && (
               <div className="border-t pt-6">
                 <h3 className="text-lg font-semibold mb-4">Content Fields</h3>
                 <div className="space-y-4">
-                  {Object.entries(contentType.schema).map(([fieldName, fieldSchema]) => 
-                    renderField(fieldName, fieldSchema)
+                  {contentType.fields.map((field) => 
+                    renderField(field.name, field)
                   )}
                 </div>
               </div>

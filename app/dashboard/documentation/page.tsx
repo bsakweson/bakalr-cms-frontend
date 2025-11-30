@@ -68,6 +68,14 @@ const docSections: DocSection[] = [
     external: false,
   },
   {
+    id: 'analytics',
+    title: 'analytics',
+    description: 'Content and user analytics',
+    icon: Zap,
+    href: '/dashboard/analytics',
+    external: false,
+  },
+  {
     id: 'getting-started',
     title: 'getting started',
     description: 'Installation and first steps',

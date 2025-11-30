@@ -41,11 +41,22 @@ export default function NewContentPage() {
       const type = contentTypes.find(t => t.id === parseInt(selectedTypeId));
       setSelectedType(type || null);
       
-      // Initialize form fields based on content type schema
-      if (type?.schema) {
+      // Initialize form fields based on content type fields
+      if (type?.fields) {
         const initialFields: any = {};
-        Object.keys(type.schema).forEach(key => {
-          initialFields[key] = '';
+        type.fields.forEach(field => {
+          // Set default values based on field type
+          if (field.default !== null && field.default !== undefined) {
+            initialFields[field.name] = field.default;
+          } else if (field.type === 'boolean') {
+            initialFields[field.name] = false;
+          } else if (field.type === 'number') {
+            initialFields[field.name] = 0;
+          } else if (field.type === 'json') {
+            initialFields[field.name] = [];
+          } else {
+            initialFields[field.name] = '';
+          }
         });
         setFormData({ ...formData, fields: initialFields, content_type_id: type.id });
       }
@@ -220,6 +231,36 @@ export default function NewContentPage() {
           </div>
         );
 
+      case 'json':
+        return (
+          <div key={fieldName}>
+            <Label htmlFor={fieldName}>
+              {fieldSchema.help_text || fieldName}
+              {isRequired && <span className="text-destructive ml-1">*</span>}
+            </Label>
+            <Textarea
+              id={fieldName}
+              value={typeof fieldValue === 'string' ? fieldValue : JSON.stringify(fieldValue, null, 2)}
+              onChange={(e) => {
+                try {
+                  const parsed = JSON.parse(e.target.value);
+                  handleFieldChange(fieldName, parsed);
+                } catch {
+                  // Allow editing invalid JSON
+                  handleFieldChange(fieldName, e.target.value);
+                }
+              }}
+              placeholder='["url1", "url2"] or {"key": "value"}'
+              required={isRequired}
+              rows={4}
+              className="font-mono text-sm"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Enter valid JSON (array or object)
+            </p>
+          </div>
+        );
+
       default:
         return (
           <div key={fieldName}>
@@ -345,8 +386,8 @@ export default function NewContentPage() {
                   <div className="border-t pt-6">
                     <h3 className="text-lg font-semibold mb-4">Content Fields</h3>
                     <div className="space-y-4">
-                      {selectedType.schema && Object.entries(selectedType.schema).map(([fieldName, fieldSchema]) => 
-                        renderField(fieldName, fieldSchema)
+                      {selectedType.fields && selectedType.fields.map((field) => 
+                        renderField(field.name, field)
                       )}
                     </div>
                   </div>

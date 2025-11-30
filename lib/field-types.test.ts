@@ -8,8 +8,8 @@ import {
 
 describe('field-types', () => {
   describe('FIELD_TYPES array', () => {
-    it('should contain all 12 field type definitions', () => {
-      expect(FIELD_TYPES).toHaveLength(12);
+    it('should contain all 13 field type definitions', () => {
+      expect(FIELD_TYPES).toHaveLength(13);
       
       const types = FIELD_TYPES.map(ft => ft.type);
       expect(types).toEqual([
@@ -25,6 +25,7 @@ describe('field-types', () => {
         'file',
         'date',
         'datetime',
+        'json',
       ]);
     });
 

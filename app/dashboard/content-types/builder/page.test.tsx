@@ -381,13 +381,13 @@ describe('ContentTypeBuilderPage', () => {
         expect(contentApi.createContentType).toHaveBeenCalledWith(
           expect.objectContaining({
             name: 'Blog Post',
-            slug: 'blog-post',
-            schema: expect.objectContaining({
-              title: expect.objectContaining({
+            api_id: 'blog-post',
+            fields: expect.arrayContaining([
+              expect.objectContaining({
+                name: 'title',
                 type: expect.any(String),
-                label: expect.any(String)
               })
-            })
+            ])
           })
         );
       });

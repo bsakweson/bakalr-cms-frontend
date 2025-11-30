@@ -53,18 +53,26 @@ export default function ContentTypeBuilderPage() {
       setIsLoading(true);
       const data = await contentApi.getContentType(id);
       setName(data.name);
-      setApiName(data.slug);
+      setApiName(data.api_id || '');
       setDescription(data.description || '');
       
-      // Convert schema to fields array
-      const schemaFields: FieldConfig[] = Object.entries(data.schema || {}).map(
-        ([key, config]: [string, unknown], index) => ({
+      // Convert fields array to field configs
+      const fieldConfigs: FieldConfig[] = (data.fields || []).map(
+        (field, index) => ({
           id: `field-${index}`,
-          key,
-          config: config as Record<string, unknown>,
+          key: field.name,
+          config: {
+            type: field.type,
+            required: field.required,
+            unique: field.unique,
+            localized: field.localized,
+            default: field.default,
+            validation: field.validation,
+            help_text: field.help_text,
+          },
         })
       );
-      setFields(schemaFields);
+      setFields(fieldConfigs);
     } catch (err) {
       console.error('Failed to load content type:', err);
       alert('Failed to load content type');
@@ -179,17 +187,23 @@ export default function ContentTypeBuilderPage() {
     try {
       setIsSaving(true);
 
-    // Convert fields array to schema object
-    const schema: Record<string, Record<string, unknown>> = {};
-    fields.forEach((field) => {
-        schema[field.key] = field.config;
-      });
+      // Convert field configs to API fields array
+      const apiFields = fields.map((field) => ({
+        name: field.key,
+        type: field.config.type as string,
+        required: field.config.required as boolean || false,
+        unique: field.config.unique as boolean || false,
+        localized: field.config.localized as boolean || false,
+        default: field.config.default,
+        validation: field.config.validation as Record<string, unknown> | undefined,
+        help_text: field.config.help_text as string | undefined,
+      }));
 
       const payload = {
         name,
-        slug: apiName,
+        api_id: apiName,
         description: description || undefined,
-        schema,
+        fields: apiFields,
       };
 
       if (isEdit && editId) {

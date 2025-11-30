@@ -93,7 +93,7 @@ export default function ContentTypesPage() {
                     <div className="flex items-center gap-2">
                       <CardTitle className="text-xl">{type.name}</CardTitle>
                       <Badge variant="outline" className="text-xs">
-                        {type.slug}
+                        {type.api_id}
                       </Badge>
                     </div>
                     {type.description && (
@@ -137,19 +137,19 @@ export default function ContentTypesPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Fields</span>
                     <Badge variant="secondary">
-                      {Object.keys(type.schema || {}).length}
+                      {type.fields?.length || 0}
                     </Badge>
                   </div>
-                  {type.schema && Object.keys(type.schema).length > 0 && (
+                  {type.fields && type.fields.length > 0 && (
                     <div className="flex flex-wrap gap-1">
-                      {Object.keys(type.schema).slice(0, 5).map((fieldKey) => (
-                        <Badge key={fieldKey} variant="outline" className="text-xs">
-                          {fieldKey}
+                      {type.fields.slice(0, 5).map((field) => (
+                        <Badge key={field.name} variant="outline" className="text-xs">
+                          {field.name}
                         </Badge>
                       ))}
-                      {Object.keys(type.schema).length > 5 && (
+                      {type.fields.length > 5 && (
                         <Badge variant="outline" className="text-xs">
-                          +{Object.keys(type.schema).length - 5} more
+                          +{type.fields.length - 5} more
                         </Badge>
                       )}
                     </div>

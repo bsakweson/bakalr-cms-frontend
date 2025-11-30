@@ -246,6 +246,24 @@ export const FIELD_TYPES: FieldTypeDefinition[] = [
       { name: 'required', label: 'Required', type: 'boolean', default: false },
     ],
   },
+  {
+    type: 'json',
+    label: 'JSON',
+    icon: '{}',
+    description: 'JSON array or object data',
+    defaultConfig: {
+      label: 'JSON Field',
+      type: 'json',
+      required: false,
+      description: '',
+    },
+    configurableProperties: [
+      { name: 'label', label: 'Label', type: 'text' },
+      { name: 'description', label: 'Description', type: 'textarea' },
+      { name: 'required', label: 'Required', type: 'boolean', default: false },
+      { name: 'placeholder', label: 'Placeholder', type: 'text' },
+    ],
+  },
 ];
 
 export function getFieldTypeDefinition(type: string): FieldTypeDefinition | undefined {

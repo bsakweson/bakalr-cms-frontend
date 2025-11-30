@@ -58,24 +58,6 @@ function Sidebar({
         {navigation.map((item) => {
           const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
           
-          // External links (like API docs)
-          if (item.external) {
-            return (
-              <a
-                key={item.name}
-                href={item.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors text-muted-foreground hover:bg-muted hover:text-foreground"
-              >
-                <span className="text-xl">{item.icon}</span>
-                {item.name}
-                <span className="ml-auto text-xs">↗</span>
-              </a>
-            );
-          }
-          
-          // Internal links
           return (
             <Link
               key={item.name}

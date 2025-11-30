@@ -104,9 +104,9 @@ export default function ContentTypeDetailPage() {
             </div>
             <Separator />
             <div>
-              <label className="text-sm font-medium">Slug</label>
+              <label className="text-sm font-medium">API ID</label>
               <p className="text-sm text-muted-foreground">
-                <Badge variant="outline">{contentType.slug}</Badge>
+                <Badge variant="outline">{contentType.api_id}</Badge>
               </p>
             </div>
             <Separator />
@@ -141,29 +141,33 @@ export default function ContentTypeDetailPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {contentType.schema && Object.keys(contentType.schema).length > 0 ? (
+            {contentType.fields && contentType.fields.length > 0 ? (
               <div className="space-y-4">
-                {Object.entries(contentType.schema).map(([fieldKey, fieldValue]: [string, any]) => (
-                  <div key={fieldKey} className="rounded-lg border p-4">
+                {contentType.fields.map((field) => (
+                  <div key={field.name} className="rounded-lg border p-4">
                     <div className="flex items-start justify-between mb-2">
                       <div>
-                        <h4 className="font-medium">{fieldKey}</h4>
-                        {fieldValue?.label && (
-                          <p className="text-sm text-muted-foreground">{fieldValue.label}</p>
+                        <h4 className="font-medium">{field.name}</h4>
+                        {field.help_text && (
+                          <p className="text-sm text-muted-foreground">{field.help_text}</p>
                         )}
                       </div>
-                      {fieldValue?.type && (
-                        <Badge variant="secondary">{fieldValue.type}</Badge>
+                      <Badge variant="secondary">{field.type}</Badge>
+                    </div>
+                    <div className="flex gap-2 flex-wrap">
+                      {field.required && (
+                        <Badge variant="outline">Required</Badge>
+                      )}
+                      {field.unique && (
+                        <Badge variant="outline">Unique</Badge>
+                      )}
+                      {field.localized && (
+                        <Badge variant="outline">Localized</Badge>
                       )}
                     </div>
-                    {fieldValue?.required && (
-                      <Badge variant="outline" className="mr-2">
-                        Required
-                      </Badge>
-                    )}
-                    {fieldValue?.description && (
+                    {field.default !== null && field.default !== undefined && (
                       <p className="text-sm text-muted-foreground mt-2">
-                        {fieldValue.description}
+                        Default: {JSON.stringify(field.default)}
                       </p>
                     )}
                   </div>
