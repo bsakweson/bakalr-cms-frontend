@@ -16,6 +16,7 @@ export interface PasswordResetConfirm {
 
 export interface PasswordResetResponse {
   message: string;
+  email?: string;
 }
 
 export interface TokenValidationResponse {
@@ -27,7 +28,7 @@ export interface TokenValidationResponse {
  * Request password reset email
  */
 export async function requestPasswordReset(email: string): Promise<PasswordResetResponse> {
-  const response = await apiClient.post('/api/v1/auth/password-reset/request', { email });
+  const response = await apiClient.post('/auth/password-reset/request', { email });
   return response.data;
 }
 
@@ -35,7 +36,7 @@ export async function requestPasswordReset(email: string): Promise<PasswordReset
  * Confirm password reset with token
  */
 export async function confirmPasswordReset(token: string, newPassword: string): Promise<PasswordResetResponse> {
-  const response = await apiClient.post('/api/v1/auth/password-reset/confirm', {
+  const response = await apiClient.post('/auth/password-reset/confirm', {
     token,
     new_password: newPassword,
   });
@@ -47,7 +48,7 @@ export async function confirmPasswordReset(token: string, newPassword: string): 
  */
 export async function validateResetToken(token: string): Promise<TokenValidationResponse> {
   try {
-    const response = await apiClient.post('/api/v1/auth/password-reset/validate', { token });
+    const response = await apiClient.post('/auth/password-reset/validate', { token });
     return response.data;
   } catch (error: any) {
     return {

@@ -582,7 +582,7 @@ export default function ContentEntryEditorPage() {
               </CardHeader>
               <CardContent className="space-y-2">
                 <Button variant="outline" className="w-full" asChild>
-                  <Link href={`/api/v1/preview/content/${id}`} target="_blank">
+                  <Link href={`/preview/content/${id}`} target="_blank">
                     Preview
                   </Link>
                 </Button>

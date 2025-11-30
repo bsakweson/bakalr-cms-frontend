@@ -52,7 +52,7 @@ describe('themeApi', () => {
       const result = await themeApi.listThemes();
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/themes', { params: undefined });
+      expect(apiClient.get).toHaveBeenCalledWith('/themes', { params: undefined });
     });
 
     it('should fetch themes with pagination', async () => {
@@ -68,7 +68,7 @@ describe('themeApi', () => {
       const result = await themeApi.listThemes({ page: 2, page_size: 15 });
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/themes', {
+      expect(apiClient.get).toHaveBeenCalledWith('/themes', {
         params: { page: 2, page_size: 15 },
       });
     });
@@ -86,7 +86,7 @@ describe('themeApi', () => {
       const result = await themeApi.listThemes({ include_system: true });
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/themes', {
+      expect(apiClient.get).toHaveBeenCalledWith('/themes', {
         params: { include_system: true },
       });
     });
@@ -123,7 +123,7 @@ describe('themeApi', () => {
       const result = await themeApi.getTheme(2);
 
       expect(result).toEqual(mockTheme);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/themes/2');
+      expect(apiClient.get).toHaveBeenCalledWith('/themes/2');
     });
 
     it('should handle not found error', async () => {
@@ -153,7 +153,7 @@ describe('themeApi', () => {
 
       expect(result).toEqual(mockTheme);
       expect(result.is_active).toBe(true);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/themes/active');
+      expect(apiClient.get).toHaveBeenCalledWith('/themes/active');
     });
 
     it('should handle no active theme error', async () => {
@@ -190,7 +190,7 @@ describe('themeApi', () => {
       const result = await themeApi.createTheme(createData);
 
       expect(result).toEqual(mockCreatedTheme);
-      expect(apiClient.post).toHaveBeenCalledWith('/api/v1/themes', createData);
+      expect(apiClient.post).toHaveBeenCalledWith('/themes', createData);
     });
 
     it('should handle duplicate theme name error', async () => {
@@ -244,7 +244,7 @@ describe('themeApi', () => {
       const result = await themeApi.updateTheme(3, updateData);
 
       expect(result).toEqual(mockUpdatedTheme);
-      expect(apiClient.put).toHaveBeenCalledWith('/api/v1/themes/3', updateData);
+      expect(apiClient.put).toHaveBeenCalledWith('/themes/3', updateData);
     });
 
     it('should handle system theme modification error', async () => {
@@ -264,7 +264,7 @@ describe('themeApi', () => {
 
       await themeApi.deleteTheme(3);
 
-      expect(apiClient.delete).toHaveBeenCalledWith('/api/v1/themes/3');
+      expect(apiClient.delete).toHaveBeenCalledWith('/themes/3');
     });
 
     it('should handle active theme deletion error', async () => {
@@ -300,7 +300,7 @@ describe('themeApi', () => {
 
       expect(result).toEqual(mockActivatedTheme);
       expect(result.is_active).toBe(true);
-      expect(apiClient.post).toHaveBeenCalledWith('/api/v1/themes/3/activate');
+      expect(apiClient.post).toHaveBeenCalledWith('/themes/3/activate');
     });
 
     it('should handle theme not found error', async () => {
@@ -324,7 +324,7 @@ describe('themeApi', () => {
       const result = await themeApi.exportTheme(3);
 
       expect(result).toEqual(mockExport);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/themes/3/export');
+      expect(apiClient.get).toHaveBeenCalledWith('/themes/3/export');
     });
 
     it('should handle export error', async () => {
@@ -352,7 +352,7 @@ describe('themeApi', () => {
       expect(result).toEqual(mockCSSResponse);
       expect(result.css).toContain('--primary');
       expect(result.variables['--primary']).toBe('#0066cc');
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/themes/1/css-variables');
+      expect(apiClient.get).toHaveBeenCalledWith('/themes/1/css-variables');
     });
 
     it('should handle theme not found error', async () => {

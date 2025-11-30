@@ -32,7 +32,7 @@ describe('API Client', () => {
 
       expect(result).toEqual(mockResponse.data);
       expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/v1/graphql'),
+        expect.stringContaining('/graphql'),
         expect.objectContaining({
           method: 'POST',
           headers: expect.objectContaining({

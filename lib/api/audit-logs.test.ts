@@ -51,7 +51,7 @@ describe('Audit Log API', () => {
       const result = await auditLogApi.listLogs({});
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/audit-logs/', { params: {} });
+      expect(apiClient.get).toHaveBeenCalledWith('/audit-logs/', { params: {} });
       expect(result.logs).toHaveLength(2);
       expect(result.total).toBe(2);
     });
@@ -81,7 +81,7 @@ describe('Audit Log API', () => {
       const result = await auditLogApi.listLogs({ page: 2, page_size: 20 });
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/audit-logs/', {
+      expect(apiClient.get).toHaveBeenCalledWith('/audit-logs/', {
         params: { page: 2, page_size: 20 },
       });
     });
@@ -112,7 +112,7 @@ describe('Audit Log API', () => {
 
       expect(result.logs).toHaveLength(1);
       expect(result.logs[0].action).toBe('created');
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/audit-logs/', {
+      expect(apiClient.get).toHaveBeenCalledWith('/audit-logs/', {
         params: { action: 'created' },
       });
     });
@@ -142,7 +142,7 @@ describe('Audit Log API', () => {
       const result = await auditLogApi.listLogs({ resource_type: 'user' });
 
       expect(result.logs[0].resource_type).toBe('user');
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/audit-logs/', {
+      expect(apiClient.get).toHaveBeenCalledWith('/audit-logs/', {
         params: { resource_type: 'user' },
       });
     });
@@ -173,7 +173,7 @@ describe('Audit Log API', () => {
       const result = await auditLogApi.listLogs({ user_id: 5 });
 
       expect(result.logs[0].user_id).toBe(5);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/audit-logs/', {
+      expect(apiClient.get).toHaveBeenCalledWith('/audit-logs/', {
         params: { user_id: 5 },
       });
     });
@@ -203,7 +203,7 @@ describe('Audit Log API', () => {
       const result = await auditLogApi.listLogs({ severity: 'error' });
 
       expect(result.logs[0].severity).toBe('error');
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/audit-logs/', {
+      expect(apiClient.get).toHaveBeenCalledWith('/audit-logs/', {
         params: { severity: 'error' },
       });
     });
@@ -233,7 +233,7 @@ describe('Audit Log API', () => {
       const result = await auditLogApi.listLogs({ status: 'failed' });
 
       expect(result.logs[0].status).toBe('failed');
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/audit-logs/', {
+      expect(apiClient.get).toHaveBeenCalledWith('/audit-logs/', {
         params: { status: 'failed' },
       });
     });
@@ -251,7 +251,7 @@ describe('Audit Log API', () => {
       const result = await auditLogApi.listLogs({ days: 7 });
 
       expect(result.logs).toHaveLength(0);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/audit-logs/', {
+      expect(apiClient.get).toHaveBeenCalledWith('/audit-logs/', {
         params: { days: 7 },
       });
     });
@@ -275,7 +275,7 @@ describe('Audit Log API', () => {
         days: 30,
       });
 
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/audit-logs/', {
+      expect(apiClient.get).toHaveBeenCalledWith('/audit-logs/', {
         params: {
           page: 1,
           page_size: 20,
@@ -308,7 +308,7 @@ describe('Audit Log API', () => {
       vi.mocked(apiClient.get).mockRejectedValueOnce(mockError);
 
       await expect(auditLogApi.listLogs({})).rejects.toThrow('Failed to fetch audit logs');
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/audit-logs/', { params: {} });
+      expect(apiClient.get).toHaveBeenCalledWith('/audit-logs/', { params: {} });
     });
   });
 
@@ -326,7 +326,7 @@ describe('Audit Log API', () => {
       const result = await auditLogApi.getStats();
 
       expect(result).toEqual(mockStats);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/audit-logs/stats');
+      expect(apiClient.get).toHaveBeenCalledWith('/audit-logs/stats');
       expect(result.total_logs).toBe(1024);
       expect(result.actions_today).toBe(45);
       expect(result.failed_actions).toBe(8);
@@ -354,7 +354,7 @@ describe('Audit Log API', () => {
       vi.mocked(apiClient.get).mockRejectedValueOnce(mockError);
 
       await expect(auditLogApi.getStats()).rejects.toThrow('Failed to fetch stats');
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/audit-logs/stats');
+      expect(apiClient.get).toHaveBeenCalledWith('/audit-logs/stats');
     });
   });
 });

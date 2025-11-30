@@ -36,7 +36,7 @@ describe('templateApi', () => {
       const result = await templateApi.listTemplates();
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/templates', { params: undefined });
+      expect(apiClient.get).toHaveBeenCalledWith('/templates', { params: undefined });
     });
 
     it('should fetch templates with pagination', async () => {
@@ -52,7 +52,7 @@ describe('templateApi', () => {
       const result = await templateApi.listTemplates({ page: 3, page_size: 20 });
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/templates', {
+      expect(apiClient.get).toHaveBeenCalledWith('/templates', {
         params: { page: 3, page_size: 20 },
       });
     });
@@ -82,7 +82,7 @@ describe('templateApi', () => {
       const result = await templateApi.listTemplates({ content_type_id: 2 });
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/templates', {
+      expect(apiClient.get).toHaveBeenCalledWith('/templates', {
         params: { content_type_id: 2 },
       });
     });
@@ -100,7 +100,7 @@ describe('templateApi', () => {
       const result = await templateApi.listTemplates({ published_only: true });
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/templates', {
+      expect(apiClient.get).toHaveBeenCalledWith('/templates', {
         params: { published_only: true },
       });
     });
@@ -118,7 +118,7 @@ describe('templateApi', () => {
       const result = await templateApi.listTemplates({ category: 'marketing' });
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/templates', {
+      expect(apiClient.get).toHaveBeenCalledWith('/templates', {
         params: { category: 'marketing' },
       });
     });
@@ -161,7 +161,7 @@ describe('templateApi', () => {
       const result = await templateApi.getTemplate(1);
 
       expect(result).toEqual(mockTemplate);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/templates/1');
+      expect(apiClient.get).toHaveBeenCalledWith('/templates/1');
     });
 
     it('should handle not found error', async () => {
@@ -200,7 +200,7 @@ describe('templateApi', () => {
       const result = await templateApi.createTemplate(createData);
 
       expect(result).toEqual(mockCreatedTemplate);
-      expect(apiClient.post).toHaveBeenCalledWith('/api/v1/templates', createData);
+      expect(apiClient.post).toHaveBeenCalledWith('/templates', createData);
     });
 
     it('should handle duplicate template name error', async () => {
@@ -252,7 +252,7 @@ describe('templateApi', () => {
       const result = await templateApi.updateTemplate(5, updateData);
 
       expect(result).toEqual(mockUpdatedTemplate);
-      expect(apiClient.put).toHaveBeenCalledWith('/api/v1/templates/5', updateData);
+      expect(apiClient.put).toHaveBeenCalledWith('/templates/5', updateData);
     });
 
     it('should handle system template modification error', async () => {
@@ -272,7 +272,7 @@ describe('templateApi', () => {
 
       await templateApi.deleteTemplate(5);
 
-      expect(apiClient.delete).toHaveBeenCalledWith('/api/v1/templates/5');
+      expect(apiClient.delete).toHaveBeenCalledWith('/templates/5');
     });
 
     it('should handle system template deletion error', async () => {
@@ -299,7 +299,7 @@ describe('templateApi', () => {
       const result = await templateApi.getCategories();
 
       expect(result).toEqual(mockResponse.categories);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/templates/categories');
+      expect(apiClient.get).toHaveBeenCalledWith('/templates/categories');
     });
 
     it('should handle empty categories', async () => {

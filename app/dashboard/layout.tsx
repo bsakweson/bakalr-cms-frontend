@@ -22,6 +22,7 @@ import { CommandPalette } from '@/components/command-palette';
 import { OnboardingTour } from '@/components/onboarding-tour';
 import { DynamicBreadcrumbs } from '@/components/dynamic-breadcrumbs';
 import { KeyboardShortcutsHelp, useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
+import { EmailVerificationBanner } from '@/components/EmailVerificationBanner';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: '📊' },
@@ -260,6 +261,9 @@ export default function DashboardLayout({
           </DropdownMenu>
           </div>
         </header>
+
+        {/* Email Verification Banner */}
+        <EmailVerificationBanner />
 
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto bg-muted/30 p-6">

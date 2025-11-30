@@ -67,31 +67,31 @@ export const templateApi = {
     published_only?: boolean;
     category?: string;
   }): Promise<ContentTemplateListResponse> {
-    const response = await apiClient.get('/api/v1/templates', { params });
+    const response = await apiClient.get('/templates', { params });
     return response.data;
   },
 
   async getTemplate(id: number): Promise<ContentTemplate> {
-    const response = await apiClient.get(`/api/v1/templates/${id}`);
+    const response = await apiClient.get(`/templates/${id}`);
     return response.data;
   },
 
   async createTemplate(data: ContentTemplateCreate): Promise<ContentTemplate> {
-    const response = await apiClient.post('/api/v1/templates', data);
+    const response = await apiClient.post('/templates', data);
     return response.data;
   },
 
   async updateTemplate(id: number, data: ContentTemplateUpdate): Promise<ContentTemplate> {
-    const response = await apiClient.put(`/api/v1/templates/${id}`, data);
+    const response = await apiClient.put(`/templates/${id}`, data);
     return response.data;
   },
 
   async deleteTemplate(id: number): Promise<void> {
-    await apiClient.delete(`/api/v1/templates/${id}`);
+    await apiClient.delete(`/templates/${id}`);
   },
 
   async getCategories(): Promise<string[]> {
-    const response = await apiClient.get('/api/v1/templates/categories');
+    const response = await apiClient.get('/templates/categories');
     return response.data.categories;
   },
 };

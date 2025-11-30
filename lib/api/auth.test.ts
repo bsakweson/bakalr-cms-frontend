@@ -24,7 +24,7 @@ describe('Auth API', () => {
       const result = await authApi.login(credentials);
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.post).toHaveBeenCalledWith('/api/v1/auth/login', credentials);
+      expect(apiClient.post).toHaveBeenCalledWith('/auth/login', credentials);
     });
   });
 
@@ -48,7 +48,7 @@ describe('Auth API', () => {
       const result = await authApi.register(registerData);
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.post).toHaveBeenCalledWith('/api/v1/auth/register', registerData);
+      expect(apiClient.post).toHaveBeenCalledWith('/auth/register', registerData);
     });
   });
 
@@ -61,7 +61,7 @@ describe('Auth API', () => {
       const result = await authApi.getCurrentUser();
 
       expect(result).toEqual(mockUser);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/auth/me');
+      expect(apiClient.get).toHaveBeenCalledWith('/auth/me');
     });
   });
 
@@ -91,7 +91,7 @@ describe('Auth API', () => {
       const result = await authApi.refreshToken('old-refresh-token');
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.post).toHaveBeenCalledWith('/api/v1/auth/refresh', {
+      expect(apiClient.post).toHaveBeenCalledWith('/auth/refresh', {
         refresh_token: 'old-refresh-token',
       });
     });
@@ -106,7 +106,7 @@ describe('Auth API', () => {
       const result = await authApi.changePassword('oldpass', 'newpass');
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.post).toHaveBeenCalledWith('/api/v1/auth/change-password', {
+      expect(apiClient.post).toHaveBeenCalledWith('/auth/change-password', {
         current_password: 'oldpass',
         new_password: 'newpass',
       });
@@ -127,7 +127,7 @@ describe('Auth API', () => {
       const result = await authApi.updateProfile(updateData);
 
       expect(result).toEqual(mockUser);
-      expect(apiClient.put).toHaveBeenCalledWith('/api/v1/auth/profile', updateData);
+      expect(apiClient.put).toHaveBeenCalledWith('/auth/profile', updateData);
     });
 
     it('should update partial profile fields', async () => {
@@ -138,7 +138,7 @@ describe('Auth API', () => {
       const result = await authApi.updateProfile({ first_name: 'New', last_name: 'Name' });
 
       expect(result).toEqual(mockUser);
-      expect(apiClient.put).toHaveBeenCalledWith('/api/v1/auth/profile', {
+      expect(apiClient.put).toHaveBeenCalledWith('/auth/profile', {
         first_name: 'New',
         last_name: 'Name',
       });
@@ -165,7 +165,7 @@ describe('Auth API', () => {
       const result = await authApi.updateProfile(updateData);
 
       expect(result).toEqual(mockUser);
-      expect(apiClient.put).toHaveBeenCalledWith('/api/v1/auth/profile', updateData);
+      expect(apiClient.put).toHaveBeenCalledWith('/auth/profile', updateData);
     });
 
     it('should handle updating username and avatar_url', async () => {
@@ -185,7 +185,7 @@ describe('Auth API', () => {
       const result = await authApi.updateProfile(updateData);
 
       expect(result).toEqual(mockUser);
-      expect(apiClient.put).toHaveBeenCalledWith('/api/v1/auth/profile', updateData);
+      expect(apiClient.put).toHaveBeenCalledWith('/auth/profile', updateData);
     });
 
     it('should handle all profile fields together', async () => {
@@ -214,7 +214,7 @@ describe('Auth API', () => {
       const result = await authApi.updateProfile(updateData);
 
       expect(result).toEqual(mockUser);
-      expect(apiClient.put).toHaveBeenCalledWith('/api/v1/auth/profile', updateData);
+      expect(apiClient.put).toHaveBeenCalledWith('/auth/profile', updateData);
     });
   });
 });

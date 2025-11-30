@@ -24,7 +24,7 @@ interface TwoFactorSetup {
   secret: string;
   qr_code: string;
   backup_codes: string[];
-  message: string;
+  message?: string;
 }
 
 export default function SettingsPage() {
@@ -74,15 +74,8 @@ export default function SettingsPage() {
 
   const loadTwoFactorStatus = async () => {
     try {
-      const response = await fetch('/api/v1/auth/2fa/status', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setTwoFactorStatus(data);
-      }
+      const data = await authApi.get2FAStatus();
+      setTwoFactorStatus(data);
     } catch (error) {
       console.error('Failed to load 2FA status:', error);
     }
@@ -127,23 +120,11 @@ export default function SettingsPage() {
     setMessage(null);
     setLoading(true);
     try {
-      const response = await fetch('/api/v1/auth/2fa/enable', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        },
-      });
-
-      if (response.ok) {
-        const data: TwoFactorSetup = await response.json();
-        setTwoFactorSetup(data);
-        setSetupDialogOpen(true);
-      } else {
-        const error = await response.json();
-        setMessage({ type: 'error', text: error.detail || 'Failed to enable 2FA' });
-      }
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to enable 2FA' });
+      const data = await authApi.enable2FA();
+      setTwoFactorSetup(data);
+      setSetupDialogOpen(true);
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.response?.data?.detail || 'Failed to enable 2FA' });
     } finally {
       setLoading(false);
     }
@@ -155,27 +136,14 @@ export default function SettingsPage() {
     setMessage(null);
     setLoading(true);
     try {
-      const response = await fetch('/api/v1/auth/2fa/verify-setup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        },
-        body: JSON.stringify({ code: verifyCode }),
-      });
-
-      if (response.ok) {
-        setMessage({ type: 'success', text: '2FA enabled successfully' });
-        setSetupDialogOpen(false);
-        setTwoFactorSetup(null);
-        setVerifyCode('');
-        loadTwoFactorStatus();
-      } else {
-        const error = await response.json();
-        setMessage({ type: 'error', text: error.detail || 'Invalid verification code' });
-      }
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to verify code' });
+      await authApi.verifySetup2FA(verifyCode);
+      setMessage({ type: 'success', text: '2FA enabled successfully' });
+      setSetupDialogOpen(false);
+      setTwoFactorSetup(null);
+      setVerifyCode('');
+      loadTwoFactorStatus();
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.response?.data?.detail || 'Invalid verification code' });
     } finally {
       setLoading(false);
     }
@@ -187,25 +155,12 @@ export default function SettingsPage() {
     setMessage(null);
     setLoading(true);
     try {
-      const response = await fetch('/api/v1/auth/2fa/disable', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        },
-        body: JSON.stringify({ password: disablePassword }),
-      });
-
-      if (response.ok) {
-        setMessage({ type: 'success', text: '2FA disabled successfully' });
-        setDisablePassword('');
-        loadTwoFactorStatus();
-      } else {
-        const error = await response.json();
-        setMessage({ type: 'error', text: error.detail || 'Failed to disable 2FA' });
-      }
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to disable 2FA' });
+      await authApi.disable2FA(disablePassword);
+      setMessage({ type: 'success', text: '2FA disabled successfully' });
+      setDisablePassword('');
+      loadTwoFactorStatus();
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.response?.data?.detail || 'Failed to disable 2FA' });
     } finally {
       setLoading(false);
     }

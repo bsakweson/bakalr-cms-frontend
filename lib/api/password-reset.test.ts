@@ -24,7 +24,7 @@ describe('Password Reset API', () => {
       const result = await requestPasswordReset('user@example.com');
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.post).toHaveBeenCalledWith('/api/v1/auth/password-reset/request', {
+      expect(apiClient.post).toHaveBeenCalledWith('/auth/password-reset/request', {
         email: 'user@example.com',
       });
     });
@@ -67,7 +67,7 @@ describe('Password Reset API', () => {
       const result = await confirmPasswordReset('valid-token-123', 'NewSecurePassword123!');
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.post).toHaveBeenCalledWith('/api/v1/auth/password-reset/confirm', {
+      expect(apiClient.post).toHaveBeenCalledWith('/auth/password-reset/confirm', {
         token: 'valid-token-123',
         new_password: 'NewSecurePassword123!',
       });
@@ -125,7 +125,7 @@ describe('Password Reset API', () => {
       const result = await validateResetToken('valid-token-123');
 
       expect(result.valid).toBe(true);
-      expect(apiClient.post).toHaveBeenCalledWith('/api/v1/auth/password-reset/validate', {
+      expect(apiClient.post).toHaveBeenCalledWith('/auth/password-reset/validate', {
         token: 'valid-token-123',
       });
     });

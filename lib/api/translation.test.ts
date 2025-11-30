@@ -46,7 +46,7 @@ describe('translationApi', () => {
       const result = await translationApi.getLocales();
 
       expect(result).toEqual(mockLocales);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/translation/locales', { params: {} });
+      expect(apiClient.get).toHaveBeenCalledWith('/translation/locales', { params: {} });
     });
 
     it('should fetch only enabled locales', async () => {
@@ -70,7 +70,7 @@ describe('translationApi', () => {
       const result = await translationApi.getLocales(true);
 
       expect(result).toEqual(mockLocales);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/translation/locales', {
+      expect(apiClient.get).toHaveBeenCalledWith('/translation/locales', {
         params: { enabled_only: true },
       });
     });
@@ -111,7 +111,7 @@ describe('translationApi', () => {
       const result = await translationApi.createLocale(createData);
 
       expect(result).toEqual(mockCreatedLocale);
-      expect(apiClient.post).toHaveBeenCalledWith('/api/v1/translation/locales', createData);
+      expect(apiClient.post).toHaveBeenCalledWith('/translation/locales', createData);
     });
 
     it('should handle duplicate locale code error', async () => {
@@ -164,7 +164,7 @@ describe('translationApi', () => {
       const result = await translationApi.updateLocale('fr', updateData);
 
       expect(result).toEqual(mockUpdatedLocale);
-      expect(apiClient.put).toHaveBeenCalledWith('/api/v1/translation/locales/fr', updateData);
+      expect(apiClient.put).toHaveBeenCalledWith('/translation/locales/fr', updateData);
     });
 
     it('should handle default locale modification error', async () => {
@@ -194,7 +194,7 @@ describe('translationApi', () => {
 
       await translationApi.deleteLocale('fr');
 
-      expect(apiClient.delete).toHaveBeenCalledWith('/api/v1/translation/locales/fr');
+      expect(apiClient.delete).toHaveBeenCalledWith('/translation/locales/fr');
     });
 
     it('should handle default locale deletion error', async () => {
@@ -242,7 +242,7 @@ describe('translationApi', () => {
       const result = await translationApi.getContentTranslations(10);
 
       expect(result).toEqual(mockTranslations);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/translation/content/10');
+      expect(apiClient.get).toHaveBeenCalledWith('/translation/content/10');
     });
 
     it('should handle content with no translations', async () => {
@@ -279,7 +279,7 @@ describe('translationApi', () => {
       const result = await translationApi.getTranslation(10, 'es');
 
       expect(result).toEqual(mockTranslation);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/translation/content/10/es');
+      expect(apiClient.get).toHaveBeenCalledWith('/translation/content/10/es');
     });
 
     it('should handle translation not found error', async () => {
@@ -313,7 +313,7 @@ describe('translationApi', () => {
       const result = await translationApi.createOrUpdateTranslation(10, 'fr', translationData);
 
       expect(result).toEqual(mockTranslation);
-      expect(apiClient.put).toHaveBeenCalledWith('/api/v1/translation/content/10/fr', {
+      expect(apiClient.put).toHaveBeenCalledWith('/translation/content/10/fr', {
         translated_data: translationData,
       });
     });
@@ -341,7 +341,7 @@ describe('translationApi', () => {
 
       await translationApi.deleteTranslation(10, 'fr');
 
-      expect(apiClient.delete).toHaveBeenCalledWith('/api/v1/translation/content/10/fr');
+      expect(apiClient.delete).toHaveBeenCalledWith('/translation/content/10/fr');
     });
 
     it('should handle translation not found error', async () => {
@@ -393,7 +393,7 @@ describe('translationApi', () => {
 
       expect(result).toEqual(mockResponse);
       expect(result.translations).toHaveLength(2);
-      expect(apiClient.post).toHaveBeenCalledWith('/api/v1/translation/content/10/auto-translate', {
+      expect(apiClient.post).toHaveBeenCalledWith('/translation/content/10/auto-translate', {
         target_locales: ['de', 'it'],
       });
     });

@@ -32,7 +32,7 @@ describe('searchApi', () => {
       const result = await searchApi.search({ q: 'test' });
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/search', {
+      expect(apiClient.get).toHaveBeenCalledWith('/search', {
         params: { q: 'test' },
       });
     });
@@ -53,7 +53,7 @@ describe('searchApi', () => {
       });
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/search', {
+      expect(apiClient.get).toHaveBeenCalledWith('/search', {
         params: { q: 'article', content_type_id: 2 },
       });
     });
@@ -83,7 +83,7 @@ describe('searchApi', () => {
       });
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/search', {
+      expect(apiClient.get).toHaveBeenCalledWith('/search', {
         params: { q: 'draft', status: 'draft' },
       });
     });
@@ -105,7 +105,7 @@ describe('searchApi', () => {
       });
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/search', {
+      expect(apiClient.get).toHaveBeenCalledWith('/search', {
         params: { q: 'content', limit: 20, offset: 40 },
       });
     });
@@ -141,7 +141,7 @@ describe('searchApi', () => {
       });
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/search', {
+      expect(apiClient.get).toHaveBeenCalledWith('/search', {
         params: {
           q: 'guide',
           content_type_id: 3,

@@ -25,7 +25,7 @@ export const searchApi = {
     limit?: number;
     offset?: number;
   }): Promise<SearchResponse> {
-    const response = await apiClient.get<SearchResponse>('/api/v1/search', {
+    const response = await apiClient.get<SearchResponse>('/search', {
       params,
     });
     return response.data;

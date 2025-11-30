@@ -34,10 +34,18 @@ export default function RolesPage() {
   const loadRoles = async () => {
     try {
       setLoading(true);
+      console.log('🔄 Loading roles...');
       const data = await roleApi.listRoles();
+      console.log('✅ Roles loaded:', data);
+      console.log('Roles array:', data.roles);
+      console.log('Roles count:', data.roles?.length);
       setRoles(data.roles);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load roles:', error);
+      if (error.response) {
+        console.error('Response status:', error.response.status);
+        console.error('Response data:', error.response.data);
+      }
     } finally {
       setLoading(false);
     }
@@ -45,10 +53,16 @@ export default function RolesPage() {
 
   const loadPermissions = async () => {
     try {
+      console.log('🔄 Loading permissions...');
       const data = await roleApi.listPermissions();
+      console.log('✅ Permissions loaded:', data);
       setPermissions(data.permissions);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load permissions:', error);
+      if (error.response) {
+        console.error('Response status:', error.response.status);
+        console.error('Response data:', error.response.data);
+      }
     }
   };
 

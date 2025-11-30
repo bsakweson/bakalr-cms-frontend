@@ -78,46 +78,46 @@ export const themeApi = {
     page_size?: number;
     include_system?: boolean;
   }): Promise<ThemeListResponse> {
-    const response = await apiClient.get('/api/v1/themes', { params });
+    const response = await apiClient.get('/themes', { params });
     return response.data;
   },
 
   async getTheme(id: number): Promise<Theme> {
-    const response = await apiClient.get(`/api/v1/themes/${id}`);
+    const response = await apiClient.get(`/themes/${id}`);
     return response.data;
   },
 
   async getActiveTheme(): Promise<Theme> {
-    const response = await apiClient.get('/api/v1/themes/active');
+    const response = await apiClient.get('/themes/active');
     return response.data;
   },
 
   async createTheme(data: ThemeCreate): Promise<Theme> {
-    const response = await apiClient.post('/api/v1/themes', data);
+    const response = await apiClient.post('/themes', data);
     return response.data;
   },
 
   async updateTheme(id: number, data: ThemeUpdate): Promise<Theme> {
-    const response = await apiClient.put(`/api/v1/themes/${id}`, data);
+    const response = await apiClient.put(`/themes/${id}`, data);
     return response.data;
   },
 
   async deleteTheme(id: number): Promise<void> {
-    await apiClient.delete(`/api/v1/themes/${id}`);
+    await apiClient.delete(`/themes/${id}`);
   },
 
   async setActiveTheme(id: number): Promise<Theme> {
-    const response = await apiClient.post(`/api/v1/themes/${id}/activate`);
+    const response = await apiClient.post(`/themes/${id}/activate`);
     return response.data;
   },
 
   async exportTheme(id: number): Promise<Record<string, any>> {
-    const response = await apiClient.get(`/api/v1/themes/${id}/export`);
+    const response = await apiClient.get(`/themes/${id}/export`);
     return response.data;
   },
 
   async getCSSVariables(id: number): Promise<{ css: string; variables: Record<string, string> }> {
-    const response = await apiClient.get(`/api/v1/themes/${id}/css-variables`);
+    const response = await apiClient.get(`/themes/${id}/css-variables`);
     return response.data;
   },
 };

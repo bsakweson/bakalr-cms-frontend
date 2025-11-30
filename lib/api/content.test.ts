@@ -22,7 +22,7 @@ describe('Content API', () => {
         const result = await contentApi.getContentTypes();
 
         expect(result).toEqual(mockTypes);
-        expect(apiClient.get).toHaveBeenCalledWith('/api/v1/content/types');
+        expect(apiClient.get).toHaveBeenCalledWith('/content/types');
       });
     });
 
@@ -35,7 +35,7 @@ describe('Content API', () => {
         const result = await contentApi.getContentType(1);
 
         expect(result).toEqual(mockType);
-        expect(apiClient.get).toHaveBeenCalledWith('/api/v1/content/types/1');
+        expect(apiClient.get).toHaveBeenCalledWith('/content/types/1');
       });
     });
 
@@ -49,7 +49,7 @@ describe('Content API', () => {
         const result = await contentApi.createContentType(newType);
 
         expect(result).toEqual(mockResponse);
-        expect(apiClient.post).toHaveBeenCalledWith('/api/v1/content/types', newType);
+        expect(apiClient.post).toHaveBeenCalledWith('/content/types', newType);
       });
     });
 
@@ -63,7 +63,7 @@ describe('Content API', () => {
         const result = await contentApi.updateContentType(1, updateData);
 
         expect(result).toEqual(mockResponse);
-        expect(apiClient.put).toHaveBeenCalledWith('/api/v1/content/types/1', updateData);
+        expect(apiClient.put).toHaveBeenCalledWith('/content/types/1', updateData);
       });
     });
 
@@ -73,7 +73,7 @@ describe('Content API', () => {
 
         await contentApi.deleteContentType(1);
 
-        expect(apiClient.delete).toHaveBeenCalledWith('/api/v1/content/types/1');
+        expect(apiClient.delete).toHaveBeenCalledWith('/content/types/1');
       });
     });
   });
@@ -96,7 +96,7 @@ describe('Content API', () => {
         const result = await contentApi.getContentEntries();
 
         expect(result).toEqual(mockResponse);
-        expect(apiClient.get).toHaveBeenCalledWith('/api/v1/content/entries', {
+        expect(apiClient.get).toHaveBeenCalledWith('/content/entries', {
           params: undefined,
         });
       });
@@ -119,7 +119,7 @@ describe('Content API', () => {
         const result = await contentApi.getContentEntries(params);
 
         expect(result).toEqual(mockResponse);
-        expect(apiClient.get).toHaveBeenCalledWith('/api/v1/content/entries', {
+        expect(apiClient.get).toHaveBeenCalledWith('/content/entries', {
           params,
         });
       });
@@ -134,7 +134,7 @@ describe('Content API', () => {
         const result = await contentApi.getContentEntry(1);
 
         expect(result).toEqual(mockEntry);
-        expect(apiClient.get).toHaveBeenCalledWith('/api/v1/content/entries/1');
+        expect(apiClient.get).toHaveBeenCalledWith('/content/entries/1');
       });
     });
 
@@ -152,7 +152,7 @@ describe('Content API', () => {
         const result = await contentApi.createContentEntry(newEntry);
 
         expect(result).toEqual(mockResponse);
-        expect(apiClient.post).toHaveBeenCalledWith('/api/v1/content/entries', newEntry);
+        expect(apiClient.post).toHaveBeenCalledWith('/content/entries', newEntry);
       });
     });
 
@@ -166,7 +166,7 @@ describe('Content API', () => {
         const result = await contentApi.updateContentEntry(1, updateData);
 
         expect(result).toEqual(mockResponse);
-        expect(apiClient.put).toHaveBeenCalledWith('/api/v1/content/entries/1', updateData);
+        expect(apiClient.put).toHaveBeenCalledWith('/content/entries/1', updateData);
       });
     });
 
@@ -176,7 +176,7 @@ describe('Content API', () => {
 
         await contentApi.deleteContentEntry(1);
 
-        expect(apiClient.delete).toHaveBeenCalledWith('/api/v1/content/entries/1');
+        expect(apiClient.delete).toHaveBeenCalledWith('/content/entries/1');
       });
     });
 
@@ -189,7 +189,7 @@ describe('Content API', () => {
         const result = await contentApi.publishContentEntry(1);
 
         expect(result).toEqual(mockResponse);
-        expect(apiClient.post).toHaveBeenCalledWith('/api/v1/content/entries/1/publish');
+        expect(apiClient.post).toHaveBeenCalledWith('/content/entries/1/publish');
       });
     });
 
@@ -202,7 +202,7 @@ describe('Content API', () => {
         const result = await contentApi.unpublishContentEntry(1);
 
         expect(result).toEqual(mockResponse);
-        expect(apiClient.post).toHaveBeenCalledWith('/api/v1/content/entries/1/unpublish');
+        expect(apiClient.post).toHaveBeenCalledWith('/content/entries/1/unpublish');
       });
     });
   });

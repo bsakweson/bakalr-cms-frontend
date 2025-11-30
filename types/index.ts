@@ -7,6 +7,7 @@ export interface User {
   last_name?: string;
   full_name?: string; // Computed field for backward compatibility
   is_active: boolean;
+  is_email_verified: boolean;
   organization_id: number;
   organization?: Organization;
   bio?: string;

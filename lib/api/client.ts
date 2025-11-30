@@ -1,10 +1,14 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+// API Configuration
+export const API_CONFIG = {
+  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+  CONTEXT_PATH: '/api/v1',
+};
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: `${API_CONFIG.BASE_URL}${API_CONFIG.CONTEXT_PATH}`,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -41,7 +45,7 @@ apiClient.interceptors.response.use(
           throw new Error('No refresh token available');
         }
 
-        const response = await axios.post(`${API_BASE_URL}/api/v1/auth/refresh`, {
+        const response = await axios.post(`${API_CONFIG.BASE_URL}${API_CONFIG.CONTEXT_PATH}/auth/refresh`, {
           refresh_token: refreshToken,
         });
 
@@ -76,7 +80,7 @@ export default apiClient;
 export const graphqlClient = async (query: string, variables?: Record<string, any>) => {
   const token = localStorage.getItem('access_token');
   
-  const response = await fetch(`${API_BASE_URL}/api/v1/graphql`, {
+  const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.CONTEXT_PATH}/graphql`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

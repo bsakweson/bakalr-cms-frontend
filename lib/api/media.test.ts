@@ -26,7 +26,7 @@ describe('Media API', () => {
       const result = await mediaApi.getMedia();
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/media', {
+      expect(apiClient.get).toHaveBeenCalledWith('/media', {
         params: undefined,
       });
     });
@@ -49,7 +49,7 @@ describe('Media API', () => {
       const result = await mediaApi.getMedia(params);
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/media', { params });
+      expect(apiClient.get).toHaveBeenCalledWith('/media', { params });
     });
   });
 
@@ -67,7 +67,7 @@ describe('Media API', () => {
       const result = await mediaApi.getMediaItem(1);
 
       expect(result).toEqual(mockMedia);
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/media/1');
+      expect(apiClient.get).toHaveBeenCalledWith('/media/1');
     });
   });
 
@@ -87,7 +87,7 @@ describe('Media API', () => {
       const result = await mediaApi.uploadMedia(formData);
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.post).toHaveBeenCalledWith('/api/v1/media/upload', formData, {
+      expect(apiClient.post).toHaveBeenCalledWith('/media/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -111,7 +111,7 @@ describe('Media API', () => {
 
       expect(result).toEqual(mockResponse);
       expect(apiClient.post).toHaveBeenCalledWith(
-        '/api/v1/media/upload',
+        '/media/upload',
         formData,
         expect.objectContaining({
           headers: {
@@ -137,7 +137,7 @@ describe('Media API', () => {
       const result = await mediaApi.updateMedia(1, updateData);
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.put).toHaveBeenCalledWith('/api/v1/media/1', updateData);
+      expect(apiClient.put).toHaveBeenCalledWith('/media/1', updateData);
     });
 
     it('should update partial media fields', async () => {
@@ -148,7 +148,7 @@ describe('Media API', () => {
       const result = await mediaApi.updateMedia(1, { alt_text: 'New alt' });
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.put).toHaveBeenCalledWith('/api/v1/media/1', { alt_text: 'New alt' });
+      expect(apiClient.put).toHaveBeenCalledWith('/media/1', { alt_text: 'New alt' });
     });
   });
 
@@ -158,7 +158,7 @@ describe('Media API', () => {
 
       await mediaApi.deleteMedia(1);
 
-      expect(apiClient.delete).toHaveBeenCalledWith('/api/v1/media/1');
+      expect(apiClient.delete).toHaveBeenCalledWith('/media/1');
     });
 
     it('should handle deletion of multiple items', async () => {
@@ -171,9 +171,9 @@ describe('Media API', () => {
       ]);
 
       expect(apiClient.delete).toHaveBeenCalledTimes(3);
-      expect(apiClient.delete).toHaveBeenCalledWith('/api/v1/media/1');
-      expect(apiClient.delete).toHaveBeenCalledWith('/api/v1/media/2');
-      expect(apiClient.delete).toHaveBeenCalledWith('/api/v1/media/3');
+      expect(apiClient.delete).toHaveBeenCalledWith('/media/1');
+      expect(apiClient.delete).toHaveBeenCalledWith('/media/2');
+      expect(apiClient.delete).toHaveBeenCalledWith('/media/3');
     });
   });
 });

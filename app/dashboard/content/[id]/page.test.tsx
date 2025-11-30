@@ -725,7 +725,7 @@ describe('ContentEntryEditorPage', () => {
 
       await waitFor(() => {
         const previewLink = screen.getByRole('link', { name: /Preview/i });
-        expect(previewLink).toHaveAttribute('href', '/api/v1/preview/content/1');
+        expect(previewLink).toHaveAttribute('href', '/preview/content/1');
         expect(previewLink).toHaveAttribute('target', '_blank');
       });
     });
