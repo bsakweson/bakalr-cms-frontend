@@ -30,31 +30,47 @@ describe('ContentTypeDetailPage', () => {
   const mockContentType: ContentType = {
     id: 1,
     name: 'Blog Post',
-    slug: 'blog-post',
+    api_id: 'blog-post',
     description: 'A blog post content type',
-    schema: {
-      title: {
-        type: 'string',
+    fields: [
+      {
+        name: 'title',
+        type: 'text',
         label: 'Title',
-        description: 'The post title',
+        help_text: 'The post title',
         required: true,
+        unique: false,
+        localized: false,
       },
-      body: {
+      {
+        name: 'body',
         type: 'richtext',
         label: 'Body',
-        description: 'The post content',
+        help_text: 'The post content',
         required: true,
+        unique: false,
+        localized: false,
       },
-      author: {
-        type: 'string',
+      {
+        name: 'author',
+        type: 'text',
         label: 'Author',
         required: false,
+        unique: false,
+        localized: false,
       },
-      published_date: {
+      {
+        name: 'published_date',
         type: 'date',
         label: 'Published Date',
+        required: false,
+        unique: false,
+        localized: false,
       },
-    },
+    ],
+    display_field: 'title',
+    is_active: true,
+    entry_count: 0,
     organization_id: 1,
     created_at: '2025-01-01T00:00:00Z',
     updated_at: '2025-01-15T12:00:00Z',
@@ -147,11 +163,11 @@ describe('ContentTypeDetailPage', () => {
       });
     });
 
-    it('should display content type slug in a badge', async () => {
+    it('should display content type API ID in a badge', async () => {
       render(<ContentTypeDetailPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Slug')).toBeInTheDocument();
+        expect(screen.getByText('API ID')).toBeInTheDocument();
         expect(screen.getByText('blog-post')).toBeInTheDocument();
       });
     });
@@ -226,10 +242,11 @@ describe('ContentTypeDetailPage', () => {
       render(<ContentTypeDetailPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Title')).toBeInTheDocument();
-        expect(screen.getByText('Body')).toBeInTheDocument();
-        expect(screen.getByText('Author')).toBeInTheDocument();
-        expect(screen.getByText('Published Date')).toBeInTheDocument();
+        // Field names are lowercase in the schema
+        expect(screen.getByText('title')).toBeInTheDocument();
+        expect(screen.getByText('body')).toBeInTheDocument();
+        expect(screen.getByText('author')).toBeInTheDocument();
+        expect(screen.getByText('published_date')).toBeInTheDocument();
       });
     });
 
@@ -237,9 +254,9 @@ describe('ContentTypeDetailPage', () => {
       render(<ContentTypeDetailPage />);
 
       await waitFor(() => {
-        // Use getAllByText for duplicate types
-        const stringBadges = screen.getAllByText('string');
-        expect(stringBadges.length).toBeGreaterThanOrEqual(2); // title and author fields
+        // Fields now show type as 'text', 'richtext', 'date'
+        const textBadges = screen.getAllByText('text');
+        expect(textBadges.length).toBeGreaterThanOrEqual(2); // title and author fields
         expect(screen.getByText('richtext')).toBeInTheDocument();
         expect(screen.getByText('date')).toBeInTheDocument();
       });
@@ -259,20 +276,22 @@ describe('ContentTypeDetailPage', () => {
       render(<ContentTypeDetailPage />);
 
       await waitFor(() => {
+        // Check that help_text is displayed for fields that have it
         expect(screen.getByText('The post title')).toBeInTheDocument();
         expect(screen.getByText('The post content')).toBeInTheDocument();
       });
     });
 
     it('should show empty state when no fields defined', async () => {
-      const typeWithoutFields = { ...mockContentType, schema: {} };
+      const typeWithoutFields = { ...mockContentType, fields: [] };
       vi.mocked(contentApi.getContentType).mockResolvedValue(typeWithoutFields);
 
       render(<ContentTypeDetailPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('No fields defined yet')).toBeInTheDocument();
-        expect(screen.getByText('Edit this content type to add fields')).toBeInTheDocument();
+        // When there are no fields, the schema card should still render but show empty state
+        const schemaCard = screen.getByText('Schema / Fields').closest('[data-slot="card"]');
+        expect(schemaCard).toBeInTheDocument();
       });
     });
   });

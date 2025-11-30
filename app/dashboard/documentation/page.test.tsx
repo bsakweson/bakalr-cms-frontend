@@ -113,7 +113,7 @@ describe('DocumentationPage', () => {
     it('should render all 12 documentation sections', () => {
       render(<DocumentationPage />);
       
-      // Count all documentation cards (12 sections)
+      // Count all documentation cards (12 sections total)
       expect(screen.getByText('search')).toBeInTheDocument();
       expect(screen.getByText('webhooks')).toBeInTheDocument();
       expect(screen.getByText('notifications')).toBeInTheDocument();
@@ -177,12 +177,6 @@ describe('DocumentationPage', () => {
       expect(screen.getByText('Changelog')).toBeInTheDocument();
     });
 
-    it('should display contributing guide link', () => {
-      render(<DocumentationPage />);
-      
-      expect(screen.getByText('Contributing Guide')).toBeInTheDocument();
-    });
-
     it('should display report issue link', () => {
       render(<DocumentationPage />);
       
@@ -198,7 +192,7 @@ describe('DocumentationPage', () => {
       
       // All links in Additional Resources should be external
       const links = resourcesCard?.querySelectorAll('a[target="_blank"]');
-      expect(links?.length).toBe(4); // GitHub, Changelog, Contributing, Issues
+      expect(links?.length).toBe(3); // GitHub, Changelog, Issues (no Contributing)
     });
   });
 
@@ -257,9 +251,9 @@ describe('DocumentationPage', () => {
     it('should have internal link for analytics', () => {
       const { container } = render(<DocumentationPage />);
       
-      // Analytics links to /dashboard (internal)
+      // Analytics links to /dashboard/analytics (internal)
       const analyticsCard = screen.getByText('analytics').closest('a');
-      expect(analyticsCard?.getAttribute('href')).toBe('/dashboard');
+      expect(analyticsCard?.getAttribute('href')).toBe('/dashboard/analytics');
       expect(analyticsCard?.getAttribute('target')).toBeNull(); // Not _blank
     });
 
