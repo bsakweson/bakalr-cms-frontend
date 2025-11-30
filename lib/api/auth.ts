@@ -39,7 +39,15 @@ export const authApi = {
     return response.data;
   },
 
-  async updateProfile(data: { first_name?: string; last_name?: string; username?: string; email?: string }): Promise<User> {
+  async updateProfile(data: { 
+    first_name?: string; 
+    last_name?: string; 
+    username?: string; 
+    email?: string;
+    bio?: string;
+    preferences?: string;
+    avatar_url?: string;
+  }): Promise<User> {
     const response = await apiClient.put<User>('/api/v1/auth/profile', data);
     return response.data;
   },

@@ -125,9 +125,13 @@ describe('SettingsPage', () => {
 
       await waitFor(() => {
         expect(authApi.updateProfile).toHaveBeenCalledWith({
+          email: 'test@example.com',
+          username: '',
           first_name: 'Jane',
           last_name: 'Doe',
-          email: 'test@example.com',
+          bio: '',
+          preferences: '',
+          avatar_url: '',
         });
       });
     });

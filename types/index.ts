@@ -9,6 +9,9 @@ export interface User {
   is_active: boolean;
   organization_id: number;
   organization?: Organization;
+  bio?: string;
+  preferences?: string; // JSON string
+  avatar_url?: string;
   two_factor_enabled?: boolean;
   created_at: string;
   updated_at: string;
@@ -243,12 +246,27 @@ export interface AuditLogStats {
 export interface ContentType {
   id: number;
   name: string;
-  slug: string;
+  api_id: string; // API uses api_id not slug
   description?: string;
-  schema: Record<string, any>;
+  fields: Array<{
+    name: string;
+    type: string;
+    required?: boolean;
+    unique?: boolean;
+    localized?: boolean;
+    default?: any;
+    validation?: Record<string, any>;
+    help_text?: string;
+  }>;
+  display_field?: string;
+  is_active: boolean;
+  entry_count?: number;
   organization_id: number;
   created_at: string;
   updated_at: string;
+  // Legacy compatibility
+  slug?: string;
+  schema?: Record<string, any>;
 }
 
 export interface ContentEntry {

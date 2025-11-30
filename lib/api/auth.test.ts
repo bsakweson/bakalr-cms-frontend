@@ -143,5 +143,78 @@ describe('Auth API', () => {
         last_name: 'Name',
       });
     });
+
+    it('should update profile with bio and preferences', async () => {
+      const mockUser = {
+        id: 1,
+        email: 'test@example.com',
+        first_name: 'Test',
+        last_name: 'User',
+        bio: 'Software developer passionate about APIs',
+        preferences: '{"theme":"dark","language":"en"}',
+        avatar_url: 'https://example.com/avatar.jpg',
+      };
+
+      vi.mocked(apiClient.put).mockResolvedValueOnce({ data: mockUser } as any);
+
+      const updateData = {
+        bio: 'Software developer passionate about APIs',
+        preferences: '{"theme":"dark","language":"en"}',
+        avatar_url: 'https://example.com/avatar.jpg',
+      };
+      const result = await authApi.updateProfile(updateData);
+
+      expect(result).toEqual(mockUser);
+      expect(apiClient.put).toHaveBeenCalledWith('/api/v1/auth/profile', updateData);
+    });
+
+    it('should handle updating username and avatar_url', async () => {
+      const mockUser = {
+        id: 1,
+        email: 'test@example.com',
+        username: 'testuser123',
+        avatar_url: 'https://cdn.example.com/avatars/user123.jpg',
+      };
+
+      vi.mocked(apiClient.put).mockResolvedValueOnce({ data: mockUser } as any);
+
+      const updateData = {
+        username: 'testuser123',
+        avatar_url: 'https://cdn.example.com/avatars/user123.jpg',
+      };
+      const result = await authApi.updateProfile(updateData);
+
+      expect(result).toEqual(mockUser);
+      expect(apiClient.put).toHaveBeenCalledWith('/api/v1/auth/profile', updateData);
+    });
+
+    it('should handle all profile fields together', async () => {
+      const mockUser = {
+        id: 1,
+        email: 'complete@example.com',
+        username: 'completeuser',
+        first_name: 'Complete',
+        last_name: 'User',
+        bio: 'Full stack developer with 10 years experience',
+        preferences: '{"theme":"light","language":"fr","notifications":true}',
+        avatar_url: 'https://example.com/complete-avatar.jpg',
+      };
+
+      vi.mocked(apiClient.put).mockResolvedValueOnce({ data: mockUser } as any);
+
+      const updateData = {
+        email: 'complete@example.com',
+        username: 'completeuser',
+        first_name: 'Complete',
+        last_name: 'User',
+        bio: 'Full stack developer with 10 years experience',
+        preferences: '{"theme":"light","language":"fr","notifications":true}',
+        avatar_url: 'https://example.com/complete-avatar.jpg',
+      };
+      const result = await authApi.updateProfile(updateData);
+
+      expect(result).toEqual(mockUser);
+      expect(apiClient.put).toHaveBeenCalledWith('/api/v1/auth/profile', updateData);
+    });
   });
 });

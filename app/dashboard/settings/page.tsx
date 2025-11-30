@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -36,6 +37,10 @@ export default function SettingsPage() {
     first_name: '',
     last_name: '',
     email: '',
+    username: '',
+    bio: '',
+    preferences: '',
+    avatar_url: '',
   });
 
   // Password change state
@@ -58,6 +63,10 @@ export default function SettingsPage() {
         first_name: user.first_name || '',
         last_name: user.last_name || '',
         email: user.email || '',
+        username: user.username || '',
+        bio: user.bio || '',
+        preferences: user.preferences || '',
+        avatar_url: user.avatar_url || '',
       });
       loadTwoFactorStatus();
     }
@@ -246,6 +255,15 @@ export default function SettingsPage() {
                 />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  id="username"
+                  value={profileForm.username}
+                  onChange={(e) => setProfileForm({ ...profileForm, username: e.target.value })}
+                  placeholder="Optional username"
+                />
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
@@ -253,6 +271,43 @@ export default function SettingsPage() {
                   value={profileForm.email}
                   onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="avatar_url">Avatar URL</Label>
+                <Input
+                  id="avatar_url"
+                  type="url"
+                  value={profileForm.avatar_url}
+                  onChange={(e) => setProfileForm({ ...profileForm, avatar_url: e.target.value })}
+                  placeholder="https://example.com/avatar.jpg"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="bio">Bio</Label>
+                <Textarea
+                  id="bio"
+                  value={profileForm.bio}
+                  onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
+                  placeholder="Tell us about yourself..."
+                  rows={4}
+                  maxLength={500}
+                />
+                <p className="text-sm text-muted-foreground">
+                  {profileForm.bio.length}/500 characters
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="preferences">Preferences (JSON)</Label>
+                <Textarea
+                  id="preferences"
+                  value={profileForm.preferences}
+                  onChange={(e) => setProfileForm({ ...profileForm, preferences: e.target.value })}
+                  placeholder='{"theme":"dark","language":"en"}'
+                  rows={3}
+                />
+                <p className="text-sm text-muted-foreground">
+                  Store user preferences as JSON (theme, language, notifications, etc.)
+                </p>
               </div>
               <Button onClick={handleUpdateProfile} disabled={loading}>
                 {loading ? 'Saving...' : 'Save Changes'}
