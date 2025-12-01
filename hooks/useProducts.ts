@@ -84,6 +84,10 @@ export function useProducts(
         contentTypeId = productsType.id;
       }
 
+      if (!contentTypeId) {
+        throw new Error('Products content type ID is not configured.');
+      }
+
       // Build query parameters
       const params = new URLSearchParams({
         page: page.toString(),
