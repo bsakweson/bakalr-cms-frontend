@@ -29,7 +29,8 @@ describe('RegisterPage', () => {
 
     expect(screen.getByText('Bakalr CMS')).toBeInTheDocument();
     expect(screen.getByText('Create account')).toBeInTheDocument();
-    expect(screen.getByLabelText('Full Name')).toBeInTheDocument();
+    expect(screen.getByLabelText('First Name')).toBeInTheDocument();
+    expect(screen.getByLabelText('Last Name')).toBeInTheDocument();
     expect(screen.getByLabelText('Email')).toBeInTheDocument();
     expect(screen.getByLabelText('Organization Name')).toBeInTheDocument();
     expect(screen.getByLabelText('Password')).toBeInTheDocument();
@@ -48,13 +49,15 @@ describe('RegisterPage', () => {
     mockRegister.mockResolvedValue({});
     render(<RegisterPage />);
 
-    const fullNameInput = screen.getByLabelText('Full Name');
+    const firstNameInput = screen.getByLabelText('First Name');
+    const lastNameInput = screen.getByLabelText('Last Name');
     const emailInput = screen.getByLabelText('Email');
     const organizationInput = screen.getByLabelText('Organization Name');
     const passwordInput = screen.getByLabelText('Password');
     const submitButton = screen.getByRole('button', { name: /create account/i });
 
-    fireEvent.change(fullNameInput, { target: { value: 'John Doe' } });
+    fireEvent.change(firstNameInput, { target: { value: 'John' } });
+    fireEvent.change(lastNameInput, { target: { value: 'Doe' } });
     fireEvent.change(emailInput, { target: { value: 'john@example.com' } });
     fireEvent.change(organizationInput, { target: { value: 'My Company' } });
     fireEvent.change(passwordInput, { target: { value: 'SecurePass123!' } });
@@ -82,13 +85,15 @@ describe('RegisterPage', () => {
 
     render(<RegisterPage />);
 
-    const fullNameInput = screen.getByLabelText('Full Name');
+    const firstNameInput = screen.getByLabelText('First Name');
+    const lastNameInput = screen.getByLabelText('Last Name');
     const emailInput = screen.getByLabelText('Email');
     const organizationInput = screen.getByLabelText('Organization Name');
     const passwordInput = screen.getByLabelText('Password');
     const submitButton = screen.getByRole('button', { name: /create account/i });
 
-    fireEvent.change(fullNameInput, { target: { value: 'John Doe' } });
+    fireEvent.change(firstNameInput, { target: { value: 'John' } });
+    fireEvent.change(lastNameInput, { target: { value: 'Doe' } });
     fireEvent.change(emailInput, { target: { value: 'existing@example.com' } });
     fireEvent.change(organizationInput, { target: { value: 'My Company' } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
@@ -106,13 +111,15 @@ describe('RegisterPage', () => {
 
     render(<RegisterPage />);
 
-    const fullNameInput = screen.getByLabelText('Full Name');
+    const firstNameInput = screen.getByLabelText('First Name');
+    const lastNameInput = screen.getByLabelText('Last Name');
     const emailInput = screen.getByLabelText('Email');
     const organizationInput = screen.getByLabelText('Organization Name');
     const passwordInput = screen.getByLabelText('Password');
     const submitButton = screen.getByRole('button', { name: /create account/i });
 
-    fireEvent.change(fullNameInput, { target: { value: 'John Doe' } });
+    fireEvent.change(firstNameInput, { target: { value: 'John' } });
+    fireEvent.change(lastNameInput, { target: { value: 'Doe' } });
     fireEvent.change(emailInput, { target: { value: 'john@example.com' } });
     fireEvent.change(organizationInput, { target: { value: 'My Company' } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
@@ -128,20 +135,23 @@ describe('RegisterPage', () => {
 
     render(<RegisterPage />);
 
-    const fullNameInput = screen.getByLabelText('Full Name') as HTMLInputElement;
+    const firstNameInput = screen.getByLabelText('First Name') as HTMLInputElement;
+    const lastNameInput = screen.getByLabelText('Last Name') as HTMLInputElement;
     const emailInput = screen.getByLabelText('Email') as HTMLInputElement;
     const organizationInput = screen.getByLabelText('Organization Name') as HTMLInputElement;
     const passwordInput = screen.getByLabelText('Password') as HTMLInputElement;
     const submitButton = screen.getByRole('button', { name: /create account/i }) as HTMLButtonElement;
 
-    fireEvent.change(fullNameInput, { target: { value: 'John Doe' } });
+    fireEvent.change(firstNameInput, { target: { value: 'John' } });
+    fireEvent.change(lastNameInput, { target: { value: 'Doe' } });
     fireEvent.change(emailInput, { target: { value: 'john@example.com' } });
     fireEvent.change(organizationInput, { target: { value: 'My Company' } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(fullNameInput.disabled).toBe(true);
+      expect(firstNameInput.disabled).toBe(true);
+      expect(lastNameInput.disabled).toBe(true);
       expect(emailInput.disabled).toBe(true);
       expect(organizationInput.disabled).toBe(true);
       expect(passwordInput.disabled).toBe(true);
@@ -152,17 +162,20 @@ describe('RegisterPage', () => {
   it('should update form data when inputs change', () => {
     render(<RegisterPage />);
 
-    const fullNameInput = screen.getByLabelText('Full Name') as HTMLInputElement;
+    const firstNameInput = screen.getByLabelText('First Name') as HTMLInputElement;
+    const lastNameInput = screen.getByLabelText('Last Name') as HTMLInputElement;
     const emailInput = screen.getByLabelText('Email') as HTMLInputElement;
     const organizationInput = screen.getByLabelText('Organization Name') as HTMLInputElement;
     const passwordInput = screen.getByLabelText('Password') as HTMLInputElement;
 
-    fireEvent.change(fullNameInput, { target: { value: 'Jane Smith' } });
+    fireEvent.change(firstNameInput, { target: { value: 'Jane' } });
+    fireEvent.change(lastNameInput, { target: { value: 'Smith' } });
     fireEvent.change(emailInput, { target: { value: 'jane@example.com' } });
     fireEvent.change(organizationInput, { target: { value: 'Tech Corp' } });
     fireEvent.change(passwordInput, { target: { value: 'MyPass456' } });
 
-    expect(fullNameInput.value).toBe('Jane Smith');
+    expect(firstNameInput.value).toBe('Jane');
+    expect(lastNameInput.value).toBe('Smith');
     expect(emailInput.value).toBe('jane@example.com');
     expect(organizationInput.value).toBe('Tech Corp');
     expect(passwordInput.value).toBe('MyPass456');
@@ -171,12 +184,14 @@ describe('RegisterPage', () => {
   it('should require all fields', () => {
     render(<RegisterPage />);
 
-    const fullNameInput = screen.getByLabelText('Full Name') as HTMLInputElement;
+    const firstNameInput = screen.getByLabelText('First Name') as HTMLInputElement;
+    const lastNameInput = screen.getByLabelText('Last Name') as HTMLInputElement;
     const emailInput = screen.getByLabelText('Email') as HTMLInputElement;
     const organizationInput = screen.getByLabelText('Organization Name') as HTMLInputElement;
     const passwordInput = screen.getByLabelText('Password') as HTMLInputElement;
 
-    expect(fullNameInput.required).toBe(true);
+    expect(firstNameInput.required).toBe(true);
+    expect(lastNameInput.required).toBe(true);
     expect(emailInput.required).toBe(true);
     expect(organizationInput.required).toBe(true);
     expect(passwordInput.required).toBe(true);
@@ -189,14 +204,16 @@ describe('RegisterPage', () => {
 
     render(<RegisterPage />);
 
-    const fullNameInput = screen.getByLabelText('Full Name');
+    const firstNameInput = screen.getByLabelText('First Name');
+    const lastNameInput = screen.getByLabelText('Last Name');
     const emailInput = screen.getByLabelText('Email');
     const organizationInput = screen.getByLabelText('Organization Name');
     const passwordInput = screen.getByLabelText('Password');
     const submitButton = screen.getByRole('button', { name: /create account/i });
 
     // First submission with error
-    fireEvent.change(fullNameInput, { target: { value: 'John Doe' } });
+    fireEvent.change(firstNameInput, { target: { value: 'John' } });
+    fireEvent.change(lastNameInput, { target: { value: 'Doe' } });
     fireEvent.change(emailInput, { target: { value: 'john@example.com' } });
     fireEvent.change(organizationInput, { target: { value: 'My Company' } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });

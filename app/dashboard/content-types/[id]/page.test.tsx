@@ -7,7 +7,7 @@ import { ContentType } from '@/types';
 
 // Mock Next.js navigation
 const mockPush = vi.fn();
-const mockParams = { id: '1' };
+const mockParams = { id: '550e8400-e29b-41d4-a716-446655440001' };
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
@@ -28,7 +28,7 @@ global.alert = vi.fn();
 
 describe('ContentTypeDetailPage', () => {
   const mockContentType: ContentType = {
-    id: 1,
+    id: '550e8400-e29b-41d4-a716-446655440001',
     name: 'Blog Post',
     api_id: 'blog-post',
     description: 'A blog post content type',
@@ -71,14 +71,14 @@ describe('ContentTypeDetailPage', () => {
     display_field: 'title',
     is_active: true,
     entry_count: 0,
-    organization_id: 1,
+    organization_id: '550e8400-e29b-41d4-a716-446655440001',
     created_at: '2025-01-01T00:00:00Z',
     updated_at: '2025-01-15T12:00:00Z',
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockParams.id = '1';
+    mockParams.id = '550e8400-e29b-41d4-a716-446655440001';
     vi.mocked(contentApi.getContentType).mockResolvedValue(mockContentType);
   });
 
@@ -136,7 +136,7 @@ describe('ContentTypeDetailPage', () => {
       await waitFor(() => {
         // Use getAllByRole and check the first one (header edit button)
         const editLinks = screen.getAllByRole('link', { name: /Edit/i });
-        expect(editLinks[0]).toHaveAttribute('href', '/dashboard/content-types/1/edit');
+        expect(editLinks[0]).toHaveAttribute('href', '/dashboard/content-types/550e8400-e29b-41d4-a716-446655440001/edit');
       });
     });
   });
@@ -312,7 +312,7 @@ describe('ContentTypeDetailPage', () => {
       await waitFor(() => {
         const link = screen.getByRole('link', { name: /View Content Entries/i });
         expect(link).toBeInTheDocument();
-        expect(link).toHaveAttribute('href', '/dashboard/content?content_type_id=1');
+        expect(link).toHaveAttribute('href', '/dashboard/content?content_type_id=550e8400-e29b-41d4-a716-446655440001');
       });
     });
 
@@ -322,7 +322,7 @@ describe('ContentTypeDetailPage', () => {
       await waitFor(() => {
         const link = screen.getByRole('link', { name: /Create New Entry/i });
         expect(link).toBeInTheDocument();
-        expect(link).toHaveAttribute('href', '/dashboard/content/new?content_type_id=1');
+        expect(link).toHaveAttribute('href', '/dashboard/content/new?content_type_id=550e8400-e29b-41d4-a716-446655440001');
       });
     });
 
@@ -332,7 +332,7 @@ describe('ContentTypeDetailPage', () => {
       await waitFor(() => {
         const link = screen.getByRole('link', { name: /Edit Content Type/i });
         expect(link).toBeInTheDocument();
-        expect(link).toHaveAttribute('href', '/dashboard/content-types/1/edit');
+        expect(link).toHaveAttribute('href', '/dashboard/content-types/550e8400-e29b-41d4-a716-446655440001/edit');
       });
     });
   });
@@ -388,7 +388,7 @@ describe('ContentTypeDetailPage', () => {
       await user.click(deleteButton);
 
       await waitFor(() => {
-        expect(contentApi.deleteContentType).toHaveBeenCalledWith(1);
+        expect(contentApi.deleteContentType).toHaveBeenCalledWith('550e8400-e29b-41d4-a716-446655440001');
         expect(mockPush).toHaveBeenCalledWith('/dashboard/content-types');
       });
     });
@@ -458,16 +458,16 @@ describe('ContentTypeDetailPage', () => {
       render(<ContentTypeDetailPage />);
 
       await waitFor(() => {
-        expect(contentApi.getContentType).toHaveBeenCalledWith(1);
+        expect(contentApi.getContentType).toHaveBeenCalledWith('550e8400-e29b-41d4-a716-446655440001');
       });
     });
 
     it('should parse ID from params correctly', async () => {
-      mockParams.id = '42';
+      mockParams.id = '550e8400-e29b-41d4-a716-446655440042';
       render(<ContentTypeDetailPage />);
 
       await waitFor(() => {
-        expect(contentApi.getContentType).toHaveBeenCalledWith(42);
+        expect(contentApi.getContentType).toHaveBeenCalledWith('550e8400-e29b-41d4-a716-446655440042');
       });
     });
 
@@ -475,15 +475,15 @@ describe('ContentTypeDetailPage', () => {
       const { rerender } = render(<ContentTypeDetailPage />);
 
       await waitFor(() => {
-        expect(contentApi.getContentType).toHaveBeenCalledWith(1);
+        expect(contentApi.getContentType).toHaveBeenCalledWith('550e8400-e29b-41d4-a716-446655440001');
       });
 
       vi.clearAllMocks();
-      mockParams.id = '2';
+      mockParams.id = '550e8400-e29b-41d4-a716-446655440002';
       rerender(<ContentTypeDetailPage />);
 
       await waitFor(() => {
-        expect(contentApi.getContentType).toHaveBeenCalledWith(2);
+        expect(contentApi.getContentType).toHaveBeenCalledWith('550e8400-e29b-41d4-a716-446655440002');
       });
     });
   });

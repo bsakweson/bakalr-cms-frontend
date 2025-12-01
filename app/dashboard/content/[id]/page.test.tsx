@@ -6,7 +6,7 @@ import { contentApi, translationApi } from '@/lib/api';
 
 // Mock Next.js navigation
 const mockPush = vi.fn();
-const mockParams = { id: '1' };
+const mockParams = { id: '550e8400-e29b-41d4-a716-446655440001' };
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
@@ -50,7 +50,7 @@ vi.mock('@/components/media-picker-modal', () => ({
         <button onClick={onClose}>Close</button>
         <button
           onClick={() =>
-            onSelect({ id: 1, public_url: 'https://example.com/image.jpg', storage_path: '/uploads/image.jpg' })
+            onSelect({ id: '550e8400-e29b-41d4-a716-446655440001', public_url: 'https://example.com/image.jpg', storage_path: '/uploads/image.jpg' })
           }
         >
           Select Media
@@ -61,15 +61,15 @@ vi.mock('@/components/media-picker-modal', () => ({
 
 describe('ContentEntryEditorPage', () => {
   const mockContentTypes = [
-    { id: 1, name: 'Blog Post', slug: 'blog-post', schema: {}, organization_id: 1, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-    { id: 2, name: 'Product', slug: 'product', schema: {}, organization_id: 1, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
+    { id: '550e8400-e29b-41d4-a716-446655440001', name: 'Blog Post', slug: 'blog-post', schema: {}, organization_id: '550e8400-e29b-41d4-a716-446655440001', created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
+    { id: '550e8400-e29b-41d4-a716-446655440002', name: 'Product', slug: 'product', schema: {}, organization_id: '550e8400-e29b-41d4-a716-446655440001', created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
   ];
 
   const mockContentType = {
-    id: 1,
+    id: '550e8400-e29b-41d4-a716-446655440001',
     name: 'Blog Post',
     slug: 'blog-post',
-    organization_id: 1,
+    organization_id: '550e8400-e29b-41d4-a716-446655440001',
     created_at: '2025-01-01T00:00:00Z',
     updated_at: '2025-01-01T00:00:00Z',
     schema: {
@@ -81,12 +81,12 @@ describe('ContentEntryEditorPage', () => {
   };
 
   const mockEntry = {
-    id: 1,
-    content_type_id: 1,
+    id: '550e8400-e29b-41d4-a716-446655440001',
+    content_type_id: '550e8400-e29b-41d4-a716-446655440001',
     slug: 'my-blog-post',
     status: 'draft' as const,
     version: 1,
-    author_id: 1,
+    author_id: '550e8400-e29b-41d4-a716-446655440001',
     content_data: {
       title: 'My Blog Post',
       body: '<p>Content here</p>',
@@ -99,14 +99,14 @@ describe('ContentEntryEditorPage', () => {
   };
 
   const mockLocales = [
-    { id: 1, code: 'en', name: 'English', is_default: true, enabled: true, is_enabled: true, is_active: true, auto_translate: false, organization_id: 1, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-    { id: 2, code: 'es', name: 'Spanish', is_default: false, enabled: true, is_enabled: true, is_active: true, auto_translate: true, organization_id: 1, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-    { id: 3, code: 'fr', name: 'French', is_default: false, enabled: true, is_enabled: true, is_active: true, auto_translate: true, organization_id: 1, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
+    { id: '550e8400-e29b-41d4-a716-446655440001', code: 'en', name: 'English', is_default: true, enabled: true, is_enabled: true, is_active: true, auto_translate: false, organization_id: '550e8400-e29b-41d4-a716-446655440001', created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
+    { id: '550e8400-e29b-41d4-a716-446655440002', code: 'es', name: 'Spanish', is_default: false, enabled: true, is_enabled: true, is_active: true, auto_translate: true, organization_id: '550e8400-e29b-41d4-a716-446655440001', created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
+    { id: '550e8400-e29b-41d4-a716-446655440003', code: 'fr', name: 'French', is_default: false, enabled: true, is_enabled: true, is_active: true, auto_translate: true, organization_id: '550e8400-e29b-41d4-a716-446655440001', created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
   ];
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockParams.id = '1';
+    mockParams.id = '550e8400-e29b-41d4-a716-446655440001';
     vi.mocked(contentApi.getContentTypes).mockResolvedValue(mockContentTypes);
     vi.mocked(contentApi.getContentType).mockResolvedValue(mockContentType);
     vi.mocked(contentApi.getContentEntry).mockResolvedValue(mockEntry);
@@ -543,8 +543,8 @@ describe('ContentEntryEditorPage', () => {
       await user.click(saveButton);
 
       await waitFor(() => {
-        expect(contentApi.updateContentEntry).toHaveBeenCalledWith(1, expect.objectContaining({
-          content_type_id: 1,
+        expect(contentApi.updateContentEntry).toHaveBeenCalledWith('550e8400-e29b-41d4-a716-446655440001', expect.objectContaining({
+          content_type_id: '550e8400-e29b-41d4-a716-446655440001',
           slug: 'my-blog-post',
           status: 'draft',
         }));
@@ -660,7 +660,7 @@ describe('ContentEntryEditorPage', () => {
       await user.click(publishButton);
 
       await waitFor(() => {
-        expect(contentApi.publishContentEntry).toHaveBeenCalledWith(1);
+        expect(contentApi.publishContentEntry).toHaveBeenCalledWith('550e8400-e29b-41d4-a716-446655440001');
         expect(global.alert).toHaveBeenCalledWith('Content published successfully');
       });
     });
@@ -725,7 +725,7 @@ describe('ContentEntryEditorPage', () => {
 
       await waitFor(() => {
         const previewLink = screen.getByRole('link', { name: /Preview/i });
-        expect(previewLink).toHaveAttribute('href', '/preview/content/1');
+        expect(previewLink).toHaveAttribute('href', '/preview/content/550e8400-e29b-41d4-a716-446655440001');
         expect(previewLink).toHaveAttribute('target', '_blank');
       });
     });

@@ -22,48 +22,57 @@ describe('MediaDetailsModal', () => {
   const mockOnDelete = vi.fn();
 
   const mockImageMedia = {
-    id: 1,
+    id: '550e8400-e29b-41d4-a716-446655440001',
     filename: 'test-image.jpg',
     original_filename: 'test-image.jpg',
+    file_path: 'uploads/images/test-image.jpg',
+    url: 'http://example.com/test-image.jpg',
     file_type: 'image/jpeg',
     file_size: 1024000,
     mime_type: 'image/jpeg',
+    media_type: 'image' as const,
     storage_path: 'uploads/images/test-image.jpg',
     public_url: 'http://example.com/test-image.jpg',
     thumbnail_url: 'http://example.com/test-image-thumb.jpg',
     alt_text: 'Test image description',
-    uploaded_by_id: 1,
-    organization_id: 1,
+    uploaded_by_id: '550e8400-e29b-41d4-a716-446655440001',
+    organization_id: '550e8400-e29b-41d4-a716-446655440001',
     created_at: '2025-01-15T10:30:00Z',
     updated_at: '2025-01-15T10:30:00Z',
   };
 
   const mockVideoMedia = {
-    id: 2,
+    id: '550e8400-e29b-41d4-a716-446655440002',
     filename: 'test-video.mp4',
     original_filename: 'test-video.mp4',
+    file_path: 'uploads/videos/test-video.mp4',
+    url: 'http://example.com/test-video.mp4',
     file_type: 'video/mp4',
     file_size: 5120000,
     mime_type: 'video/mp4',
+    media_type: 'video' as const,
     storage_path: 'uploads/videos/test-video.mp4',
     public_url: 'http://example.com/test-video.mp4',
-    uploaded_by_id: 1,
-    organization_id: 1,
+    uploaded_by_id: '550e8400-e29b-41d4-a716-446655440001',
+    organization_id: '550e8400-e29b-41d4-a716-446655440001',
     created_at: '2025-01-20T14:45:00Z',
     updated_at: '2025-01-20T14:45:00Z',
   };
 
   const mockDocumentMedia = {
-    id: 3,
+    id: '550e8400-e29b-41d4-a716-446655440003',
     filename: 'document.pdf',
     original_filename: 'document.pdf',
+    file_path: 'uploads/documents/document.pdf',
+    url: 'http://example.com/document.pdf',
     file_type: 'application/pdf',
     file_size: 512000,
     mime_type: 'application/pdf',
+    media_type: 'document' as const,
     storage_path: 'uploads/documents/document.pdf',
     public_url: 'http://example.com/document.pdf',
-    uploaded_by_id: 1,
-    organization_id: 1,
+    uploaded_by_id: '550e8400-e29b-41d4-a716-446655440001',
+    organization_id: '550e8400-e29b-41d4-a716-446655440001',
     created_at: '2025-02-01T09:15:00Z',
     updated_at: '2025-02-01T09:15:00Z',
   };
@@ -123,10 +132,11 @@ describe('MediaDetailsModal', () => {
   });
 
   describe('Media Display', () => {
-    it('should display image preview when thumbnail_url exists', () => {
+    it('should display image preview when cdn_url exists', () => {
+      const mediaWithCdn = { ...mockImageMedia, cdn_url: 'http://cdn.example.com/test-image.jpg' };
       render(
         <MediaDetailsModal
-          media={mockImageMedia}
+          media={mediaWithCdn}
           open={true}
           onClose={mockOnClose}
           onUpdate={mockOnUpdate}
@@ -136,14 +146,14 @@ describe('MediaDetailsModal', () => {
 
       const img = screen.getByAltText('Test image description');
       expect(img).toBeInTheDocument();
-      expect(img).toHaveAttribute('src', 'http://example.com/test-image-thumb.jpg');
+      expect(img).toHaveAttribute('src', 'http://cdn.example.com/test-image.jpg');
     });
 
-    it('should fallback to public_url when thumbnail_url is missing', () => {
-      const mediaWithoutThumbnail = { ...mockImageMedia, thumbnail_url: undefined };
+    it('should fallback to url when cdn_url is missing', () => {
+      const mediaWithoutCdn = { ...mockImageMedia, cdn_url: undefined };
       render(
         <MediaDetailsModal
-          media={mediaWithoutThumbnail}
+          media={mediaWithoutCdn}
           open={true}
           onClose={mockOnClose}
           onUpdate={mockOnUpdate}
@@ -156,7 +166,7 @@ describe('MediaDetailsModal', () => {
     });
 
     it('should display video icon for video files without preview', () => {
-      const videoWithoutUrl = { ...mockVideoMedia, public_url: undefined, thumbnail_url: undefined };
+      const videoWithoutUrl = { ...mockVideoMedia, url: undefined, cdn_url: undefined };
       render(
         <MediaDetailsModal
           media={videoWithoutUrl}
@@ -171,7 +181,7 @@ describe('MediaDetailsModal', () => {
     });
 
     it('should display document icon for document files', () => {
-      const docWithoutUrl = { ...mockDocumentMedia, public_url: undefined };
+      const docWithoutUrl = { ...mockDocumentMedia, url: undefined, cdn_url: undefined };
       render(
         <MediaDetailsModal
           media={docWithoutUrl}
@@ -542,7 +552,7 @@ describe('MediaDetailsModal', () => {
       await user.click(saveButton);
 
       await waitFor(() => {
-        expect(mediaApi.updateMedia).toHaveBeenCalledWith(1, {
+        expect(mediaApi.updateMedia).toHaveBeenCalledWith('550e8400-e29b-41d4-a716-446655440001', {
           alt_text: 'Test image description',
           filename: 'updated.jpg',
         });
@@ -796,7 +806,7 @@ describe('MediaDetailsModal', () => {
       await user.click(deleteButtons[deleteButtons.length - 1]);
 
       await waitFor(() => {
-        expect(mediaApi.deleteMedia).toHaveBeenCalledWith(1);
+        expect(mediaApi.deleteMedia).toHaveBeenCalledWith('550e8400-e29b-41d4-a716-446655440001');
       });
     });
 
