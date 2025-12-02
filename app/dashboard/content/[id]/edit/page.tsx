@@ -21,7 +21,7 @@ import { ArrowLeft } from 'lucide-react';
 export default function EditContentPage() {
   const router = useRouter();
   const params = useParams();
-  const contentId = parseInt(params?.id as string);
+  const contentId = params?.id as string;
   
   const [content, setContent] = useState<ContentEntry | null>(null);
   const [contentType, setContentType] = useState<ContentType | null>(null);

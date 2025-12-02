@@ -1,6 +1,6 @@
 // User and Authentication Types
 export interface User {
-  id: number;
+  id: string;
   email: string;
   username?: string;
   first_name?: string;
@@ -8,7 +8,7 @@ export interface User {
   full_name?: string; // Computed field for backward compatibility
   is_active: boolean;
   is_email_verified: boolean;
-  organization_id: number;
+  organization_id: string;
   organization?: Organization;
   bio?: string;
   preferences?: string; // JSON string
@@ -19,7 +19,7 @@ export interface User {
 }
 
 export interface Organization {
-  id: number;
+  id: string;
   name: string;
   slug: string;
   is_active: boolean;
@@ -28,10 +28,10 @@ export interface Organization {
 }
 
 export interface Role {
-  id: number;
+  id: string;
   name: string;
   description?: string;
-  organization_id: number;
+  organization_id: string;
   is_system_role: boolean;
   level: number;
   permissions?: string[];
@@ -41,7 +41,7 @@ export interface Role {
 }
 
 export interface Permission {
-  id: number;
+  id: string;
   name: string;
   description?: string;
   category?: string;
@@ -60,17 +60,17 @@ export interface PermissionListResponse {
 export interface CreateRoleRequest {
   name: string;
   description?: string;
-  permission_ids?: number[];
+  permission_ids?: string[];
 }
 
 export interface UpdateRoleRequest {
   name?: string;
   description?: string;
-  permission_ids?: number[];
+  permission_ids?: string[];
 }
 
 export interface RoleResponse {
-  id: number;
+  id: string;
   name: string;
   description?: string;
   is_system_role: boolean;
@@ -79,9 +79,10 @@ export interface RoleResponse {
 }
 
 export interface UserListItem {
-  id: number;
+  id: string;
   email: string;
-  full_name: string;
+  first_name?: string;
+  last_name?: string;
   is_active: boolean;
   roles: string[];
   created_at: string;
@@ -95,19 +96,20 @@ export interface UserListResponse {
 
 export interface InviteUserRequest {
   email: string;
-  full_name: string;
-  role_id: number;
+  first_name: string;
+  last_name: string;
+  role_id: string;
   send_invite_email?: boolean;
 }
 
 export interface InviteUserResponse {
-  user_id: number;
+  user_id: string;
   email: string;
   message: string;
 }
 
 export interface UpdateUserRoleRequest {
-  role_id: number;
+  role_id: string;
 }
 
 export interface LoginRequest {
@@ -131,13 +133,14 @@ export interface RegisterRequest {
 
 // Organization Settings
 export interface OrganizationProfile {
-  id: number;
+  id: string;
   name: string;
   slug: string;
   description?: string;
   email?: string;
   website?: string;
   logo_url?: string;
+  owner_id?: string;
   is_active: boolean;
   plan_type: string;
   created_at: string;
@@ -153,7 +156,7 @@ export interface OrganizationProfileUpdate {
 }
 
 export interface Locale {
-  id: number;
+  id: string;
   code: string;
   name: string;
   native_name?: string;
@@ -161,7 +164,7 @@ export interface Locale {
   is_enabled: boolean;
   is_active: boolean;
   auto_translate: boolean;
-  organization_id: number;
+  organization_id: string;
   created_at: string;
   updated_at: string;
 }
@@ -186,7 +189,7 @@ export interface UpdateLocaleRequest {
 
 // Tenant/Organization Switching
 export interface OrganizationMembership {
-  organization_id: number;
+  organization_id: string;
   organization_name: string;
   organization_slug: string;
   is_default: boolean;
@@ -196,33 +199,33 @@ export interface OrganizationMembership {
 }
 
 export interface UserOrganizationsResponse {
-  current_organization_id: number;
+  current_organization_id: string;
   organizations: OrganizationMembership[];
   total: number;
 }
 
 export interface SwitchOrganizationRequest {
-  organization_id: number;
+  organization_id: string;
 }
 
 export interface SwitchOrganizationResponse {
   message: string;
   access_token: string;
   refresh_token: string;
-  organization_id: number;
+  organization_id: string;
   organization_name: string;
 }
 
 // Audit Logs
 export interface AuditLogItem {
-  id: number;
+  id: string;
   action: string;
   resource_type: string;
-  resource_id?: number;
+  resource_id?: string;
   description?: string;
   severity: string;
   status: string;
-  user_id?: number;
+  user_id?: string;
   user_email?: string;
   user_name?: string;
   ip_address?: string;
@@ -245,7 +248,7 @@ export interface AuditLogStats {
 
 // Content Types
 export interface ContentType {
-  id: number;
+  id: string;
   name: string;
   api_id: string; // API uses api_id not slug
   description?: string;
@@ -262,7 +265,7 @@ export interface ContentType {
   display_field?: string;
   is_active: boolean;
   entry_count?: number;
-  organization_id: number;
+  organization_id: string;
   created_at: string;
   updated_at: string;
   // Legacy compatibility
@@ -271,13 +274,13 @@ export interface ContentType {
 }
 
 export interface ContentEntry {
-  id: number;
-  content_type_id: number;
+  id: string;
+  content_type_id: string;
   slug: string;
   status: "draft" | "published" | "archived";
   content_data: Record<string, any>;
   version: number;
-  author_id: number;
+  author_id: string;
   author?: User;
   content_type?: ContentType;
   published_at?: string;
@@ -287,36 +290,47 @@ export interface ContentEntry {
 
 // Media Types
 export interface Media {
-  id: number;
+  id: string;
+  organization_id: string;
+  uploaded_by_id?: string;
   filename: string;
   original_filename: string;
-  file_type: string;
-  file_size: number;
+  file_path: string;
+  url: string;
   mime_type: string;
-  storage_path: string;
-  public_url?: string;
+  file_size: number;
+  file_extension?: string;
+  media_type: 'image' | 'video' | 'audio' | 'document' | 'other';
+  width?: number;
+  height?: number;
   alt_text?: string;
-  title?: string;
-  uploaded_by_id: number;
-  organization_id: number;
+  description?: string;
+  tags?: string[];
+  thumbnail_url?: string;
+  cdn_url?: string;
   created_at: string;
   updated_at: string;
+  // Legacy aliases for backward compatibility
+  file_type?: string;
+  storage_path?: string;
+  public_url?: string;
+  title?: string;
 }
 
 // Translation Types
 export interface Locale {
-  id: number;
+  id: string;
   code: string;
   name: string;
   is_default: boolean;
   is_enabled: boolean;
-  organization_id: number;
+  organization_id: string;
 }
 
 export interface Translation {
-  id: number;
-  content_entry_id: number;
-  locale_id: number;
+  id: string;
+  content_entry_id: string;
+  locale_id: string;
   translated_data: Record<string, any>;
   status: "pending" | "completed" | "failed";
   source_locale?: string;
@@ -331,7 +345,7 @@ export interface Translation {
 
 // Theme Types
 export interface Theme {
-  id: number;
+  id: string;
   name: string;
   slug: string;
   description?: string;
@@ -340,22 +354,22 @@ export interface Theme {
   spacing: Record<string, string>;
   is_active: boolean;
   is_system: boolean;
-  organization_id?: number;
+  organization_id?: string;
 }
 
 // Template Types
 export interface ContentTemplate {
-  id: number;
+  id: string;
   name: string;
   slug: string;
   description?: string;
-  content_type_id: number;
+  content_type_id: string;
   field_defaults: Record<string, any>;
   field_config: Record<string, any>;
   is_published: boolean;
   usage_count: number;
   tags?: string;
-  organization_id: number;
+  organization_id: string;
   content_type?: ContentType;
 }
 
@@ -367,7 +381,7 @@ export interface ContentStats {
   total_types: number;
   entries_by_type: Array<{ type: string; count: number }>;
   recent_entries: Array<{
-    id: number;
+    id: string;
     title: string;
     status: string;
     created_at: string;
@@ -381,7 +395,7 @@ export interface UserStats {
   new_users_7d: number;
   new_users_30d: number;
   top_contributors: Array<{
-    id: number;
+    id: string;
     name: string;
     email: string;
     entries_count: number;
@@ -393,7 +407,7 @@ export interface MediaStats {
   total_size_mb: number;
   media_by_type: Array<{ type: string; count: number }>;
   recent_uploads: Array<{
-    id: number;
+    id: string;
     filename: string;
     mime_type: string;
     size: number;
@@ -406,7 +420,7 @@ export interface ActivityStats {
   actions_7d: number;
   actions_30d: number;
   recent_activities: Array<{
-    id: number;
+    id: string;
     action: string;
     resource_type: string;
     description?: string;
@@ -439,7 +453,7 @@ export interface PaginatedResponse<T> {
   items: T[];
   total: number;
   page: number;
-  per_page: number;
+  page_size: number;  // Backend uses page_size, not per_page
   total_pages: number;
 }
 

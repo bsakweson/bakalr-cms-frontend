@@ -1,9 +1,9 @@
 import { apiClient } from './client';
 
 export interface ContentTemplate {
-  id: number;
-  organization_id: number;
-  content_type_id: number;
+  id: string;
+  organization_id: string;
+  content_type_id: string;
   name: string;
   description?: string;
   icon?: string;
@@ -19,14 +19,14 @@ export interface ContentTemplate {
   created_at: string;
   updated_at: string;
   content_type?: {
-    id: number;
+    id: string;
     name: string;
     slug: string;
   };
 }
 
 export interface ContentTemplateCreate {
-  content_type_id: number;
+  content_type_id: string;
   name: string;
   description?: string;
   icon?: string;
@@ -63,7 +63,7 @@ export const templateApi = {
   async listTemplates(params?: {
     page?: number;
     page_size?: number;
-    content_type_id?: number;
+    content_type_id?: string;
     published_only?: boolean;
     category?: string;
   }): Promise<ContentTemplateListResponse> {
@@ -81,12 +81,12 @@ export const templateApi = {
     return response.data;
   },
 
-  async updateTemplate(id: number, data: ContentTemplateUpdate): Promise<ContentTemplate> {
+  async updateTemplate(id: string, data: ContentTemplateUpdate): Promise<ContentTemplate> {
     const response = await apiClient.put(`/templates/${id}`, data);
     return response.data;
   },
 
-  async deleteTemplate(id: number): Promise<void> {
+  async deleteTemplate(id: string): Promise<void> {
     await apiClient.delete(`/templates/${id}`);
   },
 

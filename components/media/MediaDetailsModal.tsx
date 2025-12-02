@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { mediaApi } from '@/lib/api';
+import { Media } from '@/types';
 import {
   Dialog,
   DialogContent,
@@ -16,20 +17,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 
-interface MediaFile {
-  id: number;
-  filename: string;
-  file_type: string;
-  file_size: number;
-  mime_type: string;
-  public_url?: string;
-  alt_text?: string;
-  thumbnail_url?: string;
-  created_at: string;
-}
-
 interface MediaDetailsModalProps {
-  media: MediaFile | null;
+  media: Media | null;
   open: boolean;
   onClose: () => void;
   onUpdate: () => void;
@@ -41,6 +30,7 @@ export function MediaDetailsModal({ media, open, onClose, onUpdate, onDelete }: 
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isReplacing, setIsReplacing] = useState(false);
   const [formData, setFormData] = useState({
     alt_text: '',
     filename: '',
@@ -89,6 +79,32 @@ export function MediaDetailsModal({ media, open, onClose, onUpdate, onDelete }: 
     }
   };
 
+  const handleReplaceImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !media) return;
+
+    try {
+      setIsReplacing(true);
+      
+      // Delete old media
+      await mediaApi.deleteMedia(media.id);
+      
+      // Upload new media
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      await mediaApi.uploadMedia(formData);
+      
+      onUpdate();
+      onClose();
+    } catch (error) {
+      console.error('Failed to replace image:', error);
+      alert('Failed to replace image');
+    } finally {
+      setIsReplacing(false);
+    }
+  };
+
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
@@ -120,17 +136,17 @@ export function MediaDetailsModal({ media, open, onClose, onUpdate, onDelete }: 
         <div className="space-y-6">
           {/* Preview */}
           <div className="aspect-video bg-muted rounded-lg flex items-center justify-center overflow-hidden">
-            {media.thumbnail_url || media.public_url ? (
+            {media.url || media.cdn_url ? (
               <img
-                src={media.thumbnail_url || media.public_url}
+                src={media.cdn_url || media.url}
                 alt={media.alt_text || media.filename}
                 className="w-full h-full object-contain"
               />
             ) : (
               <span className="text-6xl">
-                {media.file_type.startsWith('image') ? '🖼️' : 
-                 media.file_type.startsWith('video') ? '🎥' :
-                 media.file_type.startsWith('audio') ? '🎵' : '📄'}
+                {media.media_type === 'image' ? '🖼️' : 
+                 media.media_type === 'video' ? '🎥' :
+                 media.media_type === 'audio' ? '🎵' : '📄'}
               </span>
             )}
           </div>
@@ -194,6 +210,34 @@ export function MediaDetailsModal({ media, open, onClose, onUpdate, onDelete }: 
                   rows={3}
                 />
               </div>
+
+              {media.media_type === 'image' && (
+                <div>
+                  <Label>Replace Image</Label>
+                  <div className="mt-2">
+                    <input
+                      type="file"
+                      id="replace-file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleReplaceImage}
+                      disabled={isReplacing}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById('replace-file')?.click()}
+                      disabled={isReplacing}
+                      className="w-full"
+                    >
+                      {isReplacing ? 'Replacing...' : 'Upload New Image'}
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      This will delete the current image and upload a new one
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -28,12 +28,12 @@ export const mediaApi = {
     return response.data;
   },
 
-  async updateMedia(id: number, data: Partial<Media>): Promise<Media> {
+  async updateMedia(id: string, data: Partial<Media>): Promise<Media> {
     const response = await apiClient.put<Media>(`/media/${id}`, data);
     return response.data;
   },
 
-  async deleteMedia(id: number): Promise<void> {
+  async deleteMedia(id: string): Promise<void> {
     await apiClient.delete(`/media/${id}`);
   },
 };

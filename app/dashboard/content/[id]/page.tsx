@@ -26,7 +26,7 @@ import { Globe, Image as ImageIcon } from 'lucide-react';
 export default function ContentEntryEditorPage() {
   const params = useParams();
   const router = useRouter();
-  const id = params?.id ? parseInt(params.id as string) : null;
+  const id = typeof params?.id === 'string' ? params.id : null;
   const isNew = id === null || params?.id === 'new';
 
   const [entry, setEntry] = useState<ContentEntry | null>(null);
@@ -35,7 +35,7 @@ export default function ContentEntryEditorPage() {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [slug, setSlug] = useState('');
   const [status, setStatus] = useState<'draft' | 'published' | 'archived'>('draft');
-  const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null);
+  const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(!isNew);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
@@ -109,7 +109,7 @@ export default function ContentEntryEditorPage() {
     }
   };
 
-  const loadTranslations = async (contentId: number) => {
+  const loadTranslations = async (contentId: string) => {
     try {
       const data = await translationApi.getContentTranslations(contentId);
       const translationsMap: Record<string, Record<string, any>> = {};
@@ -125,7 +125,7 @@ export default function ContentEntryEditorPage() {
     }
   };
 
-  const loadContentType = async (typeId: number) => {
+  const loadContentType = async (typeId: string) => {
     try {
       const data = await contentApi.getContentType(typeId);
       setContentType(data);
@@ -436,8 +436,8 @@ export default function ContentEntryEditorPage() {
               </CardHeader>
               <CardContent>
                 <Select
-                  value={selectedTypeId?.toString() || ''}
-                  onValueChange={(val) => setSelectedTypeId(parseInt(val))}
+                  value={selectedTypeId || ''}
+                  onValueChange={(val) => setSelectedTypeId(val)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select content type" />

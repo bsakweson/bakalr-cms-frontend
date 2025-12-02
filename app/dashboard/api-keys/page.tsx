@@ -6,20 +6,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 
-export default function TranslationsRedirectPage() {
+export default function APIKeysRedirectPage() {
   const router = useRouter();
 
   useEffect(() => {
     // Auto-redirect after 3 seconds
     const timer = setTimeout(() => {
-      router.push('/dashboard/organization?tab=translations');
+      router.push('/dashboard/organization?tab=api-keys');
     }, 3000);
 
     return () => clearTimeout(timer);
   }, [router]);
 
   const handleRedirect = () => {
-    router.push('/dashboard/organization?tab=translations');
+    router.push('/dashboard/organization?tab=api-keys');
   };
 
   return (
@@ -28,7 +28,7 @@ export default function TranslationsRedirectPage() {
         <CardHeader>
           <CardTitle>Page Moved</CardTitle>
           <CardDescription>
-            Translations management has been consolidated into Organization Settings
+            API Keys management has been consolidated into Organization Settings
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

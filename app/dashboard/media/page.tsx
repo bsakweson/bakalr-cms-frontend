@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { mediaApi } from '@/lib/api';
+import { Media } from '@/types';
 import { MediaDetailsModal } from '@/components/media/MediaDetailsModal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,28 +17,16 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 
-interface MediaFile {
-  id: number;
-  filename: string;
-  file_type: string;
-  file_size: number;
-  mime_type: string;
-  public_url?: string;
-  alt_text?: string;
-  thumbnail_url?: string;
-  created_at: string;
-}
-
 export default function MediaPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [media, setMedia] = useState<MediaFile[]>([]);
+  const [media, setMedia] = useState<Media[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState(searchParams?.get('type') || 'all');
   const [isDragging, setIsDragging] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
-  const [selectedMedia, setSelectedMedia] = useState<MediaFile | null>(null);
+  const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
   const [showMediaModal, setShowMediaModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -247,25 +236,25 @@ export default function MediaPage() {
                 }}
               >
                 <div className="aspect-video bg-muted flex items-center justify-center">
-                  {file.thumbnail_url ? (
+                  {(file.thumbnail_url || file.url) && file.media_type === 'image' ? (
                     <img
-                      src={file.thumbnail_url}
+                      src={file.thumbnail_url || file.url}
                       alt={file.alt_text || file.filename}
                       className="w-full h-full object-cover"
                     />
                   ) : (
                     <span className="text-4xl">
-                      {file.file_type.startsWith('image') ? '🖼️' : 
-                       file.file_type.startsWith('video') ? '🎥' :
-                       file.file_type.startsWith('audio') ? '🎵' : '📄'}
+                      {file.media_type === 'image' ? '🖼️' : 
+                       file.media_type === 'video' ? '🎥' :
+                       file.media_type === 'audio' ? '🎵' : '📄'}
                     </span>
                   )}
                 </div>
                 <CardContent className="p-4">
                   <p className="text-sm font-medium truncate mb-1">{file.filename}</p>
                   <div className="flex items-center gap-2">
-                    <Badge variant={getFileTypeColor(file.file_type)} className="text-xs">
-                      {file.file_type.split('/')[0]}
+                    <Badge variant={getFileTypeColor(file.mime_type)} className="text-xs">
+                      {file.media_type}
                     </Badge>
                     <span className="text-xs text-muted-foreground">
                       {formatFileSize(file.file_size)}

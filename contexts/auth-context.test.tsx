@@ -9,13 +9,13 @@ vi.mock('@/lib/api', () => ({
     login: vi.fn().mockResolvedValue({
       access_token: 'fake-token',
       refresh_token: 'fake-refresh',
-      user: { email: 'test@example.com', id: 1, full_name: 'Test User' }
+      user: { email: 'test@example.com', id: 1, first_name: 'Test', last_name: 'User' }
     }),
     logout: vi.fn().mockResolvedValue({}),
     register: vi.fn().mockResolvedValue({
       access_token: 'fake-token',
       refresh_token: 'fake-refresh',
-      user: { email: 'test@example.com', id: 1, full_name: 'Test User' }
+      user: { email: 'test@example.com', id: 1, first_name: 'Test', last_name: 'User' }
     }),
   },
 }))

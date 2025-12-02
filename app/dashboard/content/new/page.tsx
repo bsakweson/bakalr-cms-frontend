@@ -38,7 +38,7 @@ export default function NewContentPage() {
 
   useEffect(() => {
     if (selectedTypeId) {
-      const type = contentTypes.find(t => t.id === parseInt(selectedTypeId));
+      const type = contentTypes.find(t => t.id === selectedTypeId);
       setSelectedType(type || null);
       
       // Initialize form fields based on content type fields

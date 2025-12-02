@@ -7,18 +7,29 @@ import { ContentType, PaginatedResponse } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Plus, MoreVertical, Eye, Edit, Trash2 } from 'lucide-react';
+import { Plus, MoreVertical, Eye, Edit, Trash2, AlertCircle } from 'lucide-react';
 
 export default function ContentTypesPage() {
   const [contentTypes, setContentTypes] = useState<ContentType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [typeToDelete, setTypeToDelete] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     loadContentTypes();
@@ -27,26 +38,37 @@ export default function ContentTypesPage() {
   const loadContentTypes = async () => {
     try {
       setIsLoading(true);
+      setError('');
       const data = await contentApi.getContentTypes();
-      setContentTypes(data);
+      setContentTypes(Array.isArray(data) ? data : []);
     } catch (err: any) {
-      setError('Failed to load content types');
-      console.error(err);
+      console.error('Error loading content types:', err);
+      // Only show error if it's not a 404 or empty response
+      if (err.response?.status !== 404) {
+        setError('Failed to load content types');
+      } else {
+        setContentTypes([]);
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this content type? This action cannot be undone.')) {
-      return;
-    }
+  const openDeleteDialog = (id: string, name: string) => {
+    setTypeToDelete({ id, name });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!typeToDelete) return;
 
     try {
-      await contentApi.deleteContentType(id);
+      await contentApi.deleteContentType(typeToDelete.id);
+      setDeleteDialogOpen(false);
+      setTypeToDelete(null);
       loadContentTypes(); // Reload the list
     } catch (err: any) {
-      alert('Failed to delete content type: ' + (err.response?.data?.detail || err.message));
+      setError('Failed to delete content type: ' + (err.response?.data?.detail || err.message));
     }
   };
 
@@ -68,6 +90,13 @@ export default function ContentTypesPage() {
 
   return (
     <div className="space-y-6">
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Content Types</h1>
@@ -123,7 +152,7 @@ export default function ContentTypesPage() {
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="text-destructive"
-                        onClick={() => handleDelete(type.id)}
+                        onClick={() => openDeleteDialog(type.id, type.name)}
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
                         Delete
@@ -161,14 +190,22 @@ export default function ContentTypesPage() {
         </div>
       ) : (
         <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <div className="text-4xl mb-4">📋</div>
-            <h3 className="text-lg font-semibold mb-2">No Content Types Yet</h3>
-            <p className="text-muted-foreground text-center mb-4">
-              Get started by creating your first content type to structure your content.
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <div className="rounded-full bg-gray-100 p-6 mb-6">
+              <span className="text-6xl">📋</span>
+            </div>
+            <h3 className="text-2xl font-semibold mb-2">No Content Types Yet</h3>
+            <p className="text-muted-foreground text-center mb-2 max-w-lg">
+              Content types define the structure of your content. Think of them as blueprints or templates.
             </p>
-            <Button asChild>
-              <Link href="/dashboard/content-types/builder">Create Your First Content Type</Link>
+            <p className="text-sm text-muted-foreground text-center mb-6 max-w-lg">
+              For example, create a "Product" content type with fields like name, price, and description, or a "Blog Post" type with title, author, and body fields.
+            </p>
+            <Button asChild size="lg">
+              <Link href="/dashboard/content-types/builder">
+                <Plus className="h-5 w-5 mr-2" />
+                Create Your First Content Type
+              </Link>
             </Button>
           </CardContent>
         </Card>
@@ -181,6 +218,26 @@ export default function ContentTypesPage() {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Content Type</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{typeToDelete?.name}"? This action cannot be undone and will affect all content entries of this type.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Delete Content Type
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

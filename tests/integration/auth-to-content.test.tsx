@@ -58,7 +58,8 @@ describe('Integration: Auth to Content Creation Flow', () => {
   const mockUser = {
     id: 1,
     email: 'newuser@example.com',
-    full_name: 'New User',
+    first_name: 'New',
+    last_name: 'User',
     organization_id: 1,
     is_active: true,
     created_at: '2025-11-29T00:00:00Z',
@@ -122,7 +123,8 @@ describe('Integration: Auth to Content Creation Flow', () => {
       const registrationData = {
         email: 'newuser@example.com',
         password: 'SecurePass123!',
-        full_name: 'New User',
+        first_name: 'New',
+        last_name: 'User',
         organization_name: 'Test Org',
       };
 
@@ -140,7 +142,8 @@ describe('Integration: Auth to Content Creation Flow', () => {
       await authApi.register({
         email: 'newuser@example.com',
         password: 'SecurePass123!',
-        full_name: 'New User',
+        first_name: 'New',
+        last_name: 'User',
         organization_name: 'Test Org',
       });
 
@@ -158,7 +161,8 @@ describe('Integration: Auth to Content Creation Flow', () => {
         authApi.register({
           email: 'existing@example.com',
           password: 'password',
-          full_name: 'User',
+          first_name: 'Test',
+          last_name: 'User',
           organization_name: 'Org',
         })
       ).rejects.toMatchObject({
@@ -395,7 +399,8 @@ describe('Integration: Auth to Content Creation Flow', () => {
       const registerResult = await authApi.register({
         email: 'newuser@example.com',
         password: 'SecurePass123!',
-        full_name: 'New User',
+        first_name: 'New',
+        last_name: 'User',
         organization_name: 'Test Org',
       });
       expect(registerResult.user.email).toBe('newuser@example.com');
@@ -451,7 +456,8 @@ describe('Integration: Auth to Content Creation Flow', () => {
       const registerResult = await authApi.register({
         email: 'newuser@example.com',
         password: 'pass',
-        full_name: 'User',
+        first_name: 'Test',
+        last_name: 'User',
         organization_name: 'Test Org',
       });
 

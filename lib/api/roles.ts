@@ -20,7 +20,7 @@ export const roleApi = {
     return response.data;
   },
 
-  async getRole(roleId: number): Promise<RoleResponse> {
+  async getRole(roleId: string): Promise<RoleResponse> {
     const response = await apiClient.get(`/roles/${roleId}`);
     return response.data;
   },
@@ -30,12 +30,12 @@ export const roleApi = {
     return response.data;
   },
 
-  async updateRole(roleId: number, data: UpdateRoleRequest): Promise<RoleResponse> {
+  async updateRole(roleId: string, data: UpdateRoleRequest): Promise<RoleResponse> {
     const response = await apiClient.put(`/roles/${roleId}`, data);
     return response.data;
   },
 
-  async deleteRole(roleId: number): Promise<{ message: string }> {
+  async deleteRole(roleId: string): Promise<{ message: string }> {
     const response = await apiClient.delete(`/roles/${roleId}`);
     return response.data;
   },

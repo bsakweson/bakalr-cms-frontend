@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge';
 export function OrganizationSelector() {
   const { user, login } = useAuth();
   const [organizations, setOrganizations] = useState<OrganizationMembership[]>([]);
-  const [currentOrgId, setCurrentOrgId] = useState<number | null>(null);
+  const [currentOrgId, setCurrentOrgId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [switching, setSwitching] = useState(false);
 
@@ -41,7 +41,7 @@ export function OrganizationSelector() {
     }
   };
 
-  const handleSwitchOrganization = async (orgId: number) => {
+  const handleSwitchOrganization = async (orgId: string) => {
     if (orgId === currentOrgId) return;
 
     try {

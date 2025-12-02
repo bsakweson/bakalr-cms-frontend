@@ -27,6 +27,9 @@ interface Product {
     sku?: string;
     in_stock?: boolean;
   };
+  translation?: {
+    translated_data: Record<string, any>;
+  };
   seo_data?: any;
   published_at?: string;
 }
@@ -112,8 +115,36 @@ export function useProducts(
 
       const response = await apiClient.get(`/content/entries?${params.toString()}`);
       
+      // Fetch translations if locale is specified and not English
+      let productsWithTranslations = response.data.items || [];
+      if (filters.locale && filters.locale !== 'en') {
+        try {
+          // Fetch translations for all products in batch
+          const translationPromises = productsWithTranslations.map(async (product: Product) => {
+            try {
+              const translationResponse = await apiClient.get(
+                `/translation/content/${product.id}?locale=${filters.locale}`
+              );
+              return {
+                ...product,
+                translation: translationResponse.data,
+              };
+            } catch (err) {
+              // If translation fails, return product without translation
+              console.warn(`Translation not found for product ${product.id} in locale ${filters.locale}`);
+              return product;
+            }
+          });
+          
+          productsWithTranslations = await Promise.all(translationPromises);
+        } catch (err) {
+          console.warn('Error fetching translations:', err);
+          // Continue without translations if there's an error
+        }
+      }
+      
       // Filter by price range on client side if needed
-      let filteredProducts = response.data.items || [];
+      let filteredProducts = productsWithTranslations;
       if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
         filteredProducts = filteredProducts.filter((product: Product) => {
           const price = product.data.price || 0;

@@ -29,12 +29,12 @@ export const organizationApi = {
     return response.data;
   },
 
-  async updateLocale(localeId: number, data: UpdateLocaleRequest): Promise<Locale> {
+  async updateLocale(localeId: string, data: UpdateLocaleRequest): Promise<Locale> {
     const response = await apiClient.put(`/organization/locales/${localeId}`, data);
     return response.data;
   },
 
-  async deleteLocale(localeId: number): Promise<{ message: string }> {
+  async deleteLocale(localeId: string): Promise<{ message: string }> {
     const response = await apiClient.delete(`/organization/locales/${localeId}`);
     return response.data;
   },

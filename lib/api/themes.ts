@@ -25,8 +25,8 @@ export interface ThemeTypography {
 }
 
 export interface Theme {
-  id: number;
-  organization_id: number;
+  id: string;
+  organization_id: string;
   name: string;
   display_name: string;
   description?: string;
@@ -88,7 +88,7 @@ export const themeApi = {
   },
 
   async getActiveTheme(): Promise<Theme> {
-    const response = await apiClient.get('/themes/active');
+    const response = await apiClient.get('/themes/active/current');
     return response.data;
   },
 
@@ -97,21 +97,26 @@ export const themeApi = {
     return response.data;
   },
 
-  async updateTheme(id: number, data: ThemeUpdate): Promise<Theme> {
+  async updateTheme(id: string, data: ThemeUpdate): Promise<Theme> {
     const response = await apiClient.put(`/themes/${id}`, data);
     return response.data;
   },
 
-  async deleteTheme(id: number): Promise<void> {
+  async deleteTheme(id: string): Promise<void> {
     await apiClient.delete(`/themes/${id}`);
   },
 
-  async setActiveTheme(id: number): Promise<Theme> {
+  async setActiveTheme(id: string): Promise<Theme> {
     const response = await apiClient.post(`/themes/${id}/activate`);
     return response.data;
   },
 
-  async exportTheme(id: number): Promise<Record<string, any>> {
+  async deactivateTheme(id: string): Promise<Theme> {
+    const response = await apiClient.post(`/themes/${id}/deactivate`);
+    return response.data;
+  },
+
+  async exportTheme(id: string): Promise<Record<string, any>> {
     const response = await apiClient.get(`/themes/${id}/export`);
     return response.data;
   },

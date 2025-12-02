@@ -7,7 +7,7 @@ export const auditLogApi = {
     page_size?: number;
     action?: string;
     resource_type?: string;
-    user_id?: number;
+    user_id?: string;
     severity?: string;
     status?: string;
     days?: number;

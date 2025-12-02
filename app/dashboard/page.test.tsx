@@ -9,7 +9,8 @@ vi.mock('@/contexts/auth-context', () => ({
     user: {
       id: 1,
       email: 'test@example.com',
-      full_name: 'Test User',
+      first_name: 'Test',
+      last_name: 'User',
     },
   }),
 }));

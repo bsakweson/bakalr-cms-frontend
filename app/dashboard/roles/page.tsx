@@ -12,6 +12,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 export default function RolesPage() {
   const [roles, setRoles] = useState<Role[]>([]);
@@ -19,10 +21,13 @@ export default function RolesPage() {
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [roleToDelete, setRoleToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    permission_ids: [] as number[],
+    permission_ids: [] as string[],
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -107,14 +112,23 @@ export default function RolesPage() {
     }
   };
 
-  const handleDeleteRole = async (roleId: number) => {
-    if (!confirm('Are you sure? Users with this role will lose their permissions.')) return;
+  const openDeleteDialog = (roleId: string, roleName: string) => {
+    setRoleToDelete({ id: roleId, name: roleName });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteRole = async () => {
+    if (!roleToDelete) return;
 
     try {
-      await roleApi.deleteRole(roleId);
+      await roleApi.deleteRole(roleToDelete.id);
+      setDeleteDialogOpen(false);
+      setRoleToDelete(null);
       loadRoles();
     } catch (error) {
       console.error('Failed to delete role:', error);
+      setErrorMessage('Failed to delete role. Please try again.');
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -132,7 +146,7 @@ export default function RolesPage() {
     }
   };
 
-  const togglePermission = (permissionId: number) => {
+  const togglePermission = (permissionId: string) => {
     setFormData((prev) => ({
       ...prev,
       permission_ids: prev.permission_ids.includes(permissionId)
@@ -269,7 +283,7 @@ export default function RolesPage() {
                           Edit Role
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() => handleDeleteRole(role.id)}
+                          onClick={() => openDeleteDialog(role.id, role.name)}
                           className="text-destructive"
                         >
                           Delete Role
@@ -370,6 +384,35 @@ export default function RolesPage() {
             </Button>
             <Button onClick={handleEditRole} disabled={submitting}>
               {submitting ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Error Alert */}
+      {errorMessage && (
+        <Alert variant="destructive" className="mt-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{errorMessage}</AlertDescription>
+        </Alert>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Role</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete the role &quot;{roleToDelete?.name}&quot;? 
+              Users with this role will lose their permissions. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteRole}>
+              Delete Role
             </Button>
           </DialogFooter>
         </DialogContent>

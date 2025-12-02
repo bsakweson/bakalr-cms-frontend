@@ -18,7 +18,8 @@ const mockLogin = vi.fn();
 const mockUser = {
   id: 1,
   email: 'test@example.com',
-  full_name: 'Test User',
+  first_name: 'Test',
+  last_name: 'User',
 };
 
 vi.mock('@/contexts/auth-context', () => ({

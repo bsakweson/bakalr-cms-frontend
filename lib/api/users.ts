@@ -27,7 +27,7 @@ export const userApi = {
   /**
    * Update a user's role
    */
-  async updateUserRole(userId: number, data: UpdateUserRoleRequest): Promise<{ message: string }> {
+  async updateUserRole(userId: string, data: UpdateUserRoleRequest): Promise<{ message: string }> {
     const response = await apiClient.put(`/users/${userId}/role`, data);
     return response.data;
   },
@@ -35,7 +35,7 @@ export const userApi = {
   /**
    * Remove a user from the organization
    */
-  async removeUser(userId: number): Promise<{ message: string }> {
+  async removeUser(userId: string): Promise<{ message: string }> {
     const response = await apiClient.delete(`/users/${userId}`);
     return response.data;
   },

@@ -15,6 +15,8 @@ export default function ThemesPage() {
   const [activeTheme, setActiveTheme] = useState<Theme | null>(null);
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [themeToDelete, setThemeToDelete] = useState<{ id: string; name: string } | null>(null);
   const [editingTheme, setEditingTheme] = useState<Theme | null>(null);
   const [formData, setFormData] = useState<ThemeCreate>({
     name: '',
@@ -97,7 +99,7 @@ export default function ThemesPage() {
     setShowDialog(true);
   };
 
-  const handleExport = async (id: number, name: string) => {
+  const handleExport = async (id: string, name: string) => {
     try {
       const exported = await themeApi.exportTheme(id);
       const blob = new Blob([JSON.stringify(exported, null, 2)], { type: 'application/json' });
@@ -112,7 +114,7 @@ export default function ThemesPage() {
     }
   };
 
-  const handleActivate = async (id: number) => {
+  const handleActivate = async (id: string) => {
     try {
       await themeApi.setActiveTheme(id);
       loadThemes();
@@ -121,11 +123,27 @@ export default function ThemesPage() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Delete this theme?')) return;
+  const handleDeactivate = async (id: string) => {
     try {
-      await themeApi.deleteTheme(id);
+      await themeApi.deactivateTheme(id);
       loadThemes();
+    } catch (error) {
+      console.error('Failed to deactivate theme:', error);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    setThemeToDelete(themes.find(t => t.id === id) ? { id, name: themes.find(t => t.id === id)!.display_name } : null);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!themeToDelete) return;
+    try {
+      await themeApi.deleteTheme(themeToDelete.id);
+      loadThemes();
+      setShowDeleteDialog(false);
+      setThemeToDelete(null);
     } catch (error) {
       console.error('Failed to delete:', error);
     }
@@ -226,9 +244,11 @@ export default function ThemesPage() {
               <div className="flex flex-wrap gap-2 mb-4">
                 {theme.is_system_theme && <Badge variant="outline">System</Badge>}
               </div>
-              <div className="flex gap-2">
-                {!theme.is_active && (
-                  <Button size="sm" variant="outline" className="flex-1" onClick={() => handleActivate(theme.id)}>Activate</Button>
+              <div className="flex gap-2 flex-wrap">
+                {theme.is_active ? (
+                  <Button size="sm" variant="secondary" onClick={() => handleDeactivate(theme.id)}>Deactivate</Button>
+                ) : (
+                  <Button size="sm" variant="outline" onClick={() => handleActivate(theme.id)}>Activate</Button>
                 )}
                 {!theme.is_system_theme && (
                   <>
@@ -238,7 +258,7 @@ export default function ThemesPage() {
                   </>
                 )}
                 {theme.is_system_theme && (
-                  <Button size="sm" variant="outline" className="flex-1" onClick={() => handleExport(theme.id, theme.name)}>Export</Button>
+                  <Button size="sm" variant="outline" onClick={() => handleExport(theme.id, theme.name)}>Export</Button>
                 )}
               </div>
             </CardContent>
@@ -345,6 +365,21 @@ export default function ThemesPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => { setShowDialog(false); resetForm(); }}>Cancel</Button>
             <Button onClick={handleCreate}>{editingTheme ? 'Update Theme' : 'Create Theme'}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Theme</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete &quot;{themeToDelete?.name}&quot;? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={confirmDelete}>Delete</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

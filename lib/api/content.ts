@@ -8,7 +8,7 @@ export const contentApi = {
     return response.data;
   },
 
-  async getContentType(id: number): Promise<ContentType> {
+  async getContentType(id: string): Promise<ContentType> {
     const response = await apiClient.get<ContentType>(`/content/types/${id}`);
     return response.data;
   },
@@ -18,12 +18,12 @@ export const contentApi = {
     return response.data;
   },
 
-  async updateContentType(id: number, data: Partial<ContentType>): Promise<ContentType> {
+  async updateContentType(id: string, data: Partial<ContentType>): Promise<ContentType> {
     const response = await apiClient.put<ContentType>(`/content/types/${id}`, data);
     return response.data;
   },
 
-  async deleteContentType(id: number): Promise<void> {
+  async deleteContentType(id: string): Promise<void> {
     await apiClient.delete(`/content/types/${id}`);
   },
 
@@ -31,7 +31,7 @@ export const contentApi = {
   async getContentEntries(params?: {
     page?: number;
     per_page?: number;
-    content_type_id?: number;
+    content_type_id?: string;
     status?: string;
   }): Promise<PaginatedResponse<ContentEntry>> {
     const response = await apiClient.get<PaginatedResponse<ContentEntry>>('/content/entries', {
@@ -40,7 +40,7 @@ export const contentApi = {
     return response.data;
   },
 
-  async getContentEntry(id: number): Promise<ContentEntry> {
+  async getContentEntry(id: string): Promise<ContentEntry> {
     const response = await apiClient.get<ContentEntry>(`/content/entries/${id}`);
     return response.data;
   },
@@ -50,21 +50,21 @@ export const contentApi = {
     return response.data;
   },
 
-  async updateContentEntry(id: number, data: Partial<ContentEntry>): Promise<ContentEntry> {
+  async updateContentEntry(id: string, data: Partial<ContentEntry>): Promise<ContentEntry> {
     const response = await apiClient.put<ContentEntry>(`/content/entries/${id}`, data);
     return response.data;
   },
 
-  async deleteContentEntry(id: number): Promise<void> {
+  async deleteContentEntry(id: string): Promise<void> {
     await apiClient.delete(`/content/entries/${id}`);
   },
 
-  async publishContentEntry(id: number): Promise<ContentEntry> {
+  async publishContentEntry(id: string): Promise<ContentEntry> {
     const response = await apiClient.post<ContentEntry>(`/content/entries/${id}/publish`);
     return response.data;
   },
 
-  async unpublishContentEntry(id: number): Promise<ContentEntry> {
+  async unpublishContentEntry(id: string): Promise<ContentEntry> {
     const response = await apiClient.post<ContentEntry>(`/content/entries/${id}/unpublish`);
     return response.data;
   },

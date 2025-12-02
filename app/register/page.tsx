@@ -15,7 +15,8 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    full_name: '',
+    first_name: '',
+    last_name: '',
     organization_name: '',
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -27,7 +28,14 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      await register(formData);
+      // Combine first_name and last_name into full_name for API
+      const registerData = {
+        email: formData.email,
+        password: formData.password,
+        full_name: `${formData.first_name} ${formData.last_name}`.trim(),
+        organization_name: formData.organization_name,
+      };
+      await register(registerData);
       router.push('/dashboard');
     } catch (err: any) {
       setError(err?.response?.data?.detail || 'Registration failed. Please try again.');
@@ -46,14 +54,27 @@ export default function RegisterPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="full_name">Full Name</Label>
+              <Label htmlFor="first_name">First Name</Label>
               <Input
-                id="full_name"
-                name="full_name"
+                id="first_name"
+                name="first_name"
                 type="text"
-                placeholder="John Doe"
-                value={formData.full_name}
-                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                placeholder="John"
+                value={formData.first_name}
+                onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                required
+                disabled={isLoading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="last_name">Last Name</Label>
+              <Input
+                id="last_name"
+                name="last_name"
+                type="text"
+                placeholder="Doe"
+                value={formData.last_name}
+                onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
                 required
                 disabled={isLoading}
               />

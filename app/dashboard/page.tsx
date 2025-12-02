@@ -107,11 +107,15 @@ export default function DashboardPage() {
   }
 
   if (error) {
+    const displayName = user?.first_name && user?.last_name
+      ? `${user.first_name} ${user.last_name}`
+      : user?.first_name || user?.last_name || user?.email;
+    
     return (
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground mt-1">Welcome back, {user?.full_name || user?.email}</p>
+          <p className="text-muted-foreground mt-1">Welcome back, {displayName}</p>
         </div>
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <p className="text-yellow-800">Analytics data is currently unavailable. Please check your API connection.</p>

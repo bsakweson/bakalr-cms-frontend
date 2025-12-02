@@ -1,8 +1,8 @@
 import apiClient from './client';
 
 export interface SearchResult {
-  id: number;
-  content_type_id: number;
+  id: string;
+  content_type_id: string;
   slug: string;
   status: string;
   content_data: Record<string, any>;
@@ -20,7 +20,7 @@ export interface SearchResponse {
 export const searchApi = {
   async search(params: {
     q: string;
-    content_type_id?: number;
+    content_type_id?: string;
     status?: string;
     limit?: number;
     offset?: number;

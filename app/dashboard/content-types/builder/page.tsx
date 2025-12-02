@@ -38,7 +38,7 @@ export default function ContentTypeBuilderPage() {
 
   useEffect(() => {
     if (isEdit && editId) {
-      loadContentType(parseInt(editId));
+      loadContentType(editId);
     }
   }, [isEdit, editId]);
 
@@ -48,7 +48,7 @@ export default function ContentTypeBuilderPage() {
     }
   }, [name, isEdit, apiNameManuallyEdited]);
 
-  const loadContentType = async (id: number) => {
+  const loadContentType = async (id: string) => {
     try {
       setIsLoading(true);
       const data = await contentApi.getContentType(id);
@@ -207,7 +207,7 @@ export default function ContentTypeBuilderPage() {
       };
 
       if (isEdit && editId) {
-        await contentApi.updateContentType(parseInt(editId), payload);
+        await contentApi.updateContentType(editId, payload);
         alert('Content type updated successfully');
       } else {
         await contentApi.createContentType(payload);

@@ -25,7 +25,7 @@ export default function TemplatesPage() {
   const [filterPublished, setFilterPublished] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState<ContentTemplateCreate>({
-    content_type_id: 0,
+    content_type_id: '',
     name: '',
     description: '',
     is_published: true,
@@ -115,7 +115,7 @@ export default function TemplatesPage() {
     setShowDialog(true);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Delete this template?')) return;
     try {
       await templateApi.deleteTemplate(id);
@@ -127,7 +127,7 @@ export default function TemplatesPage() {
 
   const resetForm = () => {
     setFormData({
-      content_type_id: 0,
+      content_type_id: '',
       name: '',
       description: '',
       is_published: true,
@@ -256,7 +256,7 @@ export default function TemplatesPage() {
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label>Content Type*</Label>
-              <Select value={formData.content_type_id?.toString() || ''} onValueChange={(v) => setFormData({ ...formData, content_type_id: parseInt(v) })}>
+              <Select value={formData.content_type_id || ''} onValueChange={(v) => setFormData({ ...formData, content_type_id: v })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>

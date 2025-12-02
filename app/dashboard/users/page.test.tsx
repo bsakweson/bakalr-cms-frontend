@@ -34,7 +34,8 @@ describe('UsersPage', () => {
     {
       id: 1,
       email: 'admin@example.com',
-      full_name: 'Admin User',
+      first_name: 'Admin',
+      last_name: 'User',
       is_active: true,
       roles: ['Admin'],
       created_at: '2024-01-15T10:00:00Z',
@@ -43,7 +44,8 @@ describe('UsersPage', () => {
     {
       id: 2,
       email: 'editor@example.com',
-      full_name: 'Editor User',
+      first_name: 'Editor',
+      last_name: 'User',
       is_active: true,
       roles: ['Editor'],
       created_at: '2024-03-20T14:30:00Z',
@@ -52,7 +54,8 @@ describe('UsersPage', () => {
     {
       id: 3,
       email: 'inactive@example.com',
-      full_name: 'Inactive User',
+      first_name: 'Inactive',
+      last_name: 'User',
       is_active: false,
       roles: ['Viewer'],
       created_at: '2024-06-10T09:15:00Z',

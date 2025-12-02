@@ -39,12 +39,12 @@ export const translationApi = {
     await apiClient.delete(`/translation/locales/${code}`);
   },
 
-  async getContentTranslations(contentId: number): Promise<Translation[]> {
+  async getContentTranslations(contentId: string): Promise<Translation[]> {
     const response = await apiClient.get<Translation[]>(`/translation/content/${contentId}`);
     return response.data;
   },
 
-  async getTranslation(contentId: number, localeCode: string): Promise<Translation> {
+  async getTranslation(contentId: string, localeCode: string): Promise<Translation> {
     const response = await apiClient.get<Translation>(
       `/translation/content/${contentId}/${localeCode}`
     );
@@ -52,7 +52,7 @@ export const translationApi = {
   },
 
   async createOrUpdateTranslation(
-    contentId: number,
+    contentId: string,
     localeCode: string,
     data: Record<string, any>
   ): Promise<Translation> {
@@ -63,11 +63,11 @@ export const translationApi = {
     return response.data;
   },
 
-  async deleteTranslation(contentId: number, localeCode: string): Promise<void> {
+  async deleteTranslation(contentId: string, localeCode: string): Promise<void> {
     await apiClient.delete(`/translation/content/${contentId}/${localeCode}`);
   },
 
-  async autoTranslate(contentId: number, targetLocales: string[]): Promise<{ message: string; translations: Translation[] }> {
+  async autoTranslate(contentId: string, targetLocales: string[]): Promise<{ message: string; translations: Translation[] }> {
     const response = await apiClient.post(`/translation/content/${contentId}/auto-translate`, {
       target_locales: targetLocales,
     });

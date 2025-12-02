@@ -14,7 +14,6 @@ const mockUser = {
   email: 'test@example.com',
   first_name: 'John',
   last_name: 'Doe',
-  full_name: 'John Doe',
   is_active: true,
   organization_id: 1,
   created_at: '2025-01-01T00:00:00Z',

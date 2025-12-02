@@ -33,26 +33,43 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { UserPlus, MoreVertical, Mail, Shield, Trash2, Calendar } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { UserPlus, MoreVertical, Mail, Shield, Trash2, Calendar, AlertCircle } from 'lucide-react';
 
 export default function UsersPage() {
   const router = useRouter();
   const [users, setUsers] = useState<UserListItem[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
+  const [ownerId, setOwnerId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
+  const [userToRemove, setUserToRemove] = useState<{ id: string; name: string } | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [inviteForm, setInviteForm] = useState({
     email: '',
-    full_name: '',
+    first_name: '',
+    last_name: '',
     role_id: '',
     send_invite_email: true
   });
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    loadOrganization();
     loadUsers();
     loadRoles();
   }, []);
+
+  const loadOrganization = async () => {
+    try {
+      const { organizationApi } = await import('@/lib/api');
+      const profile = await organizationApi.getProfile();
+      setOwnerId(profile.owner_id || null);
+    } catch (error) {
+      console.error('Failed to load organization:', error);
+    }
+  };
 
   const loadUsers = async () => {
     try {
@@ -76,49 +93,58 @@ export default function UsersPage() {
   };
 
   const handleInviteUser = async () => {
-    if (!inviteForm.email || !inviteForm.full_name || !inviteForm.role_id) {
-      alert('Please fill in all fields');
+    if (!inviteForm.email || !inviteForm.first_name || !inviteForm.last_name || !inviteForm.role_id) {
+      setErrorMessage('Please fill in all fields');
       return;
     }
 
     try {
       setSubmitting(true);
+      setErrorMessage(null);
       await userApi.inviteUser({
         email: inviteForm.email,
-        full_name: inviteForm.full_name,
-        role_id: parseInt(inviteForm.role_id),
+        first_name: inviteForm.first_name,
+        last_name: inviteForm.last_name,
+        role_id: inviteForm.role_id,
         send_invite_email: inviteForm.send_invite_email
       });
       
       setInviteOpen(false);
-      setInviteForm({ email: '', full_name: '', role_id: '', send_invite_email: true });
+      setInviteForm({ email: '', first_name: '', last_name: '', role_id: '', send_invite_email: true });
       await loadUsers();
     } catch (error: any) {
-      alert(error.response?.data?.detail || 'Failed to invite user');
+      setErrorMessage(error.response?.data?.detail || 'Failed to invite user');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleRoleChange = async (userId: number, roleId: number) => {
+  const handleRoleChange = async (userId: string, roleId: string) => {
     try {
+      setErrorMessage(null);
       await userApi.updateUserRole(userId, { role_id: roleId });
       await loadUsers();
     } catch (error: any) {
-      alert(error.response?.data?.detail || 'Failed to update user role');
+      setErrorMessage(error.response?.data?.detail || 'Failed to update user role');
     }
   };
 
-  const handleRemoveUser = async (userId: number, userName: string) => {
-    if (!confirm(`Are you sure you want to remove ${userName} from this organization?`)) {
-      return;
-    }
+  const openRemoveDialog = (userId: string, userName: string) => {
+    setUserToRemove({ id: userId, name: userName });
+    setRemoveDialogOpen(true);
+  };
+
+  const handleRemoveUser = async () => {
+    if (!userToRemove) return;
 
     try {
-      await userApi.removeUser(userId);
+      setErrorMessage(null);
+      await userApi.removeUser(userToRemove.id);
+      setRemoveDialogOpen(false);
+      setUserToRemove(null);
       await loadUsers();
     } catch (error: any) {
-      alert(error.response?.data?.detail || 'Failed to remove user');
+      setErrorMessage(error.response?.data?.detail || 'Failed to remove user');
     }
   };
 
@@ -132,6 +158,13 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
+      {errorMessage && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{errorMessage}</AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Users</h1>
@@ -168,12 +201,22 @@ export default function UsersPage() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="full_name">Full Name</Label>
+                <Label htmlFor="first_name">First Name</Label>
                 <Input
-                  id="full_name"
-                  placeholder="John Doe"
-                  value={inviteForm.full_name}
-                  onChange={(e) => setInviteForm({ ...inviteForm, full_name: e.target.value })}
+                  id="first_name"
+                  placeholder="John"
+                  value={inviteForm.first_name}
+                  onChange={(e) => setInviteForm({ ...inviteForm, first_name: e.target.value })}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="last_name">Last Name</Label>
+                <Input
+                  id="last_name"
+                  placeholder="Doe"
+                  value={inviteForm.last_name}
+                  onChange={(e) => setInviteForm({ ...inviteForm, last_name: e.target.value })}
                 />
               </div>
               
@@ -231,18 +274,29 @@ export default function UsersPage() {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {users.map((user) => (
+          {users.map((user) => {
+            const displayName = user.first_name && user.last_name 
+              ? `${user.first_name} ${user.last_name}`.trim()
+              : user.first_name || user.last_name || user.email.split('@')[0];
+            const initials = user.first_name 
+              ? user.first_name.charAt(0).toUpperCase() + (user.last_name?.charAt(0).toUpperCase() || '')
+              : user.email.charAt(0).toUpperCase();
+            
+            return (
             <Card key={user.id}>
               <CardContent className="py-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4 flex-1">
                     <div className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold">
-                      {user.full_name.charAt(0).toUpperCase()}
+                      {initials}
                     </div>
                     
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{user.full_name}</h3>
+                        <h3 className="font-semibold">{displayName}</h3>
+                        {ownerId === user.id && (
+                          <Badge variant="default">Owner</Badge>
+                        )}
                         {!user.is_active && (
                           <Badge variant="secondary">Inactive</Badge>
                         )}
@@ -278,6 +332,7 @@ export default function UsersPage() {
                           handleRoleChange(user.id, role.id);
                         }
                       }}
+                      disabled={ownerId === user.id}
                     >
                       <SelectTrigger className="w-[140px]">
                         <SelectValue placeholder="Change role" />
@@ -291,31 +346,54 @@ export default function UsersPage() {
                       </SelectContent>
                     </Select>
                     
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          className="text-destructive"
-                          onClick={() => handleRemoveUser(user.id, user.full_name)}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Remove from organization
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    {ownerId !== user.id && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onClick={() => openRemoveDialog(user.id, displayName)}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Remove from organization
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </div>
                 </div>
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
         </div>
       )}
+
+      {/* Remove User Confirmation Dialog */}
+      <Dialog open={removeDialogOpen} onOpenChange={setRemoveDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Remove User</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to remove {userToRemove?.name} from this organization? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRemoveDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleRemoveUser}>
+              Remove User
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

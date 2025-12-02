@@ -21,6 +21,7 @@ import { OrganizationSelector } from '@/components/organization-selector';
 import { CommandPalette } from '@/components/command-palette';
 import { OnboardingTour } from '@/components/onboarding-tour';
 import { DynamicBreadcrumbs } from '@/components/dynamic-breadcrumbs';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { KeyboardShortcutsHelp, useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { EmailVerificationBanner } from '@/components/EmailVerificationBanner';
 
@@ -28,10 +29,10 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: '📊' },
   { name: 'Content', href: '/dashboard/content', icon: '📝' },
   { name: 'Content Types', href: '/dashboard/content-types', icon: '📋' },
+  { name: 'Products', href: '/products', icon: '🛍️' },
   { name: 'Media', href: '/dashboard/media', icon: '🖼️' },
   { name: 'Users', href: '/dashboard/users', icon: '👥' },
   { name: 'Roles', href: '/dashboard/roles', icon: '🔐' },
-  { name: 'Translations', href: '/dashboard/translations', icon: '🌍' },
   { name: 'Templates', href: '/dashboard/templates', icon: '📄' },
   { name: 'Themes', href: '/dashboard/themes', icon: '🎨' },
   { name: 'Organization', href: '/dashboard/organization', icon: '🏢' },
@@ -231,6 +232,7 @@ export default function DashboardLayout({
 
           <div className="flex items-center gap-3">
             <CommandPalette navigation={navigation} />
+            <LanguageSwitcher />
             <OrganizationSelector />
             <DropdownMenu>
             <DropdownMenuTrigger asChild>

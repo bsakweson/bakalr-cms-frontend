@@ -33,19 +33,29 @@ export default function ContentPage() {
   const loadContentTypes = useCallback(async () => {
     try {
       const data = await contentApi.getContentTypes();
-      setContentTypes(data);
+      setContentTypes(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Failed to load content types:', err);
+      // Set empty array on error so UI shows empty state
+      setContentTypes([]);
     }
   }, []);
+
+  const handleClearFilters = () => {
+    setSelectedType('all');
+    setSelectedStatus('all');
+    setSearchQuery('');
+    setCurrentPage(1);
+  };
 
   const loadContent = useCallback(async () => {
     try {
       setIsLoading(true);
+      setError('');
       const params: any = { page: currentPage, per_page: 20 };
       
       if (selectedType !== 'all') {
-        params.content_type_id = parseInt(selectedType);
+        params.content_type_id = selectedType;
       }
       if (selectedStatus !== 'all') {
         params.status = selectedStatus;
@@ -54,8 +64,14 @@ export default function ContentPage() {
       const data = await contentApi.getContentEntries(params);
       setContent(data);
     } catch (err: any) {
-      setError('Failed to load content');
-      console.error(err);
+      console.error('Error loading content:', err);
+      // Only show error if it's not a 404 or empty response
+      if (err.response?.status !== 404) {
+        setError('Failed to load content');
+      } else {
+        // Set empty content for 404 to show empty state
+        setContent({ items: [], total: 0, page: 1, page_size: 20, total_pages: 0 });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +97,7 @@ export default function ContentPage() {
       const params: any = { q: searchQuery, limit: 20 };
       
       if (selectedType !== 'all') {
-        params.content_type_id = parseInt(selectedType);
+        params.content_type_id = selectedType;
       }
       if (selectedStatus !== 'all') {
         params.status = selectedStatus;
@@ -98,13 +114,13 @@ export default function ContentPage() {
           status: result.status as any,
           content_data: result.content_data,
           version: 1,
-          author_id: 0,
+          author_id: '',
           created_at: '',
           updated_at: '',
         })),
         total: searchResults.total,
         page: 1,
-        per_page: 20,
+        page_size: 20,
         total_pages: Math.ceil(searchResults.total / 20),
       });
     } catch (error) {
@@ -242,15 +258,40 @@ export default function ContentPage() {
           ))
         ) : (
           <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <span className="text-6xl mb-4">📝</span>
-              <h3 className="text-xl font-semibold mb-2">No content yet</h3>
-              <p className="text-muted-foreground mb-4 text-center max-w-md">
-                Get started by creating your first content entry
+            <CardContent className="flex flex-col items-center justify-center py-16">
+              <div className="rounded-full bg-gray-100 p-6 mb-6">
+                <span className="text-6xl">📝</span>
+              </div>
+              <h3 className="text-2xl font-semibold mb-2">No content found</h3>
+              <p className="text-muted-foreground mb-6 text-center max-w-lg">
+                {selectedType !== 'all' || selectedStatus !== 'all' || searchQuery ? (
+                  <>
+                    No content matches your current filters. Try adjusting your search criteria or{' '}
+                    <button
+                      onClick={handleClearFilters}
+                      className="text-primary underline hover:no-underline"
+                    >
+                      clearing all filters
+                    </button>
+                    .
+                  </>
+                ) : contentTypes.length === 0 ? (
+                  <>
+                    You need to create a content type first before you can add content.{' '}
+                    <Link href="/dashboard/content-types/builder" className="text-primary underline hover:no-underline">
+                      Create a content type
+                    </Link>{' '}
+                    to get started.
+                  </>
+                ) : (
+                  'Get started by creating your first content entry. Content entries are instances of your content types.'
+                )}
               </p>
-              <Button asChild>
-                <Link href="/dashboard/content/new">Create Your First Content</Link>
-              </Button>
+              {contentTypes.length > 0 && (
+                <Button asChild size="lg">
+                  <Link href="/dashboard/content/new">Create Your First Content</Link>
+                </Button>
+              )}
             </CardContent>
           </Card>
         )}

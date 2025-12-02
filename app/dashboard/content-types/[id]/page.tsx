@@ -13,7 +13,7 @@ import { Separator } from '@/components/ui/separator';
 export default function ContentTypeDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const id = parseInt(params?.id as string);
+  const id = params?.id as string;
   const [contentType, setContentType] = useState<ContentType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
