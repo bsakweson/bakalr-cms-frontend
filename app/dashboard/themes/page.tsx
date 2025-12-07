@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { themeApi, Theme, ThemeCreate, ThemeColors } from '@/lib/api/themes';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -77,7 +78,7 @@ export default function ThemesPage() {
       setEditingTheme(null);
       loadThemes();
     } catch (error: any) {
-      alert(error.response?.data?.detail || `Failed to ${editingTheme ? 'update' : 'create'} theme`);
+      toast.error(error.response?.data?.detail || `Failed to ${editingTheme ? 'update' : 'create'} theme`);
     }
   };
 

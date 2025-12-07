@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { authApi } from '@/lib/api/auth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -8,10 +8,25 @@ import { Button } from '@/components/ui/button';
 import { Mail, X, Loader2 } from 'lucide-react';
 
 export function EmailVerificationBanner() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [isHidden, setIsHidden] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Periodically check if user has been verified (every 30 seconds)
+  useEffect(() => {
+    if (!user || user.is_email_verified) return;
+
+    const interval = setInterval(async () => {
+      try {
+        await refreshUser();
+      } catch {
+        // Silently ignore refresh errors
+      }
+    }, 30000); // Check every 30 seconds
+
+    return () => clearInterval(interval);
+  }, [user, refreshUser]);
 
   // Don't show banner if user is verified or banner is hidden
   if (!user || user.is_email_verified || isHidden) {
@@ -27,10 +42,11 @@ export function EmailVerificationBanner() {
       
       // Auto-hide success message after 5 seconds
       setTimeout(() => setMessage(null), 5000);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { detail?: string } } };
       setMessage({ 
         type: 'error', 
-        text: error.response?.data?.detail || 'Failed to send verification email' 
+        text: err.response?.data?.detail || 'Failed to send verification email' 
       });
     } finally {
       setLoading(false);

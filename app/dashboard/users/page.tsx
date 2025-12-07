@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { userApi } from '@/lib/api';
 import type { UserListItem, Role } from '@/types';
@@ -30,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { SearchInput } from '@/components/ui/search-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
@@ -42,6 +43,8 @@ export default function UsersPage() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [ownerId, setOwnerId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedRole, setSelectedRole] = useState('all');
   const [inviteOpen, setInviteOpen] = useState(false);
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
   const [userToRemove, setUserToRemove] = useState<{ id: string; name: string } | null>(null);
@@ -54,6 +57,25 @@ export default function UsersPage() {
     send_invite_email: true
   });
   const [submitting, setSubmitting] = useState(false);
+
+  // Filter users based on search query and role
+  const filteredUsers = useMemo(() => {
+    return users.filter((user) => {
+      const displayName = user.first_name && user.last_name 
+        ? `${user.first_name} ${user.last_name}`.toLowerCase()
+        : (user.first_name || user.last_name || '').toLowerCase();
+      const matchesSearch = !searchQuery || 
+        displayName.includes(searchQuery.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchQuery.toLowerCase());
+      // user.roles is string[] (role names), match against role name
+      const matchesRole = selectedRole === 'all' || 
+        user.roles.some(roleName => {
+          const role = roles.find(r => r.id.toString() === selectedRole);
+          return role && roleName === role.name;
+        });
+      return matchesSearch && matchesRole;
+    });
+  }, [users, searchQuery, selectedRole, roles]);
 
   useEffect(() => {
     loadOrganization();
@@ -252,29 +274,71 @@ export default function UsersPage() {
         </Dialog>
       </div>
 
+      {/* Filters */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Filters</CardTitle>
+          <CardDescription>Search and filter users</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Search</label>
+              <SearchInput
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search by name or email..."
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Role</label>
+              <Select value={selectedRole} onValueChange={setSelectedRole}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All Roles" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Roles</SelectItem>
+                  {roles.map((role) => (
+                    <SelectItem key={role.id} value={role.id.toString()}>
+                      {role.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {loading ? (
         <Card>
           <CardContent className="py-8">
             <p className="text-center text-muted-foreground">Loading users...</p>
           </CardContent>
         </Card>
-      ) : users.length === 0 ? (
+      ) : filteredUsers.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <UserPlus className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No users yet</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              {users.length === 0 ? 'No users yet' : 'No users match your filters'}
+            </h3>
             <p className="text-muted-foreground mb-4">
-              Get started by inviting your first team member
+              {users.length === 0 
+                ? 'Get started by inviting your first team member'
+                : 'Try adjusting your search or filters'}
             </p>
-            <Button onClick={() => setInviteOpen(true)}>
-              <UserPlus className="mr-2 h-4 w-4" />
-              Invite User
-            </Button>
+            {users.length === 0 && (
+              <Button onClick={() => setInviteOpen(true)}>
+                <UserPlus className="mr-2 h-4 w-4" />
+                Invite User
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-4">
-          {users.map((user) => {
+          {filteredUsers.map((user) => {
             const displayName = user.first_name && user.last_name 
               ? `${user.first_name} ${user.last_name}`.trim()
               : user.first_name || user.last_name || user.email.split('@')[0];

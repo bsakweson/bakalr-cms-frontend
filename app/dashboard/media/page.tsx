@@ -3,11 +3,12 @@
 import { useEffect, useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { mediaApi } from '@/lib/api';
+import { resolveMediaUrl } from '@/lib/api/client';
 import { Media } from '@/types';
 import { MediaDetailsModal } from '@/components/media/MediaDetailsModal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { SearchInput } from '@/components/ui/search-input';
 import {
   Select,
   SelectContent,
@@ -16,6 +17,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+
+const ITEMS_PER_PAGE = 12;
 
 export default function MediaPage() {
   const router = useRouter();
@@ -28,22 +32,42 @@ export default function MediaPage() {
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
   const [showMediaModal, setShowMediaModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
 
   useEffect(() => {
     loadMedia();
     // Update URL with type parameter
-    if (selectedType !== 'all') {
-      router.push(`/dashboard/media?type=${selectedType}`);
-    } else {
-      router.push('/dashboard/media');
-    }
-  }, [selectedType, router]);
+    const params = new URLSearchParams();
+    if (selectedType !== 'all') params.set('type', selectedType);
+    if (currentPage > 1) params.set('page', currentPage.toString());
+    const queryString = params.toString();
+    router.push(`/dashboard/media${queryString ? `?${queryString}` : ''}`);
+  }, [selectedType, currentPage, router]);
+
+  // Reset to page 1 when search or type changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedType]);
+
+  // Debounced search effect
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      loadMedia();
+    }, 300);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, currentPage]);
 
   const loadMedia = async () => {
     try {
       setIsLoading(true);
-      const params: any = {};
+      const params: any = {
+        page: currentPage,
+        page_size: ITEMS_PER_PAGE,
+      };
       
       if (selectedType !== 'all') {
         params.file_type = selectedType;
@@ -54,9 +78,11 @@ export default function MediaPage() {
       
       const response = await mediaApi.getMedia(params);
       setMedia(response.items || []);
+      setTotalItems(response.total || 0);
     } catch (error) {
       console.error('Failed to load media:', error);
       setMedia([]);
+      setTotalItems(0);
     } finally {
       setIsLoading(false);
     }
@@ -193,10 +219,10 @@ export default function MediaPage() {
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
               <label className="text-sm font-medium">Search</label>
-              <Input
-                placeholder="Search files..."
+              <SearchInput
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={setSearchQuery}
+                placeholder="Search files..."
               />
             </div>
             <div className="space-y-2">
@@ -238,7 +264,7 @@ export default function MediaPage() {
                 <div className="aspect-video bg-muted flex items-center justify-center">
                   {(file.thumbnail_url || file.url) && file.media_type === 'image' ? (
                     <img
-                      src={file.thumbnail_url || file.url}
+                      src={resolveMediaUrl(file.thumbnail_url || file.url)}
                       alt={file.alt_text || file.filename}
                       className="w-full h-full object-cover"
                     />
@@ -277,6 +303,60 @@ export default function MediaPage() {
               </CardContent>
             </Card>
           )}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between border-t pt-4">
+          <p className="text-sm text-muted-foreground">
+            Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, totalItems)} of {totalItems} items
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Previous
+            </Button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum: number;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={currentPage === pageNum ? 'default' : 'outline'}
+                    size="sm"
+                    className="w-9"
+                    onClick={() => setCurrentPage(pageNum)}
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
         </div>
       )}
 

@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import { contentApi, translationApi, mediaApi } from '@/lib/api';
+import { resolveMediaUrl } from '@/lib/api/client';
 import { ContentEntry, ContentType, Translation, Locale, Media } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,11 +19,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import RichTextEditor from '@/components/rich-text-editor';
 import MediaPickerModal from '@/components/media-picker-modal';
-import { Globe, Image as ImageIcon } from 'lucide-react';
+import { MediaGalleryEditor } from '@/components/content/media-gallery-editor';
+import { Globe, Image as ImageIcon, X, Pencil, Eye, ExternalLink } from 'lucide-react';
 
 export default function ContentEntryEditorPage() {
   const params = useParams();
@@ -46,9 +57,12 @@ export default function ContentEntryEditorPage() {
   const [selectedLocale, setSelectedLocale] = useState<string>('');
   const [activeTab, setActiveTab] = useState<string>('content');
   
-  // Media picker state
+  // Media picker state (for single image/file fields only)
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [currentMediaField, setCurrentMediaField] = useState<string | null>(null);
+  
+  // Preview dialog state
+  const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
     loadContentTypes();
@@ -92,7 +106,7 @@ export default function ContentEntryEditorPage() {
       setIsLoading(true);
       const data = await contentApi.getContentEntry(id);
       setEntry(data);
-      setFormData(data.content_data || {});
+      setFormData(data.data || data.content_data || {});
       setSlug(data.slug);
       setStatus(data.status);
       setSelectedTypeId(data.content_type_id);
@@ -125,9 +139,49 @@ export default function ContentEntryEditorPage() {
     }
   };
 
+  // Helper to convert fields array to schema object format
+  const getFieldsAsSchema = (ct: ContentType | null): Record<string, any> => {
+    if (!ct) return {};
+    
+    // If schema exists and has fields property, use it
+    if (ct.schema?.fields && typeof ct.schema.fields === 'object') {
+      return ct.schema.fields;
+    }
+    
+    // If schema is already in the right format (object with field definitions)
+    if (ct.schema && typeof ct.schema === 'object' && !Array.isArray(ct.schema)) {
+      const hasFieldDefs = Object.values(ct.schema).some(
+        (v: any) => v && typeof v === 'object' && 'type' in v
+      );
+      if (hasFieldDefs) return ct.schema;
+    }
+    
+    // Convert fields array to schema object
+    if (ct.fields && Array.isArray(ct.fields)) {
+      const schema: Record<string, any> = {};
+      ct.fields.forEach((field) => {
+        schema[field.name] = {
+          type: field.type,
+          label: field.label || field.name,
+          required: field.required,
+          localized: field.localized,
+          default: field.default,
+          help_text: field.help_text,
+          validation: field.validation,
+        };
+      });
+      return schema;
+    }
+    
+    return {};
+  };
+
   const loadContentType = async (typeId: string) => {
     try {
       const data = await contentApi.getContentType(typeId);
+      console.log('Loaded content type:', data);
+      console.log('Content type fields:', data.fields);
+      console.log('Content type schema:', data.schema);
       setContentType(data);
     } catch (err) {
       console.error('Failed to load content type:', err);
@@ -149,11 +203,15 @@ export default function ContentEntryEditorPage() {
   };
 
   const handleMediaSelect = (media: Media) => {
+    // Use primary url field, fallback to public_url or storage_path for backward compatibility
+    const mediaUrl = media.url || media.public_url || media.storage_path;
+    
+    // Handle single media field
     if (currentMediaField) {
       if (activeTab === 'content') {
-        handleFieldChange(currentMediaField, media.public_url || media.storage_path);
+        handleFieldChange(currentMediaField, mediaUrl);
       } else {
-        handleTranslationChange(selectedLocale, currentMediaField, media.public_url || media.storage_path);
+        handleTranslationChange(selectedLocale, currentMediaField, mediaUrl);
       }
     }
     setShowMediaPicker(false);
@@ -178,12 +236,12 @@ export default function ContentEntryEditorPage() {
 
   const handleSave = async () => {
     if (!selectedTypeId) {
-      alert('Please select a content type');
+      toast.error('Please select a content type');
       return;
     }
 
     if (!slug) {
-      alert('Please enter a slug');
+      toast.error('Please enter a slug');
       return;
     }
 
@@ -218,9 +276,9 @@ export default function ContentEntryEditorPage() {
         }
       }
 
-      alert('Content saved successfully');
+      toast.success('Content saved successfully');
     } catch (err: any) {
-      alert('Failed to save: ' + (err.response?.data?.detail || err.message));
+      toast.error('Failed to save: ' + (err.response?.data?.detail || err.message));
     } finally {
       setIsSaving(false);
     }
@@ -228,16 +286,16 @@ export default function ContentEntryEditorPage() {
 
   const handlePublish = async () => {
     if (!id) {
-      alert('Please save the content first');
+      toast.error('Please save the content first');
       return;
     }
 
     try {
       await contentApi.publishContentEntry(id);
       setStatus('published');
-      alert('Content published successfully');
+      toast.success('Content published successfully');
     } catch (err: any) {
-      alert('Failed to publish: ' + (err.response?.data?.detail || err.message));
+      toast.error('Failed to publish: ' + (err.response?.data?.detail || err.message));
     }
   };
 
@@ -296,7 +354,7 @@ export default function ContentEntryEditorPage() {
             </div>
             {value && fieldType === 'image' && (
               <img
-                src={value.startsWith('http') ? value : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${value}`}
+                src={resolveMediaUrl(value)}
                 alt={label}
                 className="max-w-xs rounded border"
               />
@@ -366,6 +424,13 @@ export default function ContentEntryEditorPage() {
               {label}
             </Label>
           </div>
+        ) : /* JSON/Array/Object - Media Gallery or general JSON */
+        (fieldType === 'json' || fieldType === 'array' || fieldType === 'object') ? (
+          <MediaGalleryEditor
+            value={value || []}
+            onChange={onChange}
+            label={label}
+          />
         ) : /* Default Text Input */
         (
           <Input
@@ -460,8 +525,26 @@ export default function ContentEntryEditorPage() {
               <CardHeader>
                 <CardTitle>Content</CardTitle>
                 <CardDescription>Fill in the content details and translations</CardDescription>
+                {/* Debug info - remove in production */}
+                {process.env.NODE_ENV === 'development' && (
+                  <details className="mt-2 text-xs">
+                    <summary className="cursor-pointer text-muted-foreground">Debug Info</summary>
+                    <div className="mt-2 p-2 bg-muted rounded text-xs font-mono overflow-auto max-h-32">
+                      <div>Fields array: {contentType.fields?.length || 0} items</div>
+                      <div>Schema: {contentType.schema ? 'present' : 'null'}</div>
+                      <div>getFieldsAsSchema keys: {Object.keys(getFieldsAsSchema(contentType)).join(', ') || 'none'}</div>
+                    </div>
+                  </details>
+                )}
               </CardHeader>
               <CardContent>
+                {/* Show message if no fields */}
+                {Object.keys(getFieldsAsSchema(contentType)).length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>No fields defined for this content type.</p>
+                    <p className="text-xs mt-2">Fields array: {JSON.stringify(contentType.fields?.slice(0, 2))}...</p>
+                  </div>
+                )}
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                   <TabsList className="mb-4">
                     <TabsTrigger value="content">
@@ -480,7 +563,7 @@ export default function ContentEntryEditorPage() {
                   </TabsList>
 
                   <TabsContent value="content" className="space-y-4">
-                    {Object.entries(contentType.schema || {}).map(([fieldKey, fieldConfig]: [string, any]) =>
+                    {Object.entries(getFieldsAsSchema(contentType)).map(([fieldKey, fieldConfig]: [string, any]) =>
                       renderField(fieldKey, fieldConfig, false)
                     )}
                   </TabsContent>
@@ -493,7 +576,7 @@ export default function ContentEntryEditorPage() {
                           Fields left empty will fall back to the default content.
                         </p>
                       </div>
-                      {Object.entries(contentType.schema || {}).map(([fieldKey, fieldConfig]: [string, any]) =>
+                      {Object.entries(getFieldsAsSchema(contentType)).map(([fieldKey, fieldConfig]: [string, any]) =>
                         renderField(fieldKey, fieldConfig, true, locale.code)
                       )}
                     </TabsContent>
@@ -581,11 +664,139 @@ export default function ContentEntryEditorPage() {
                 <CardTitle>Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button variant="outline" className="w-full" asChild>
-                  <Link href={`/preview/content/${id}`} target="_blank">
-                    Preview
-                  </Link>
-                </Button>
+                <Dialog open={showPreview} onOpenChange={setShowPreview}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full">
+                      <Eye className="mr-2 h-4 w-4" />
+                      Preview
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="w-[95vw] max-w-[95vw] md:w-[85vw] md:max-w-[85vw] lg:w-[75vw] lg:max-w-[75vw] xl:max-w-6xl h-[85vh] max-h-[85vh] overflow-hidden flex flex-col">
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center justify-between">
+                        <span>Preview: {formData?.title || slug || 'Content'}</span>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              setShowPreview(false);
+                              router.push(`/dashboard/content/${id}/edit`);
+                            }}
+                          >
+                            <ExternalLink className="mr-2 h-4 w-4" />
+                            Edit
+                          </Button>
+                        </div>
+                      </DialogTitle>
+                    </DialogHeader>
+                    
+                    <div className="flex-1 overflow-y-auto space-y-6 py-4">
+                      {/* Metadata Section */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/50 rounded-lg">
+                        <div>
+                          <p className="text-xs text-muted-foreground">Status</p>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                            status === 'published' ? 'bg-green-100 text-green-800' :
+                            status === 'draft' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {status}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Slug</p>
+                          <p className="text-sm font-mono">{slug || '-'}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Content Type</p>
+                          <p className="text-sm">{contentType?.name || '-'}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Last Updated</p>
+                          <p className="text-sm">{entry?.updated_at ? new Date(entry.updated_at).toLocaleDateString() : '-'}</p>
+                        </div>
+                      </div>
+                      
+                      {/* Fields Preview */}
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-semibold border-b pb-2">Content Fields</h3>
+                        {/* Debug section */}
+                        <details className="text-xs bg-muted/50 p-2 rounded">
+                          <summary className="cursor-pointer">Debug: Field Schema Info</summary>
+                          <div className="mt-2 font-mono space-y-2">
+                            <div>contentType exists: {contentType ? 'yes' : 'no'}</div>
+                            <div>contentType.fields: {contentType?.fields?.length || 0} items</div>
+                            <div>contentType.schema: {contentType?.schema ? 'present' : 'null'}</div>
+                            <div>getFieldsAsSchema keys: [{Object.keys(getFieldsAsSchema(contentType)).join(', ')}]</div>
+                            <div>formData keys: [{Object.keys(formData).join(', ')}]</div>
+                            <details className="mt-2">
+                              <summary className="cursor-pointer">Raw formData</summary>
+                              <pre className="mt-1 p-2 bg-muted rounded overflow-auto max-h-40">
+                                {JSON.stringify(formData, null, 2)}
+                              </pre>
+                            </details>
+                          </div>
+                        </details>
+                        {Object.keys(getFieldsAsSchema(contentType)).length > 0 ? (
+                          <div className="grid gap-4">
+                            {Object.entries(getFieldsAsSchema(contentType)).map(([key, fieldDef]: [string, any]) => {
+                              const value = formData[key];
+                              return (
+                                <div key={key} className="border rounded-lg p-4">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <span className="font-medium">{fieldDef.label || key}</span>
+                                    <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                                      {fieldDef.type}
+                                    </span>
+                                    {fieldDef.required && (
+                                      <span className="text-xs text-red-500">*</span>
+                                    )}
+                                  </div>
+                                  <div className="text-sm">
+                                    {value === undefined || value === null ? (
+                                      <span className="text-muted-foreground italic">Not set</span>
+                                    ) : value === '' ? (
+                                      <span className="text-muted-foreground italic">Empty</span>
+                                    ) : fieldDef.type === 'richtext' || fieldDef.type === 'wysiwyg' || fieldDef.type === 'html' ? (
+                                      <div 
+                                        className="prose prose-sm max-w-none"
+                                        dangerouslySetInnerHTML={{ __html: value }}
+                                      />
+                                    ) : fieldDef.type === 'boolean' ? (
+                                      <span className={value ? 'text-green-600' : 'text-red-600'}>
+                                        {value ? '✓ Yes' : '✗ No'}
+                                      </span>
+                                    ) : fieldDef.type === 'image' || fieldDef.type === 'file' || fieldDef.type === 'media' ? (
+                                      <div>
+                                        {typeof value === 'string' && value.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i) ? (
+                                          <img src={resolveMediaUrl(value)} alt={key} className="max-w-xs max-h-48 object-cover rounded" />
+                                        ) : (
+                                          <a href={resolveMediaUrl(value)} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                            {value}
+                                          </a>
+                                        )}
+                                      </div>
+                                    ) : typeof value === 'object' ? (
+                                      <pre className="bg-muted p-2 rounded text-xs overflow-auto">
+                                        {JSON.stringify(value, null, 2)}
+                                      </pre>
+                                    ) : (
+                                      <span>{String(value)}</span>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="text-muted-foreground">No fields defined</div>
+                        )}
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                
                 <Button variant="destructive" className="w-full">
                   Delete
                 </Button>

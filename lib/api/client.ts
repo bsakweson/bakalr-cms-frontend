@@ -101,3 +101,22 @@ export const graphqlClient = async (query: string, variables?: Record<string, an
 
   return data;
 };
+
+/**
+ * Resolve a media URL to an absolute URL.
+ * Handles relative URLs (like /api/v1/media/proxy/...) by prepending the API base URL.
+ * 
+ * @param url - The URL to resolve (can be relative or absolute)
+ * @returns The resolved absolute URL
+ */
+export const resolveMediaUrl = (url: string | null | undefined): string => {
+  if (!url) return '';
+  
+  // If it's a relative URL starting with /, prepend the base URL
+  if (url.startsWith('/')) {
+    return `${API_CONFIG.BASE_URL}${url}`;
+  }
+  
+  // Already an absolute URL
+  return url;
+};

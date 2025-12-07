@@ -50,8 +50,12 @@ import {
   Superscript as SuperscriptIcon,
   AlertCircle,
   Info,
+  FileText,
+  Code2,
+  GripVertical,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { Textarea } from '@/components/ui/textarea';
 
 // Initialize syntax highlighting
 const lowlight = createLowlight(common);
@@ -71,6 +75,10 @@ export default function RichTextEditor({
 }: RichTextEditorProps) {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showHighlightPicker, setShowHighlightPicker] = useState(false);
+  const [viewMode, setViewMode] = useState<'visual' | 'source'>('visual');
+  const [htmlSource, setHtmlSource] = useState(content);
+  const [editorHeight, setEditorHeight] = useState(200);
+  const [isResizing, setIsResizing] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -113,9 +121,53 @@ export default function RichTextEditor({
     ],
     content,
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      const html = editor.getHTML();
+      setHtmlSource(html);
+      onChange(html);
     },
   });
+
+  // Sync editor content when switching from source to visual
+  const handleViewModeSwitch = useCallback((mode: 'visual' | 'source') => {
+    if (mode === 'visual' && viewMode === 'source' && editor) {
+      // Switching from source to visual - update editor with source content
+      editor.commands.setContent(htmlSource);
+    } else if (mode === 'source' && viewMode === 'visual' && editor) {
+      // Switching from visual to source - sync source with editor
+      setHtmlSource(editor.getHTML());
+    }
+    setViewMode(mode);
+  }, [viewMode, htmlSource, editor]);
+
+  // Handle source textarea changes
+  const handleSourceChange = (value: string) => {
+    setHtmlSource(value);
+    onChange(value);
+  };
+
+  // Handle resize
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+    
+    const startY = e.clientY;
+    const startHeight = editorHeight;
+    
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const deltaY = moveEvent.clientY - startY;
+      const newHeight = Math.max(100, Math.min(800, startHeight + deltaY));
+      setEditorHeight(newHeight);
+    };
+    
+    const handleMouseUp = () => {
+      setIsResizing(false);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+    
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }, [editorHeight]);
 
   if (!editor) {
     return null;
@@ -154,9 +206,83 @@ export default function RichTextEditor({
     '#ffff00', '#ff00ff', '#00ffff', '#ff8800', '#8800ff',
   ];
 
+  // Source mode view (plain textarea)
+  if (viewMode === 'source') {
+    return (
+      <div className="border rounded-lg overflow-hidden">
+        <div className="flex items-center justify-between p-2 border-b bg-muted/30">
+          <span className="text-sm text-muted-foreground font-medium">HTML Source</span>
+          <div className="flex gap-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => handleViewModeSwitch('visual')}
+              title="Switch to Visual Editor"
+            >
+              <FileText className="h-4 w-4 mr-1" />
+              Visual
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="bg-muted"
+              title="HTML Source Mode"
+            >
+              <Code2 className="h-4 w-4 mr-1" />
+              Source
+            </Button>
+          </div>
+        </div>
+        <div className="relative">
+          <Textarea
+            value={htmlSource}
+            onChange={(e) => handleSourceChange(e.target.value)}
+            placeholder={placeholder}
+            className="font-mono text-sm border-0 rounded-none resize-none focus-visible:ring-0 focus-visible:ring-offset-0"
+            style={{ minHeight: `${editorHeight}px` }}
+          />
+          {/* Resize handle */}
+          <div
+            className="absolute bottom-0 left-0 right-0 h-3 cursor-ns-resize bg-muted/50 hover:bg-muted flex items-center justify-center"
+            onMouseDown={handleMouseDown}
+          >
+            <GripVertical className="h-3 w-3 text-muted-foreground rotate-90" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Visual mode (WYSIWYG)
   return (
     <div className="border rounded-lg overflow-hidden">
       <div className="flex flex-wrap gap-1 p-2 border-b bg-muted/30">
+        {/* Mode Toggle - at start */}
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="bg-muted"
+          title="Visual Editor Mode"
+        >
+          <FileText className="h-4 w-4 mr-1" />
+          Visual
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => handleViewModeSwitch('source')}
+          title="Switch to HTML Source"
+        >
+          <Code2 className="h-4 w-4 mr-1" />
+          Source
+        </Button>
+        
+        <div className="w-px h-6 bg-border my-auto mx-1" />
+        
         {/* Text Style */}
         <Button
           type="button"
@@ -549,10 +675,20 @@ export default function RichTextEditor({
           <Redo className="h-4 w-4" />
         </Button>
       </div>
-      <EditorContent 
-        editor={editor} 
-        className="prose prose-sm max-w-none p-4 min-h-[200px] focus:outline-none [&_.ProseMirror]:outline-none [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded-md [&_code]:text-sm [&_table]:border-collapse [&_table]:w-full [&_td]:border [&_td]:p-2 [&_th]:border [&_th]:p-2 [&_th]:bg-muted [&_th]:font-semibold [&_div[data-callout]]:border [&_div[data-callout]]:rounded-md [&_div[data-callout]]:p-4 [&_div[data-callout]]:my-4 [&_div[data-callout][data-type='info']]:border-blue-500 [&_div[data-callout][data-type='info']]:bg-blue-50 [&_div[data-callout][data-type='warning']]:border-yellow-500 [&_div[data-callout][data-type='warning']]:bg-yellow-50 [&_div[data-callout][data-type='error']]:border-red-500 [&_div[data-callout][data-type='error']]:bg-red-50 [&_details]:border [&_details]:rounded-md [&_details]:p-4 [&_details]:my-4 [&_summary]:cursor-pointer [&_summary]:font-semibold [&_summary]:mb-2"
-      />
+      <div className="relative">
+        <EditorContent 
+          editor={editor} 
+          className="prose prose-sm max-w-none p-4 focus:outline-none [&_.ProseMirror]:outline-none [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded-md [&_code]:text-sm [&_table]:border-collapse [&_table]:w-full [&_td]:border [&_td]:p-2 [&_th]:border [&_th]:p-2 [&_th]:bg-muted [&_th]:font-semibold [&_div[data-callout]]:border [&_div[data-callout]]:rounded-md [&_div[data-callout]]:p-4 [&_div[data-callout]]:my-4 [&_div[data-callout][data-type='info']]:border-blue-500 [&_div[data-callout][data-type='info']]:bg-blue-50 [&_div[data-callout][data-type='warning']]:border-yellow-500 [&_div[data-callout][data-type='warning']]:bg-yellow-50 [&_div[data-callout][data-type='error']]:border-red-500 [&_div[data-callout][data-type='error']]:bg-red-50 [&_details]:border [&_details]:rounded-md [&_details]:p-4 [&_details]:my-4 [&_summary]:cursor-pointer [&_summary]:font-semibold [&_summary]:mb-2"
+          style={{ minHeight: `${editorHeight}px` }}
+        />
+        {/* Resize handle */}
+        <div
+          className="absolute bottom-0 left-0 right-0 h-3 cursor-ns-resize bg-muted/50 hover:bg-muted flex items-center justify-center"
+          onMouseDown={handleMouseDown}
+        >
+          <GripVertical className="h-3 w-3 text-muted-foreground rotate-90" />
+        </div>
+      </div>
     </div>
   );
 }

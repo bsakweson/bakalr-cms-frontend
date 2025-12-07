@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { mediaApi } from '@/lib/api';
+import { resolveMediaUrl } from '@/lib/api/client';
 import { Media } from '@/types';
 import {
   Dialog,
@@ -56,7 +58,7 @@ export function MediaDetailsModal({ media, open, onClose, onUpdate, onDelete }: 
       onUpdate();
     } catch (error) {
       console.error('Failed to update media:', error);
-      alert('Failed to update media');
+      toast.error('Failed to update media');
     } finally {
       setIsSaving(false);
     }
@@ -73,7 +75,7 @@ export function MediaDetailsModal({ media, open, onClose, onUpdate, onDelete }: 
       onDelete();
     } catch (error) {
       console.error('Failed to delete media:', error);
-      alert('Failed to delete media');
+      toast.error('Failed to delete media');
     } finally {
       setIsDeleting(false);
     }
@@ -99,7 +101,7 @@ export function MediaDetailsModal({ media, open, onClose, onUpdate, onDelete }: 
       onClose();
     } catch (error) {
       console.error('Failed to replace image:', error);
-      alert('Failed to replace image');
+      toast.error('Failed to replace image');
     } finally {
       setIsReplacing(false);
     }
@@ -138,7 +140,7 @@ export function MediaDetailsModal({ media, open, onClose, onUpdate, onDelete }: 
           <div className="aspect-video bg-muted rounded-lg flex items-center justify-center overflow-hidden">
             {media.url || media.cdn_url ? (
               <img
-                src={media.cdn_url || media.url}
+                src={resolveMediaUrl(media.cdn_url || media.url)}
                 alt={media.alt_text || media.filename}
                 className="w-full h-full object-contain"
               />

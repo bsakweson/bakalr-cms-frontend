@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import { contentApi } from '@/lib/api';
 import { ContentType } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -46,7 +47,7 @@ export default function ContentTypeDetailPage() {
       await contentApi.deleteContentType(id);
       router.push('/dashboard/content-types');
     } catch (err: any) {
-      alert('Failed to delete content type: ' + (err.response?.data?.detail || err.message));
+      toast.error('Failed to delete content type: ' + (err.response?.data?.detail || err.message));
     }
   };
 

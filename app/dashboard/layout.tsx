@@ -29,7 +29,7 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: '📊' },
   { name: 'Content', href: '/dashboard/content', icon: '📝' },
   { name: 'Content Types', href: '/dashboard/content-types', icon: '📋' },
-  { name: 'Products', href: '/products', icon: '🛍️' },
+  { name: 'Navigation', href: '/dashboard/navigation', icon: '🧭' },
   { name: 'Media', href: '/dashboard/media', icon: '🖼️' },
   { name: 'Users', href: '/dashboard/users', icon: '👥' },
   { name: 'Roles', href: '/dashboard/roles', icon: '🔐' },
@@ -225,9 +225,17 @@ export default function DashboardLayout({
                 </Button>
               </SheetTrigger>
             </Sheet>
-            <h2 className="text-xl font-semibold">
-              {navigation.find((item) => pathname === item.href || pathname?.startsWith(item.href + '/'))?.name || 'Dashboard'}
-            </h2>
+            {(() => {
+              const currentNav = navigation.find((item) => pathname === item.href || pathname?.startsWith(item.href + '/'));
+              return (
+                <div className="flex items-center gap-2">
+                  {currentNav && <span className="text-2xl">{currentNav.icon}</span>}
+                  <h2 className="text-xl font-semibold">
+                    {currentNav?.name || 'Dashboard'}
+                  </h2>
+                </div>
+              );
+            })()}
           </div>
 
           <div className="flex items-center gap-3">

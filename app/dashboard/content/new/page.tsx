@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { contentApi } from '@/lib/api';
 import { ContentType } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -104,7 +105,7 @@ export default function NewContentPage() {
     e.preventDefault();
     
     if (!selectedType) {
-      alert('Please select a content type');
+      toast.error('Please select a content type');
       return;
     }
 
@@ -114,7 +115,7 @@ export default function NewContentPage() {
       router.push('/dashboard/content');
     } catch (error: any) {
       console.error('Failed to create content:', error);
-      alert('Failed to create content: ' + (error.response?.data?.detail || error.message));
+      toast.error('Failed to create content: ' + (error.response?.data?.detail || error.message));
     } finally {
       setIsSaving(false);
     }

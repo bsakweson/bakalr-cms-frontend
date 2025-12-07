@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { templateApi, ContentTemplate, ContentTemplateCreate } from '@/lib/api/templates';
 import { contentApi } from '@/lib/api/content';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -96,7 +97,7 @@ export default function TemplatesPage() {
       setEditingTemplate(null);
       loadData();
     } catch (error: any) {
-      alert(error.response?.data?.detail || `Failed to ${editingTemplate ? 'update' : 'create'} template`);
+      toast.error(error.response?.data?.detail || `Failed to ${editingTemplate ? 'update' : 'create'} template`);
     }
   };
 

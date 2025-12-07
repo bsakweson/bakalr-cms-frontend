@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { contentApi } from '@/lib/api';
 import { ContentType, PaginatedResponse } from '@/types';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { SearchInput } from '@/components/ui/search-input';
 import {
   Dialog,
   DialogContent,
@@ -28,8 +29,20 @@ export default function ContentTypesPage() {
   const [contentTypes, setContentTypes] = useState<ContentType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [typeToDelete, setTypeToDelete] = useState<{ id: string; name: string } | null>(null);
+
+  // Filter content types based on search
+  const filteredContentTypes = useMemo(() => {
+    if (!searchQuery) return contentTypes;
+    const query = searchQuery.toLowerCase();
+    return contentTypes.filter((type) => 
+      type.name.toLowerCase().includes(query) ||
+      type.api_id?.toLowerCase().includes(query) ||
+      type.description?.toLowerCase().includes(query)
+    );
+  }, [contentTypes, searchQuery]);
 
   useEffect(() => {
     loadContentTypes();
@@ -112,9 +125,18 @@ export default function ContentTypesPage() {
         </Button>
       </div>
 
-      {contentTypes && contentTypes.length > 0 ? (
+      {/* Search */}
+      <div className="max-w-md">
+        <SearchInput
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Search content types..."
+        />
+      </div>
+
+      {filteredContentTypes && filteredContentTypes.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {contentTypes.map((type) => (
+          {filteredContentTypes.map((type) => (
             <Card key={type.id} className="relative">
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -194,27 +216,35 @@ export default function ContentTypesPage() {
             <div className="rounded-full bg-gray-100 p-6 mb-6">
               <span className="text-6xl">📋</span>
             </div>
-            <h3 className="text-2xl font-semibold mb-2">No Content Types Yet</h3>
+            <h3 className="text-2xl font-semibold mb-2">
+              {contentTypes.length === 0 ? 'No Content Types Yet' : 'No content types match your search'}
+            </h3>
             <p className="text-muted-foreground text-center mb-2 max-w-lg">
-              Content types define the structure of your content. Think of them as blueprints or templates.
+              {contentTypes.length === 0 
+                ? 'Content types define the structure of your content. Think of them as blueprints or templates.'
+                : 'Try adjusting your search terms.'}
             </p>
-            <p className="text-sm text-muted-foreground text-center mb-6 max-w-lg">
-              For example, create a "Product" content type with fields like name, price, and description, or a "Blog Post" type with title, author, and body fields.
-            </p>
-            <Button asChild size="lg">
-              <Link href="/dashboard/content-types/builder">
-                <Plus className="h-5 w-5 mr-2" />
-                Create Your First Content Type
-              </Link>
-            </Button>
+            {contentTypes.length === 0 && (
+              <>
+                <p className="text-sm text-muted-foreground text-center mb-6 max-w-lg">
+                  For example, create a "Product" content type with fields like name, price, and description, or a "Blog Post" type with title, author, and body fields.
+                </p>
+                <Button asChild size="lg">
+                  <Link href="/dashboard/content-types/builder">
+                    <Plus className="h-5 w-5 mr-2" />
+                    Create Your First Content Type
+                  </Link>
+                </Button>
+              </>
+            )}
           </CardContent>
         </Card>
       )}
 
-      {contentTypes && contentTypes.length > 0 && (
+      {filteredContentTypes && filteredContentTypes.length > 0 && (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <div>
-            Showing {contentTypes.length} content type{contentTypes.length !== 1 ? 's' : ''}
+            Showing {filteredContentTypes.length} of {contentTypes.length} content type{contentTypes.length !== 1 ? 's' : ''}
           </div>
         </div>
       )}

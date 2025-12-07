@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { mediaApi } from '@/lib/api/media';
+import { resolveMediaUrl } from '@/lib/api/client';
 import { Media } from '@/types';
 import {
   Dialog,
@@ -95,7 +97,7 @@ export default function MediaPickerModal({
       setSelectedMedia(uploaded);
     } catch (err) {
       console.error('Failed to upload media:', err);
-      alert('Failed to upload file');
+      toast.error('Failed to upload file');
     } finally {
       setIsLoading(false);
     }
@@ -108,7 +110,9 @@ export default function MediaPickerModal({
   };
 
   const getMediaUrl = (m: Media) => {
-    return m.public_url || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${m.storage_path}`;
+    // Use primary url field, fallback to public_url or storage_path for backward compatibility
+    const url = m.url || m.public_url || m.storage_path || '';
+    return resolveMediaUrl(url);
   };
 
   const totalPages = Math.ceil(total / perPage);
@@ -186,7 +190,7 @@ export default function MediaPickerModal({
                   }`}
                   onClick={() => setSelectedMedia(m)}
                 >
-                  {m.file_type === 'image' ? (
+                  {(m.media_type || m.file_type) === 'image' ? (
                     <img
                       src={getMediaUrl(m)}
                       alt={m.alt_text || m.filename}
@@ -195,7 +199,7 @@ export default function MediaPickerModal({
                   ) : (
                     <div className="w-full h-32 bg-muted flex items-center justify-center">
                       <span className="text-xs uppercase text-muted-foreground">
-                        {m.file_type}
+                        {m.media_type || m.file_type}
                       </span>
                     </div>
                   )}

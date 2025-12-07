@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import { contentApi } from '@/lib/api';
 import { FIELD_TYPES, getFieldTypeDefinition, generateFieldKey } from '@/lib/field-types';
 import { Button } from '@/components/ui/button';
@@ -63,6 +64,7 @@ export default function ContentTypeBuilderPage() {
           key: field.name,
           config: {
             type: field.type,
+            label: field.label || field.name.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()),
             required: field.required,
             unique: field.unique,
             localized: field.localized,
@@ -75,7 +77,7 @@ export default function ContentTypeBuilderPage() {
       setFields(fieldConfigs);
     } catch (err) {
       console.error('Failed to load content type:', err);
-      alert('Failed to load content type');
+      toast.error('Failed to load content type');
     } finally {
       setIsLoading(false);
     }
@@ -143,17 +145,17 @@ export default function ContentTypeBuilderPage() {
 
   const validateSchema = (): boolean => {
     if (!name.trim()) {
-      alert('Please enter a content type name');
+      toast.error('Please enter a content type name');
       return false;
     }
 
     if (!apiName.trim()) {
-      alert('Please enter an API name');
+      toast.error('Please enter an API name');
       return false;
     }
 
     if (fields.length === 0) {
-      alert('Please add at least one field');
+      toast.error('Please add at least one field');
       return false;
     }
 
@@ -161,19 +163,19 @@ export default function ContentTypeBuilderPage() {
     const keys = fields.map((f) => f.key);
     const duplicates = keys.filter((key, index) => keys.indexOf(key) !== index);
     if (duplicates.length > 0) {
-      alert(`Duplicate field keys found: ${duplicates.join(', ')}`);
+      toast.error(`Duplicate field keys found: ${duplicates.join(', ')}`);
       return false;
     }
 
     // Validate field configurations
     for (const field of fields) {
       if (!field.key.trim()) {
-        alert('All fields must have a key');
+        toast.error('All fields must have a key');
         return false;
       }
       const label = field.config.label;
       if (typeof label !== 'string' || !label.trim()) {
-        alert(`Field "${field.key}" must have a label`);
+        toast.error(`Field "${field.key}" must have a label`);
         return false;
       }
     }
@@ -208,15 +210,16 @@ export default function ContentTypeBuilderPage() {
 
       if (isEdit && editId) {
         await contentApi.updateContentType(editId, payload);
-        alert('Content type updated successfully');
+        toast.success('Content type updated successfully');
       } else {
         await contentApi.createContentType(payload);
-        alert('Content type created successfully');
+        toast.success('Content type created successfully');
         router.push('/dashboard/content-types');
       }
     } catch (err) {
       const error = err as Error & { response?: { data?: { detail?: string } } };
       setError('Failed to create content type: ' + (error.response?.data?.detail || error.message));
+      toast.error('Failed to save content type');
     } finally {
       setIsSaving(false);
     }

@@ -30,13 +30,13 @@ export const translationApi = {
     return response.data;
   },
 
-  async updateLocale(code: string, data: LocaleUpdate): Promise<Locale> {
-    const response = await apiClient.put<Locale>(`/translation/locales/${code}`, data);
+  async updateLocale(localeId: string, data: LocaleUpdate): Promise<Locale> {
+    const response = await apiClient.put<Locale>(`/translation/locales/${localeId}`, data);
     return response.data;
   },
 
-  async deleteLocale(code: string): Promise<void> {
-    await apiClient.delete(`/translation/locales/${code}`);
+  async deleteLocale(localeId: string): Promise<void> {
+    await apiClient.delete(`/translation/locales/${localeId}`);
   },
 
   async getContentTranslations(contentId: string): Promise<Translation[]> {

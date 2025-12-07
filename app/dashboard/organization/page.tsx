@@ -70,7 +70,7 @@ export default function OrganizationSettingsPage() {
   const [localeDialogOpen, setLocaleDialogOpen] = useState(false);
   const [editingLocale, setEditingLocale] = useState<Locale | null>(null);
   const [deleteLocaleDialogOpen, setDeleteLocaleDialogOpen] = useState(false);
-  const [localeToDelete, setLocaleToDelete] = useState<{ code: string; name: string } | null>(null);
+  const [localeToDelete, setLocaleToDelete] = useState<{ id: string; name: string } | null>(null);
   const [localeForm, setLocaleForm] = useState<LocaleCreate>({
     code: '',
     name: '',
@@ -189,7 +189,7 @@ export default function OrganizationSettingsPage() {
 
   const handleToggleLocale = async (locale: Locale) => {
     try {
-      await translationApi.updateLocale(locale.code, {
+      await translationApi.updateLocale(locale.id, {
         is_enabled: !locale.is_enabled,
       });
       await loadData();
@@ -202,7 +202,7 @@ export default function OrganizationSettingsPage() {
 
   const handleSetDefaultLocale = async (locale: Locale) => {
     try {
-      await translationApi.updateLocale(locale.code, {
+      await translationApi.updateLocale(locale.id, {
         is_default: true,
       });
       await loadData();
@@ -213,8 +213,8 @@ export default function OrganizationSettingsPage() {
     }
   };
 
-  const openDeleteLocaleDialog = (code: string, name: string) => {
-    setLocaleToDelete({ code, name });
+  const openDeleteLocaleDialog = (id: string, name: string) => {
+    setLocaleToDelete({ id, name });
     setDeleteLocaleDialogOpen(true);
   };
 
@@ -222,7 +222,7 @@ export default function OrganizationSettingsPage() {
     if (!localeToDelete) return;
 
     try {
-      await translationApi.deleteLocale(localeToDelete.code);
+      await translationApi.deleteLocale(localeToDelete.id);
       setDeleteLocaleDialogOpen(false);
       setLocaleToDelete(null);
       await loadData();
@@ -634,7 +634,7 @@ export default function OrganizationSettingsPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => openDeleteLocaleDialog(locale.code, locale.name)}
+                              onClick={() => openDeleteLocaleDialog(locale.id, locale.name)}
                             >
                               Delete
                             </Button>

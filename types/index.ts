@@ -255,6 +255,7 @@ export interface ContentType {
   fields: Array<{
     name: string;
     type: string;
+    label?: string;
     required?: boolean;
     unique?: boolean;
     localized?: boolean;
@@ -278,7 +279,8 @@ export interface ContentEntry {
   content_type_id: string;
   slug: string;
   status: "draft" | "published" | "archived";
-  content_data: Record<string, any>;
+  content_data?: Record<string, any>;  // Legacy field name
+  data?: Record<string, any>;          // API returns 'data', not 'content_data'
   version: number;
   author_id: string;
   author?: User;
@@ -454,7 +456,9 @@ export interface PaginatedResponse<T> {
   total: number;
   page: number;
   page_size: number;  // Backend uses page_size, not per_page
-  total_pages: number;
+  pages: number;  // Backend uses 'pages', not 'total_pages'
+  // Alias for backwards compatibility
+  total_pages?: number;
 }
 
 export interface ApiError {

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { toast } from 'sonner';
 import { contentApi } from '@/lib/api';
 import { ContentEntry, ContentType } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { ArrowLeft, Eye } from 'lucide-react';
 
 export default function EditContentPage() {
   const router = useRouter();
@@ -32,6 +40,7 @@ export default function EditContentPage() {
     status: 'draft',
     fields: {},
   });
+  const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
     loadContent();
@@ -49,15 +58,15 @@ export default function EditContentPage() {
         setContentType(type);
       }
       
-      // Set form data
+      // Set form data - API returns 'data', not 'content_data'
       setFormData({
         slug: entry.slug || '',
         status: entry.status || 'draft',
-        fields: entry.content_data || {},
+        fields: entry.data || entry.content_data || {},
       });
     } catch (error) {
       console.error('Failed to load content:', error);
-      alert('Failed to load content');
+      toast.error('Failed to load content');
       router.push('/dashboard/content');
     } finally {
       setIsLoading(false);
@@ -82,12 +91,13 @@ export default function EditContentPage() {
       await contentApi.updateContentEntry(contentId, {
         slug: formData.slug,
         status: formData.status,
-        content_data: formData.fields,
+        data: formData.fields,
       });
+      toast.success('Content updated successfully');
       router.push('/dashboard/content');
     } catch (error: any) {
       console.error('Failed to update content:', error);
-      alert('Failed to update content: ' + (error.response?.data?.detail || error.message));
+      toast.error('Failed to update content: ' + (error.response?.data?.detail || error.message));
     } finally {
       setIsSaving(false);
     }
@@ -103,7 +113,7 @@ export default function EditContentPage() {
       router.push('/dashboard/content');
     } catch (error: any) {
       console.error('Failed to delete content:', error);
-      alert('Failed to delete content: ' + (error.response?.data?.detail || error.message));
+      toast.error('Failed to delete content: ' + (error.response?.data?.detail || error.message));
     }
   };
 
@@ -291,9 +301,98 @@ export default function EditContentPage() {
             <p className="text-muted-foreground">Update your content entry</p>
           </div>
         </div>
-        <Button variant="destructive" onClick={handleDelete}>
-          Delete
-        </Button>
+        <div className="flex items-center gap-2">
+          <Dialog open={showPreview} onOpenChange={setShowPreview}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Eye className="mr-2 h-4 w-4" />
+                Preview
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="w-[95vw] max-w-[95vw] md:w-[85vw] md:max-w-[85vw] lg:w-[75vw] lg:max-w-[75vw] xl:max-w-6xl h-[85vh] max-h-[85vh] overflow-hidden flex flex-col">
+              <DialogHeader>
+                <DialogTitle>Preview: {formData.fields?.site_name || formData.fields?.title || formData.slug || 'Content'}</DialogTitle>
+              </DialogHeader>
+              <div className="flex-1 overflow-y-auto space-y-6 py-4">
+                {/* Metadata Section */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/50 rounded-lg">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Status</p>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                      formData.status === 'published' ? 'bg-green-100 text-green-800' :
+                      formData.status === 'draft' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {formData.status}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Slug</p>
+                    <p className="text-sm font-mono">{formData.slug || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Content Type</p>
+                    <p className="text-sm">{contentType?.name || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Last Updated</p>
+                    <p className="text-sm">{content?.updated_at ? new Date(content.updated_at).toLocaleDateString() : '-'}</p>
+                  </div>
+                </div>
+                
+                {/* Fields Preview */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold border-b pb-2">Content Fields</h3>
+                  {contentType?.fields && contentType.fields.length > 0 ? (
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {contentType.fields.map((field) => {
+                        const value = formData.fields[field.name];
+                        return (
+                          <div key={field.name} className="border rounded-lg p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="font-medium">{field.label || field.name}</span>
+                              <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                                {field.type}
+                              </span>
+                              {field.required && (
+                                <span className="text-xs text-red-500">*</span>
+                              )}
+                            </div>
+                            <div className="text-sm">
+                              {value === undefined || value === null ? (
+                                <span className="text-muted-foreground italic">Not set</span>
+                              ) : value === '' ? (
+                                <span className="text-muted-foreground italic">Empty</span>
+                              ) : field.type === 'boolean' ? (
+                                <span className={value ? 'text-green-600' : 'text-red-600'}>
+                                  {value ? '✓ Yes' : '✗ No'}
+                                </span>
+                              ) : field.type === 'json' || field.type === 'array' || field.type === 'object' || typeof value === 'object' ? (
+                                <pre className="bg-muted p-2 rounded text-xs overflow-auto max-h-32">
+                                  {JSON.stringify(value, null, 2)}
+                                </pre>
+                              ) : (
+                                <span className="break-words">{String(value)}</span>
+                              )}
+                            </div>
+                            {field.help_text && (
+                              <p className="text-xs text-muted-foreground mt-2">{field.help_text}</p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-muted-foreground">No fields defined</div>
+                  )}
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Button variant="destructive" onClick={handleDelete}>
+            Delete
+          </Button>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit}>
