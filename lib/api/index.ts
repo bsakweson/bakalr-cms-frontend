@@ -14,3 +14,6 @@ export { themeApi } from './themes';
 export { searchApi } from './search';
 export { passwordResetApi } from './password-reset';
 export { apiKeysApi } from './api-keys';
+export { deviceApi } from './devices';
+export { sessionApi } from './sessions';
+export { socialLoginApi } from './social-login';
