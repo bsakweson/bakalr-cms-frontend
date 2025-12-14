@@ -47,7 +47,7 @@ vi.mock('@/lib/api/translation', () => ({
 
 describe('Integration: Content → Translation → Publishing Flow', () => {
   const mockContentType = {
-    id: 1,
+    id: '1',
     name: 'Blog Post',
     slug: 'blog-post',
     schema: {
@@ -55,14 +55,14 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
       body: { type: 'textarea', required: true },
       excerpt: { type: 'text' },
     },
-    organization_id: 1,
+    organization_id: '1',
     created_at: '2025-11-29T00:00:00Z',
     updated_at: '2025-11-29T00:00:00Z',
   };
 
   const mockContentEntry = {
-    id: 1,
-    content_type_id: 1,
+    id: '1',
+    content_type_id: '1',
     slug: 'hello-world',
     status: 'draft' as const,
     content_data: {
@@ -71,7 +71,7 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
       excerpt: 'Introduction to my blog',
     },
     version: 1,
-    author_id: 1,
+    author_id: '1',
     created_at: '2025-11-29T00:00:00Z',
     updated_at: '2025-11-29T00:00:00Z',
   };
@@ -84,47 +84,47 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
 
   const mockLocales = [
     {
-      id: 1,
+      id: '1',
       code: 'en',
       name: 'English',
       is_default: true,
       is_enabled: true,
       is_active: true,
       auto_translate: false,
-      organization_id: 1,
+      organization_id: '1',
       created_at: '2025-11-29T00:00:00Z',
       updated_at: '2025-11-29T00:00:00Z',
     },
     {
-      id: 2,
+      id: '2',
       code: 'es',
       name: 'Spanish',
       is_default: false,
       is_enabled: true,
       is_active: true,
       auto_translate: true,
-      organization_id: 1,
+      organization_id: '1',
       created_at: '2025-11-29T00:00:00Z',
       updated_at: '2025-11-29T00:00:00Z',
     },
     {
-      id: 3,
+      id: '3',
       code: 'fr',
       name: 'French',
       is_default: false,
       is_enabled: true,
       is_active: true,
       auto_translate: true,
-      organization_id: 1,
+      organization_id: '1',
       created_at: '2025-11-29T00:00:00Z',
       updated_at: '2025-11-29T00:00:00Z',
     },
   ];
 
   const mockSpanishTranslation = {
-    id: 1,
-    content_entry_id: 1,
-    locale_id: 2,
+    id: '1',
+    content_entry_id: '1',
+    locale_id: '2',
     translated_data: {
       title: 'Hola Mundo',
       body: 'Esta es mi primera entrada de blog.',
@@ -138,9 +138,9 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
   };
 
   const mockFrenchTranslation = {
-    id: 2,
-    content_entry_id: 1,
-    locale_id: 3,
+    id: '2',
+    content_entry_id: '1',
+    locale_id: '3',
     translated_data: {
       title: 'Bonjour le Monde',
       body: 'Ceci est mon premier article de blog.',
@@ -188,8 +188,8 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
       expect(result.schema).toHaveProperty('title');
       expect(result.schema).toHaveProperty('body');
       expect(result.schema).toHaveProperty('excerpt');
-      expect(result.schema.title.required).toBe(true);
-      expect(result.schema.body.required).toBe(true);
+      expect(result.schema!.title.required).toBe(true);
+      expect(result.schema!.body.required).toBe(true);
     });
   });
 
@@ -198,7 +198,7 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
       const createEntrySpy = vi.spyOn(contentApi, 'createContentEntry').mockResolvedValue(mockContentEntry);
 
       const result = await contentApi.createContentEntry({
-        content_type_id: 1,
+        content_type_id: '1',
         slug: 'hello-world',
         status: 'draft',
         content_data: {
@@ -211,14 +211,14 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
       expect(createEntrySpy).toHaveBeenCalled();
       expect(result).toEqual(mockContentEntry);
       expect(result.status).toBe('draft');
-      expect(result.content_data.title).toBe('Hello World');
+      expect(result.content_data!.title).toBe('Hello World');
     });
 
     it('should validate required fields', async () => {
       vi.spyOn(contentApi, 'createContentEntry').mockResolvedValue(mockContentEntry);
 
       const result = await contentApi.createContentEntry({
-        content_type_id: 1,
+        content_type_id: '1',
         slug: 'hello-world',
         status: 'draft',
         content_data: {
@@ -228,8 +228,8 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
         },
       });
 
-      expect(result.content_data.title).toBeTruthy();
-      expect(result.content_data.body).toBeTruthy();
+      expect(result.content_data!.title).toBeTruthy();
+      expect(result.content_data!.body).toBeTruthy();
     });
 
     it('should handle missing optional fields', async () => {
@@ -244,7 +244,7 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
       vi.spyOn(contentApi, 'createContentEntry').mockResolvedValue(entryWithoutExcerpt);
 
       const result = await contentApi.createContentEntry({
-        content_type_id: 1,
+        content_type_id: '1',
         slug: 'hello-world',
         status: 'draft',
         content_data: {
@@ -253,9 +253,9 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
         },
       });
 
-      expect(result.content_data.title).toBeTruthy();
-      expect(result.content_data.body).toBeTruthy();
-      expect(result.content_data.excerpt).toBeUndefined();
+      expect(result.content_data!.title).toBeTruthy();
+      expect(result.content_data!.body).toBeTruthy();
+      expect(result.content_data!.excerpt).toBeUndefined();
     });
   });
 
@@ -296,7 +296,7 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
     it('should create Spanish translation', async () => {
       const createTranslationSpy = vi.spyOn(translationApi, 'createOrUpdateTranslation').mockResolvedValue(mockSpanishTranslation);
 
-      const result = await translationApi.createOrUpdateTranslation(1, 'es', {
+      const result = await translationApi.createOrUpdateTranslation("1", 'es', {
         title: 'Hola Mundo',
         body: 'Esta es mi primera entrada de blog.',
         excerpt: 'Introducción a mi blog',
@@ -314,7 +314,7 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
     it('should create French translation', async () => {
       const createTranslationSpy = vi.spyOn(translationApi, 'createOrUpdateTranslation').mockResolvedValue(mockFrenchTranslation);
 
-      const result = await translationApi.createOrUpdateTranslation(1, 'fr', {
+      const result = await translationApi.createOrUpdateTranslation("1", 'fr', {
         title: 'Bonjour le Monde',
         body: 'Ceci est mon premier article de blog.',
         excerpt: 'Introduction à mon blog',
@@ -332,7 +332,7 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
     it('should translate all fields from schema', async () => {
       vi.spyOn(translationApi, 'createOrUpdateTranslation').mockResolvedValue(mockSpanishTranslation);
 
-      const result = await translationApi.createOrUpdateTranslation(1, 'es', {
+      const result = await translationApi.createOrUpdateTranslation("1", 'es', {
         title: 'Hola Mundo',
         body: 'Esta es mi primera entrada de blog.',
         excerpt: 'Introducción a mi blog',
@@ -349,7 +349,7 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
       });
 
       await expect(
-        translationApi.createOrUpdateTranslation(1, 'es', {})
+        translationApi.createOrUpdateTranslation("1", 'es', {})
       ).rejects.toMatchObject({
         response: { data: { detail: 'Translation service unavailable' } },
       });
@@ -362,7 +362,7 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
     it('should publish content entry', async () => {
       const publishSpy = vi.spyOn(contentApi, 'publishContentEntry').mockResolvedValue(mockPublishedEntry);
 
-      const result = await contentApi.publishContentEntry(1);
+      const result = await contentApi.publishContentEntry("1");
 
       expect(publishSpy).toHaveBeenCalledWith(1);
       expect(result.status).toBe('published');
@@ -372,7 +372,7 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
     it('should update status from draft to published', async () => {
       vi.spyOn(contentApi, 'publishContentEntry').mockResolvedValue(mockPublishedEntry);
 
-      const result = await contentApi.publishContentEntry(1);
+      const result = await contentApi.publishContentEntry("1");
 
       expect(result.status).toBe('published');
       expect(result.published_at).toBe('2025-11-29T12:00:00Z');
@@ -384,7 +384,7 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
       });
 
       await expect(
-        contentApi.publishContentEntry(1)
+        contentApi.publishContentEntry("1")
       ).rejects.toMatchObject({
         response: { data: { detail: 'Cannot publish content with missing translations' } },
       });
@@ -397,7 +397,7 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
     it('should retrieve published content entry', async () => {
       const getEntrySpy = vi.spyOn(contentApi, 'getContentEntry').mockResolvedValue(mockPublishedEntry);
 
-      const result = await contentApi.getContentEntry(1);
+      const result = await contentApi.getContentEntry("1");
 
       expect(getEntrySpy).toHaveBeenCalledWith(1);
       expect(result.status).toBe('published');
@@ -409,12 +409,12 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
         [mockSpanishTranslation, mockFrenchTranslation]
       );
 
-      const result = await translationApi.getContentTranslations(1);
+      const result = await translationApi.getContentTranslations("1");
 
       expect(getTranslationsSpy).toHaveBeenCalledWith(1);
       expect(result).toHaveLength(2);
-      expect(result.find(t => t.locale_id === 2)).toBeDefined();
-      expect(result.find(t => t.locale_id === 3)).toBeDefined();
+      expect(result.find(t => t.locale!.id === '2')).toBeDefined();
+      expect(result.find(t => t.locale!.id === '3')).toBeDefined();
     });
 
     it('should verify Spanish translation is available', async () => {
@@ -422,8 +422,8 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
         [mockSpanishTranslation, mockFrenchTranslation]
       );
 
-      const result = await translationApi.getContentTranslations(1);
-      const spanish = result.find(t => t.locale_id === 2);
+      const result = await translationApi.getContentTranslations("1");
+      const spanish = result.find(t => t.locale!.id === '2');
 
       expect(spanish).toBeDefined();
       expect(spanish?.translated_data.title).toBe('Hola Mundo');
@@ -434,8 +434,8 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
         [mockSpanishTranslation, mockFrenchTranslation]
       );
 
-      const result = await translationApi.getContentTranslations(1);
-      const french = result.find(t => t.locale_id === 3);
+      const result = await translationApi.getContentTranslations("1");
+      const french = result.find(t => t.locale!.id === '3');
 
       expect(french).toBeDefined();
       expect(french?.translated_data.title).toBe('Bonjour le Monde');
@@ -503,13 +503,13 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
       // Create content
       vi.spyOn(contentApi, 'createContentEntry').mockResolvedValue(mockContentEntry);
       const entry = await contentApi.createContentEntry({
-        content_type_id: 1,
+        content_type_id: '1',
         slug: 'hello-world',
         status: 'draft',
         content_data: mockContentEntry.content_data,
       });
 
-      const originalTitle = entry.content_data.title;
+      const originalTitle = entry.content_data!.title;
 
       // Create translations
       vi.spyOn(translationApi, 'createOrUpdateTranslation')
@@ -529,7 +529,7 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
       );
 
       // Original content should be unchanged
-      expect(entry.content_data.title).toBe(originalTitle);
+      expect(entry.content_data!.title).toBe(originalTitle);
       // Translations should have different content
       expect(spanish.translated_data.title).not.toBe(originalTitle);
       expect(french.translated_data.title).not.toBe(originalTitle);
@@ -544,7 +544,7 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
         .mockResolvedValueOnce(mockFrenchTranslation);
 
       const entry = await contentApi.createContentEntry({
-        content_type_id: 1,
+        content_type_id: '1',
         slug: 'hello-world',
         status: 'draft',
         content_data: mockContentEntry.content_data,

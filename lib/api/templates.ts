@@ -71,7 +71,7 @@ export const templateApi = {
     return response.data;
   },
 
-  async getTemplate(id: number): Promise<ContentTemplate> {
+  async getTemplate(id: string): Promise<ContentTemplate> {
     const response = await apiClient.get(`/templates/${id}`);
     return response.data;
   },

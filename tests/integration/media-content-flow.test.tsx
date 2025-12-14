@@ -38,7 +38,7 @@ import { contentApi } from '@/lib/api/content';
 describe('Integration: Media Upload → Content Attachment → Preview', () => {
   // Mock media files
   const mockImageMedia: Media = {
-    id: 1,
+    id: '1',
     filename: 'hero-image.jpg',
     original_filename: 'my-photo.jpg',
     file_type: 'image',
@@ -48,14 +48,14 @@ describe('Integration: Media Upload → Content Attachment → Preview', () => {
     public_url: 'https://cdn.example.com/uploads/2025/11/hero-image.jpg',
     alt_text: 'Hero banner image',
     title: 'Homepage Hero',
-    uploaded_by_id: 1,
-    organization_id: 1,
+    uploaded_by_id: '1',
+    organization_id: '1',
     created_at: '2025-11-25T10:00:00Z',
     updated_at: '2025-11-25T10:00:00Z',
   };
 
   const mockDocumentMedia: Media = {
-    id: 2,
+    id: '2',
     filename: 'user-guide.pdf',
     original_filename: 'product-guide.pdf',
     file_type: 'document',
@@ -65,15 +65,15 @@ describe('Integration: Media Upload → Content Attachment → Preview', () => {
     public_url: 'https://cdn.example.com/uploads/2025/11/user-guide.pdf',
     alt_text: undefined,
     title: 'User Guide',
-    uploaded_by_id: 1,
-    organization_id: 1,
+    uploaded_by_id: '1',
+    organization_id: '1',
     created_at: '2025-11-25T10:05:00Z',
     updated_at: '2025-11-25T10:05:00Z',
   };
 
   const mockContentEntry: ContentEntry = {
-    id: 1,
-    content_type_id: 1,
+    id: '1',
+    content_type_id: '1',
     slug: 'product-launch',
     status: 'draft',
     version: 1,
@@ -83,7 +83,7 @@ describe('Integration: Media Upload → Content Attachment → Preview', () => {
       featured_image: undefined,
       attachments: [],
     },
-    author_id: 1,
+    author_id: '1',
     created_at: '2025-11-25T09:00:00Z',
     updated_at: '2025-11-25T09:00:00Z',
   };
@@ -139,7 +139,7 @@ describe('Integration: Media Upload → Content Attachment → Preview', () => {
     it('should get uploaded media item by id', async () => {
       vi.mocked(mediaApi.getMediaItem).mockResolvedValue(mockImageMedia);
 
-      const result = await mediaApi.getMediaItem(1);
+      const result = await mediaApi.getMediaItem("1");
 
       expect(mediaApi.getMediaItem).toHaveBeenCalledWith(1);
       expect(result).toEqual(mockImageMedia);
@@ -152,8 +152,8 @@ describe('Integration: Media Upload → Content Attachment → Preview', () => {
         items: [mockImageMedia, mockDocumentMedia],
         total: 2,
         page: 1,
-        per_page: 10,
-        total_pages: 1,
+        page_size: 10,
+        pages: 1,
       };
 
       vi.mocked(mediaApi.getMedia).mockResolvedValue(paginatedResponse);
@@ -172,8 +172,8 @@ describe('Integration: Media Upload → Content Attachment → Preview', () => {
         items: [mockImageMedia],
         total: 1,
         page: 1,
-        per_page: 10,
-        total_pages: 1,
+        page_size: 10,
+        pages: 1,
       };
 
       vi.mocked(mediaApi.getMedia).mockResolvedValue(filteredResponse);
@@ -214,7 +214,7 @@ describe('Integration: Media Upload → Content Attachment → Preview', () => {
           attachments: [],
         },
       });
-      expect(result.content_data.featured_image).toBe(mockImageMedia.public_url);
+      expect(result.content_data!.featured_image).toBe(mockImageMedia.public_url);
     });
 
     it('should attach multiple documents to content entry', async () => {
@@ -236,8 +236,8 @@ describe('Integration: Media Upload → Content Attachment → Preview', () => {
         },
       });
 
-      expect(result.content_data.attachments).toHaveLength(1);
-      expect(result.content_data.attachments[0]).toBe(mockDocumentMedia.public_url);
+      expect(result.content_data!.attachments).toHaveLength(1);
+      expect(result.content_data!.attachments[0]).toBe(mockDocumentMedia.public_url);
     });
 
     it('should handle attachment errors', async () => {
@@ -270,9 +270,9 @@ describe('Integration: Media Upload → Content Attachment → Preview', () => {
       const result = await contentApi.getContentEntry(mockContentEntry.id);
 
       expect(contentApi.getContentEntry).toHaveBeenCalledWith(mockContentEntry.id);
-      expect(result.content_data.featured_image).toBe(mockImageMedia.public_url);
-      expect(result.content_data.attachments).toHaveLength(1);
-      expect(result.content_data.attachments[0]).toBe(mockDocumentMedia.public_url);
+      expect(result.content_data!.featured_image).toBe(mockImageMedia.public_url);
+      expect(result.content_data!.attachments).toHaveLength(1);
+      expect(result.content_data!.attachments[0]).toBe(mockDocumentMedia.public_url);
     });
 
     it('should verify media metadata is intact', async () => {
@@ -308,12 +308,12 @@ describe('Integration: Media Upload → Content Attachment → Preview', () => {
       const updatedContent = await contentApi.updateContentEntry(mockContentEntry.id, {
         content_data: { ...mockContentEntry.content_data, featured_image: uploadedMedia.public_url },
       });
-      expect(updatedContent.content_data.featured_image).toBe(mockImageMedia.public_url);
+      expect(updatedContent.content_data!.featured_image).toBe(mockImageMedia.public_url);
 
       // Step 3: Verify content retrieval
       vi.mocked(contentApi.getContentEntry).mockResolvedValue(contentWithMedia);
       const retrievedContent = await contentApi.getContentEntry(mockContentEntry.id);
-      expect(retrievedContent.content_data.featured_image).toBe(mockImageMedia.public_url);
+      expect(retrievedContent.content_data!.featured_image).toBe(mockImageMedia.public_url);
 
       // Step 4: Verify media retrieval
       vi.mocked(mediaApi.getMediaItem).mockResolvedValue(mockImageMedia);
@@ -346,8 +346,8 @@ describe('Integration: Media Upload → Content Attachment → Preview', () => {
         content_data: contentWithBoth.content_data,
       });
 
-      expect(updated.content_data.featured_image).toBe(mockImageMedia.public_url);
-      expect(updated.content_data.attachments).toContain(mockDocumentMedia.public_url);
+      expect(updated.content_data!.featured_image).toBe(mockImageMedia.public_url);
+      expect(updated.content_data!.attachments).toContain(mockDocumentMedia.public_url);
     });
 
     it('should maintain media references after content updates', async () => {
@@ -366,8 +366,8 @@ describe('Integration: Media Upload → Content Attachment → Preview', () => {
       });
 
       // Media references should persist
-      expect(updated.content_data.featured_image).toBe(mockImageMedia.public_url);
-      expect(updated.content_data.attachments[0]).toBe(mockDocumentMedia.public_url);
+      expect(updated.content_data!.featured_image).toBe(mockImageMedia.public_url);
+      expect(updated.content_data!.attachments[0]).toBe(mockDocumentMedia.public_url);
     });
   });
 });

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
+import { usePreferences } from '@/contexts/preferences-context';
 import { authApi, deviceApi, sessionApi } from '@/lib/api';
 import type { Device, DeviceListResponse } from '@/lib/api/devices';
 import type { Session, SessionListResponse, LoginActivity, LoginActivityListResponse, SecurityOverview } from '@/lib/api/sessions';
@@ -15,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import { 
   Smartphone, 
   Monitor, 
@@ -31,7 +33,14 @@ import {
   AlertTriangle,
   Check,
   X,
-  Fingerprint
+  Fingerprint,
+  LayoutGrid,
+  Settings2,
+  Eye,
+  EyeOff,
+  Sun,
+  Moon,
+  Palette
 } from 'lucide-react';
 
 interface TwoFactorStatus {
@@ -102,6 +111,330 @@ const formatRelativeTime = (dateString: string) => {
   if (diffDays < 7) return `${diffDays}d ago`;
   return formatDate(dateString);
 };
+
+// Display Settings Component
+function DisplaySettings() {
+  const { preferences, updatePreference, updatePreferences, generatedTheme } = usePreferences();
+  const pageSizeOptions = [6, 8, 12, 16, 20, 24];
+  const presetColors = [
+    { name: 'Bakalr Brown', color: '#8b4513' },
+    { name: 'Ocean Blue', color: '#2563eb' },
+    { name: 'Forest Green', color: '#16a34a' },
+    { name: 'Royal Purple', color: '#7c3aed' },
+    { name: 'Sunset Orange', color: '#ea580c' },
+    { name: 'Rose Pink', color: '#e11d48' },
+    { name: 'Teal', color: '#0d9488' },
+    { name: 'Indigo', color: '#4f46e5' },
+    { name: 'Amber', color: '#d97706' },
+    { name: 'Slate', color: '#475569' },
+  ];
+
+  return (
+    <TabsContent value="display" className="space-y-6">
+      {/* Theme Section Header */}
+      <div className="flex items-center gap-2 pb-2 border-b">
+        <Palette className="h-5 w-5 text-primary" />
+        <h3 className="font-semibold">Theme & Appearance</h3>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {/* Theme Mode Card */}
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-1 h-full" style={{ backgroundColor: preferences.primaryColor }} />
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg" style={{ backgroundColor: `${preferences.primaryColor}20` }}>
+                {preferences.theme === 'dark' ? (
+                  <Moon className="h-5 w-5" style={{ color: preferences.primaryColor }} />
+                ) : preferences.theme === 'light' ? (
+                  <Sun className="h-5 w-5" style={{ color: preferences.primaryColor }} />
+                ) : (
+                  <Monitor className="h-5 w-5" style={{ color: preferences.primaryColor }} />
+                )}
+              </div>
+              <div>
+                <CardTitle className="text-lg">Theme Mode</CardTitle>
+                <CardDescription>Light, dark, or system</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-2">
+              {(['light', 'dark', 'system'] as const).map((mode) => (
+                <Button
+                  key={mode}
+                  variant={preferences.theme === mode ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => updatePreference('theme', mode)}
+                  className="w-full capitalize"
+                >
+                  {mode === 'light' && <Sun className="h-3 w-3 mr-1" />}
+                  {mode === 'dark' && <Moon className="h-3 w-3 mr-1" />}
+                  {mode === 'system' && <Monitor className="h-3 w-3 mr-1" />}
+                  {mode}
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Theme Creator Card */}
+        <Card className="relative overflow-hidden md:col-span-2">
+          <div className="absolute top-0 left-0 w-1 h-full" style={{ backgroundColor: preferences.primaryColor }} />
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg" style={{ backgroundColor: `${preferences.primaryColor}20` }}>
+                <Palette className="h-5 w-5" style={{ color: preferences.primaryColor }} />
+              </div>
+              <div>
+                <CardTitle className="text-lg">Theme Creator</CardTitle>
+                <CardDescription>Pick a primary color to generate your theme</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Custom Color Picker */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Label htmlFor="custom-color">Custom Color:</Label>
+                <div className="relative">
+                  <input
+                    type="color"
+                    id="custom-color"
+                    value={preferences.primaryColor}
+                    onChange={(e) => updatePreference('primaryColor', e.target.value)}
+                    className="w-12 h-10 rounded-lg cursor-pointer border-2 border-border"
+                  />
+                </div>
+                <Input
+                  value={preferences.primaryColor}
+                  onChange={(e) => {
+                    if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) {
+                      updatePreference('primaryColor', e.target.value);
+                    }
+                  }}
+                  className="w-28 font-mono text-sm"
+                  placeholder="#8b4513"
+                />
+              </div>
+            </div>
+
+            {/* Preset Colors */}
+            <div>
+              <Label className="text-sm text-muted-foreground mb-2 block">Preset Themes:</Label>
+              <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
+                {presetColors.map((preset) => (
+                  <button
+                    key={preset.name}
+                    onClick={() => updatePreference('primaryColor', preset.color)}
+                    className={`group relative w-full aspect-square rounded-lg transition-all ${
+                      preferences.primaryColor === preset.color 
+                        ? 'ring-2 ring-offset-2 ring-primary scale-110' 
+                        : 'hover:scale-105'
+                    }`}
+                    style={{ backgroundColor: preset.color }}
+                    title={preset.name}
+                  >
+                    {preferences.primaryColor === preset.color && (
+                      <Check className="h-4 w-4 text-white absolute inset-0 m-auto drop-shadow-md" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Generated Theme Preview */}
+            {generatedTheme && (
+              <div className="mt-4 p-4 rounded-lg border bg-muted/30">
+                <Label className="text-sm text-muted-foreground mb-3 block">Generated Theme Preview:</Label>
+                <div className="grid grid-cols-6 gap-2">
+                  <div className="space-y-1">
+                    <div 
+                      className="w-full h-8 rounded-md border"
+                      style={{ backgroundColor: generatedTheme.light.primary }}
+                      title="Primary"
+                    />
+                    <p className="text-[10px] text-center text-muted-foreground">Primary</p>
+                  </div>
+                  <div className="space-y-1">
+                    <div 
+                      className="w-full h-8 rounded-md border"
+                      style={{ backgroundColor: generatedTheme.light.secondary }}
+                      title="Secondary"
+                    />
+                    <p className="text-[10px] text-center text-muted-foreground">Secondary</p>
+                  </div>
+                  <div className="space-y-1">
+                    <div 
+                      className="w-full h-8 rounded-md border"
+                      style={{ backgroundColor: generatedTheme.light.accent }}
+                      title="Accent"
+                    />
+                    <p className="text-[10px] text-center text-muted-foreground">Accent</p>
+                  </div>
+                  <div className="space-y-1">
+                    <div 
+                      className="w-full h-8 rounded-md border"
+                      style={{ backgroundColor: generatedTheme.light.muted }}
+                      title="Muted"
+                    />
+                    <p className="text-[10px] text-center text-muted-foreground">Muted</p>
+                  </div>
+                  <div className="space-y-1">
+                    <div 
+                      className="w-full h-8 rounded-md border"
+                      style={{ backgroundColor: generatedTheme.light.border }}
+                      title="Border"
+                    />
+                    <p className="text-[10px] text-center text-muted-foreground">Border</p>
+                  </div>
+                  <div className="space-y-1">
+                    <div 
+                      className="w-full h-8 rounded-md border"
+                      style={{ backgroundColor: generatedTheme.light.sidebar }}
+                      title="Sidebar"
+                    />
+                    <p className="text-[10px] text-center text-muted-foreground">Sidebar</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Layout Section Header */}
+      <div className="flex items-center gap-2 pb-2 border-b mt-8">
+        <LayoutGrid className="h-5 w-5 text-primary" />
+        <h3 className="font-semibold">Layout & Display</h3>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {/* Pagination Card */}
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <LayoutGrid className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">Items Per Page</CardTitle>
+                <CardDescription>Content list pagination</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-2">
+              {pageSizeOptions.map((size) => (
+                <Button
+                  key={size}
+                  variant={preferences.pageSize === size ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => updatePreference('pageSize', size)}
+                  className="w-full"
+                >
+                  {size}
+                </Button>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground mt-3">
+              Currently showing {preferences.pageSize} items per page
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Compact View Card */}
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Settings2 className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">Compact View</CardTitle>
+                <CardDescription>Reduce card spacing</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="compact-view">Enable compact mode</Label>
+                <p className="text-xs text-muted-foreground">
+                  Display more content in less space
+                </p>
+              </div>
+              <Switch
+                id="compact-view"
+                checked={preferences.compactView}
+                onCheckedChange={(checked) => updatePreference('compactView', checked)}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Show Descriptions Card */}
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10">
+                {preferences.showDescriptions ? (
+                  <Eye className="h-5 w-5 text-primary" />
+                ) : (
+                  <EyeOff className="h-5 w-5 text-primary" />
+                )}
+              </div>
+              <div>
+                <CardTitle className="text-lg">Descriptions</CardTitle>
+                <CardDescription>Show content descriptions</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="show-descriptions">Show descriptions</Label>
+                <p className="text-xs text-muted-foreground">
+                  Display subtitles on content cards
+                </p>
+              </div>
+              <Switch
+                id="show-descriptions"
+                checked={preferences.showDescriptions}
+                onCheckedChange={(checked) => updatePreference('showDescriptions', checked)}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Reset Preferences */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Reset Preferences</CardTitle>
+          <CardDescription>Restore all display settings to their default values</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button 
+            variant="outline" 
+            onClick={() => updatePreferences({
+              pageSize: 12,
+              theme: 'system',
+              primaryColor: '#8b4513',
+              compactView: false,
+              showDescriptions: true,
+            })}
+          >
+            Reset to Defaults
+          </Button>
+        </CardContent>
+      </Card>
+    </TabsContent>
+  );
+}
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -371,14 +704,18 @@ export default function SettingsPage() {
         </Alert>
       )}
 
-      <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+      <Tabs defaultValue="display" className="w-full">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="display">Display</TabsTrigger>
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="password">Password</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="devices">Devices</TabsTrigger>
           <TabsTrigger value="sessions">Sessions</TabsTrigger>
         </TabsList>
+
+        {/* Display Tab */}
+        <DisplaySettings />
 
         {/* Profile Tab */}
         <TabsContent value="profile" className="space-y-4">

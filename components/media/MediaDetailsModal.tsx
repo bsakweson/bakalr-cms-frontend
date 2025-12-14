@@ -181,7 +181,7 @@ export function MediaDetailsModal({ media, open, onClose, onUpdate, onDelete }: 
 
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">Uploaded</Label>
-                <p className="text-sm mt-1">{formatDate(media.created_at)}</p>
+                <p className="text-sm mt-1">{media.created_at ? formatDate(media.created_at) : 'N/A'}</p>
               </div>
 
               {media.public_url && (

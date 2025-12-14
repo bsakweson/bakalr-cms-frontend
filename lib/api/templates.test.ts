@@ -14,9 +14,9 @@ describe('templateApi', () => {
       const mockResponse: ContentTemplateListResponse = {
         templates: [
           {
-            id: 1,
-            organization_id: 1,
-            content_type_id: 1,
+            id: '1',
+            organization_id: "1",
+            content_type_id: "1",
             name: 'Blog Post Template',
             description: 'Standard blog post',
             is_system_template: false,
@@ -61,9 +61,9 @@ describe('templateApi', () => {
       const mockResponse: ContentTemplateListResponse = {
         templates: [
           {
-            id: 2,
-            organization_id: 1,
-            content_type_id: 2,
+            id: '2',
+            organization_id: "1",
+            content_type_id: "2",
             name: 'Product Template',
             is_system_template: false,
             is_published: true,
@@ -79,11 +79,11 @@ describe('templateApi', () => {
 
       vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockResponse } as any);
 
-      const result = await templateApi.listTemplates({ content_type_id: 2 });
+      const result = await templateApi.listTemplates({ content_type_id: "2" });
 
       expect(result).toEqual(mockResponse);
       expect(apiClient.get).toHaveBeenCalledWith('/templates', {
-        params: { content_type_id: 2 },
+        params: { content_type_id: "2" },
       });
     });
 
@@ -133,9 +133,9 @@ describe('templateApi', () => {
   describe('getTemplate', () => {
     it('should fetch template by id successfully', async () => {
       const mockTemplate: ContentTemplate = {
-        id: 1,
-        organization_id: 1,
-        content_type_id: 1,
+        id: '1',
+        organization_id: "1",
+        content_type_id: "1",
         name: 'Blog Post Template',
         description: 'Standard blog post with hero image',
         icon: '📝',
@@ -150,7 +150,7 @@ describe('templateApi', () => {
         created_at: '2025-01-01T00:00:00Z',
         updated_at: '2025-01-01T00:00:00Z',
         content_type: {
-          id: 1,
+          id: '1',
           name: 'Blog Post',
           slug: 'blog-post',
         },
@@ -158,7 +158,7 @@ describe('templateApi', () => {
 
       vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockTemplate } as any);
 
-      const result = await templateApi.getTemplate(1);
+      const result = await templateApi.getTemplate("1");
 
       expect(result).toEqual(mockTemplate);
       expect(apiClient.get).toHaveBeenCalledWith('/templates/1');
@@ -167,14 +167,14 @@ describe('templateApi', () => {
     it('should handle not found error', async () => {
       vi.mocked(apiClient.get).mockRejectedValueOnce(new Error('Template not found'));
 
-      await expect(templateApi.getTemplate(999)).rejects.toThrow('Template not found');
+      await expect(templateApi.getTemplate("999")).rejects.toThrow('Template not found');
     });
   });
 
   describe('createTemplate', () => {
     it('should create template successfully', async () => {
       const createData: ContentTemplateCreate = {
-        content_type_id: 1,
+        content_type_id: "1",
         name: 'New Template',
         description: 'A new template',
         is_published: false,
@@ -182,9 +182,9 @@ describe('templateApi', () => {
       };
 
       const mockCreatedTemplate: ContentTemplate = {
-        id: 5,
-        organization_id: 1,
-        content_type_id: 1,
+        id: '5',
+        organization_id: "1",
+        content_type_id: "1",
         name: 'New Template',
         description: 'A new template',
         is_system_template: false,
@@ -205,7 +205,7 @@ describe('templateApi', () => {
 
     it('should handle duplicate template name error', async () => {
       const createData: ContentTemplateCreate = {
-        content_type_id: 1,
+        content_type_id: "1",
         name: 'Existing Template',
       };
 
@@ -216,7 +216,7 @@ describe('templateApi', () => {
 
     it('should handle invalid content_type_id error', async () => {
       const createData: ContentTemplateCreate = {
-        content_type_id: 999,
+        content_type_id: "999",
         name: 'Bad Template',
       };
 
@@ -235,9 +235,9 @@ describe('templateApi', () => {
       };
 
       const mockUpdatedTemplate: ContentTemplate = {
-        id: 5,
-        organization_id: 1,
-        content_type_id: 1,
+        id: '5',
+        organization_id: "1",
+        content_type_id: "1",
         name: 'Updated Template Name',
         description: 'Updated description',
         is_system_template: false,
@@ -249,7 +249,7 @@ describe('templateApi', () => {
 
       vi.mocked(apiClient.put).mockResolvedValueOnce({ data: mockUpdatedTemplate } as any);
 
-      const result = await templateApi.updateTemplate(5, updateData);
+      const result = await templateApi.updateTemplate("5", updateData);
 
       expect(result).toEqual(mockUpdatedTemplate);
       expect(apiClient.put).toHaveBeenCalledWith('/templates/5', updateData);
@@ -262,7 +262,7 @@ describe('templateApi', () => {
 
       vi.mocked(apiClient.put).mockRejectedValueOnce(new Error('Cannot modify system template'));
 
-      await expect(templateApi.updateTemplate(1, updateData)).rejects.toThrow('Cannot modify system template');
+      await expect(templateApi.updateTemplate("1", updateData)).rejects.toThrow('Cannot modify system template');
     });
   });
 
@@ -270,7 +270,7 @@ describe('templateApi', () => {
     it('should delete template successfully', async () => {
       vi.mocked(apiClient.delete).mockResolvedValueOnce({ data: undefined } as any);
 
-      await templateApi.deleteTemplate(5);
+      await templateApi.deleteTemplate("5");
 
       expect(apiClient.delete).toHaveBeenCalledWith('/templates/5');
     });
@@ -278,13 +278,13 @@ describe('templateApi', () => {
     it('should handle system template deletion error', async () => {
       vi.mocked(apiClient.delete).mockRejectedValueOnce(new Error('Cannot delete system template'));
 
-      await expect(templateApi.deleteTemplate(1)).rejects.toThrow('Cannot delete system template');
+      await expect(templateApi.deleteTemplate("1")).rejects.toThrow('Cannot delete system template');
     });
 
     it('should handle template in use error', async () => {
       vi.mocked(apiClient.delete).mockRejectedValueOnce(new Error('Template is in use'));
 
-      await expect(templateApi.deleteTemplate(2)).rejects.toThrow('Template is in use');
+      await expect(templateApi.deleteTemplate("2")).rejects.toThrow('Template is in use');
     });
   });
 

@@ -32,7 +32,7 @@ const originalAlert = window.alert;
 describe('UsersPage', () => {
   const mockUsers: UserListItem[] = [
     {
-      id: 1,
+      id: '1',
       email: 'admin@example.com',
       first_name: 'Admin',
       last_name: 'User',
@@ -42,7 +42,7 @@ describe('UsersPage', () => {
       last_login: '2024-11-20T15:30:00Z',
     },
     {
-      id: 2,
+      id: '2',
       email: 'editor@example.com',
       first_name: 'Editor',
       last_name: 'User',
@@ -52,7 +52,7 @@ describe('UsersPage', () => {
       last_login: '2024-11-19T10:15:00Z',
     },
     {
-      id: 3,
+      id: '3',
       email: 'inactive@example.com',
       first_name: 'Inactive',
       last_name: 'User',
@@ -64,10 +64,10 @@ describe('UsersPage', () => {
 
   const mockRoles: Role[] = [
     {
-      id: 1,
+      id: '1',
       name: 'Admin',
       description: 'Full system access',
-      organization_id: 1,
+      organization_id: '1',
       is_system_role: true,
       level: 100,
       permissions: ['*'],
@@ -76,10 +76,10 @@ describe('UsersPage', () => {
       updated_at: '2024-01-01T00:00:00Z',
     },
     {
-      id: 2,
+      id: '2',
       name: 'Editor',
       description: 'Can create and edit content',
-      organization_id: 1,
+      organization_id: '1',
       is_system_role: false,
       level: 50,
       permissions: ['content.create', 'content.update'],
@@ -88,10 +88,10 @@ describe('UsersPage', () => {
       updated_at: '2024-01-01T00:00:00Z',
     },
     {
-      id: 3,
+      id: '3',
       name: 'Viewer',
       description: 'Read-only access',
-      organization_id: 1,
+      organization_id: '1',
       is_system_role: false,
       level: 10,
       permissions: ['content.read'],

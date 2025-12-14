@@ -47,7 +47,7 @@ vi.mock('next/navigation', () => ({
 
 describe('Profile Update Flow', () => {
   const initialUser = {
-    id: 1,
+    id: '1',
     email: 'test@example.com',
     username: undefined,
     first_name: 'Test',
@@ -56,7 +56,7 @@ describe('Profile Update Flow', () => {
     preferences: undefined,
     avatar_url: undefined,
     is_active: true,
-    organization_id: 1,
+    organization_id: '1',
     created_at: '2025-01-01T00:00:00Z',
     updated_at: '2025-01-01T00:00:00Z',
   };

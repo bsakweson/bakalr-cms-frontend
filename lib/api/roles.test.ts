@@ -21,10 +21,10 @@ describe('roleApi', () => {
       const mockResponse: RoleListResponse = {
         roles: [
           {
-            id: 1,
+            id: '1',
             name: 'Admin',
             description: 'Administrator role',
-            organization_id: 1,
+            organization_id: "1",
             is_system_role: true,
             level: 100,
             permissions: ['content:read', 'content:write'],
@@ -32,10 +32,10 @@ describe('roleApi', () => {
             updated_at: '2025-01-01T00:00:00Z',
           },
           {
-            id: 2,
+            id: '2',
             name: 'Editor',
             description: 'Editor role',
-            organization_id: 1,
+            organization_id: "1",
             is_system_role: false,
             level: 50,
             permissions: ['content:read', 'content:write'],
@@ -80,13 +80,13 @@ describe('roleApi', () => {
       const mockResponse: PermissionListResponse = {
         permissions: [
           {
-            id: 1,
+            id: '1',
             name: 'Read Content',
             description: 'View content',
             category: 'content',
           },
           {
-            id: 2,
+            id: '2',
             name: 'Write Content',
             description: 'Create and edit content',
             category: 'content',
@@ -107,7 +107,7 @@ describe('roleApi', () => {
       const mockResponse: PermissionListResponse = {
         permissions: [
           {
-            id: 1,
+            id: '1',
             name: 'Read Content',
             description: 'View content',
             category: 'content',
@@ -134,13 +134,13 @@ describe('roleApi', () => {
   describe('getRole', () => {
     it('should fetch role by id successfully', async () => {
       const mockRole: RoleResponse = {
-        id: 1,
+        id: '1',
         name: 'Admin',
         description: 'Administrator role',
         permissions: [
-          { id: 1, name: 'Read Content', category: 'content' },
-          { id: 2, name: 'Write Content', category: 'content' },
-          { id: 3, name: 'Manage Users', category: 'users' },
+          { id: '1', name: 'Read Content', category: 'content' },
+          { id: '2', name: 'Write Content', category: 'content' },
+          { id: '3', name: 'Manage Users', category: 'users' },
         ],
         is_system_role: true,
         level: 100,
@@ -148,7 +148,7 @@ describe('roleApi', () => {
 
       vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockRole } as any);
 
-      const result = await roleApi.getRole(1);
+      const result = await roleApi.getRole("1");
 
       expect(result).toEqual(mockRole);
       expect(apiClient.get).toHaveBeenCalledWith('/roles/1');
@@ -157,7 +157,7 @@ describe('roleApi', () => {
     it('should handle not found error', async () => {
       vi.mocked(apiClient.get).mockRejectedValueOnce(new Error('Role not found'));
 
-      await expect(roleApi.getRole(999)).rejects.toThrow('Role not found');
+      await expect(roleApi.getRole("999")).rejects.toThrow('Role not found');
     });
   });
 
@@ -166,16 +166,16 @@ describe('roleApi', () => {
       const createData: CreateRoleRequest = {
         name: 'Content Manager',
         description: 'Manages content',
-        permission_ids: [1, 2],
+        permission_ids: ["1", "2"],
       };
 
       const mockCreatedRole: RoleResponse = {
-        id: 3,
+        id: '3',
         name: 'Content Manager',
         description: 'Manages content',
         permissions: [
-          { id: 1, name: 'Read Content', category: 'content' },
-          { id: 2, name: 'Write Content', category: 'content' },
+          { id: '1', name: 'Read Content', category: 'content' },
+          { id: '2', name: 'Write Content', category: 'content' },
         ],
         is_system_role: false,
         level: 30,
@@ -203,7 +203,7 @@ describe('roleApi', () => {
     it('should handle invalid permissions error', async () => {
       const createData: CreateRoleRequest = {
         name: 'Bad Role',
-        permission_ids: [999],
+        permission_ids: ['999'],
       };
 
       vi.mocked(apiClient.post).mockRejectedValueOnce(new Error('Invalid permissions'));
@@ -216,17 +216,17 @@ describe('roleApi', () => {
     it('should update role successfully', async () => {
       const updateData: UpdateRoleRequest = {
         description: 'Updated description',
-        permission_ids: [1, 2, 4],
+        permission_ids: ["1", "2", "4"],
       };
 
       const mockUpdatedRole: RoleResponse = {
-        id: 3,
+        id: '3',
         name: 'Content Manager',
         description: 'Updated description',
         permissions: [
-          { id: 1, name: 'Read Content', category: 'content' },
-          { id: 2, name: 'Write Content', category: 'content' },
-          { id: 4, name: 'Delete Content', category: 'content' },
+          { id: '1', name: 'Read Content', category: 'content' },
+          { id: '2', name: 'Write Content', category: 'content' },
+          { id: '4', name: 'Delete Content', category: 'content' },
         ],
         is_system_role: false,
         level: 30,
@@ -234,7 +234,7 @@ describe('roleApi', () => {
 
       vi.mocked(apiClient.put).mockResolvedValueOnce({ data: mockUpdatedRole } as any);
 
-      const result = await roleApi.updateRole(3, updateData);
+      const result = await roleApi.updateRole("3", updateData);
 
       expect(result).toEqual(mockUpdatedRole);
       expect(apiClient.put).toHaveBeenCalledWith('/roles/3', updateData);
@@ -247,7 +247,7 @@ describe('roleApi', () => {
 
       vi.mocked(apiClient.put).mockRejectedValueOnce(new Error('Cannot modify system role'));
 
-      await expect(roleApi.updateRole(1, updateData)).rejects.toThrow('Cannot modify system role');
+      await expect(roleApi.updateRole("1", updateData)).rejects.toThrow('Cannot modify system role');
     });
   });
 
@@ -257,7 +257,7 @@ describe('roleApi', () => {
 
       vi.mocked(apiClient.delete).mockResolvedValueOnce({ data: mockResponse } as any);
 
-      const result = await roleApi.deleteRole(3);
+      const result = await roleApi.deleteRole("3");
 
       expect(result).toEqual(mockResponse);
       expect(apiClient.delete).toHaveBeenCalledWith('/roles/3');
@@ -266,13 +266,13 @@ describe('roleApi', () => {
     it('should handle system role deletion error', async () => {
       vi.mocked(apiClient.delete).mockRejectedValueOnce(new Error('Cannot delete system role'));
 
-      await expect(roleApi.deleteRole(1)).rejects.toThrow('Cannot delete system role');
+      await expect(roleApi.deleteRole("1")).rejects.toThrow('Cannot delete system role');
     });
 
     it('should handle role in use error', async () => {
       vi.mocked(apiClient.delete).mockRejectedValueOnce(new Error('Role is assigned to users'));
 
-      await expect(roleApi.deleteRole(2)).rejects.toThrow('Role is assigned to users');
+      await expect(roleApi.deleteRole("2")).rejects.toThrow('Role is assigned to users');
     });
   });
 });

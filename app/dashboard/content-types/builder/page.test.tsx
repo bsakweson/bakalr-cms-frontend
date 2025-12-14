@@ -344,11 +344,11 @@ describe('ContentTypeBuilderPage', () => {
     it('should call API with correct data on save', async () => {
       const user = userEvent.setup();
       vi.mocked(contentApi.createContentType).mockResolvedValue({
-        id: 1,
+        id: '1',
         name: 'Blog Post',
         slug: 'blog-post',
         schema: { title: { type: 'string' } },
-        organization_id: 1,
+        organization_id: '1',
         created_at: '2025-11-28T00:00:00Z',
         updated_at: '2025-11-28T00:00:00Z',
       });
@@ -396,11 +396,11 @@ describe('ContentTypeBuilderPage', () => {
     it('should navigate to content types list after successful save', async () => {
       const user = userEvent.setup();
       vi.mocked(contentApi.createContentType).mockResolvedValue({
-        id: 1,
+        id: '1',
         name: 'Blog Post',
         slug: 'blog-post',
         schema: { title: { type: 'string' } },
-        organization_id: 1,
+        organization_id: '1',
         created_at: '2025-11-28T00:00:00Z',
         updated_at: '2025-11-28T00:00:00Z',
       });

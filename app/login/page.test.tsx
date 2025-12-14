@@ -1,12 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import LoginPage from './page';
 import { useAuth } from '@/contexts/auth-context';
 
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
   useRouter: vi.fn(),
+  useSearchParams: vi.fn(),
 }));
 
 // Mock auth context
@@ -14,14 +15,27 @@ vi.mock('@/contexts/auth-context', () => ({
   useAuth: vi.fn(),
 }));
 
+// Mock social login API
+vi.mock('@/lib/api/social-login', () => ({
+  socialLoginApi: {
+    getProviders: vi.fn().mockResolvedValue({ providers: [] }),
+    getAuthorizationUrl: vi.fn(),
+  },
+  PROVIDER_INFO: {},
+}));
+
 describe('LoginPage', () => {
   const mockPush = vi.fn();
+  const mockReplace = vi.fn();
   const mockLogin = vi.fn();
+  const mockGet = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (useRouter as any).mockReturnValue({ push: mockPush });
+    (useRouter as any).mockReturnValue({ push: mockPush, replace: mockReplace });
+    (useSearchParams as any).mockReturnValue({ get: mockGet });
     (useAuth as any).mockReturnValue({ login: mockLogin });
+    mockGet.mockReturnValue(null);
   });
 
   it('should render login form', () => {

@@ -25,7 +25,7 @@ const originalCreateElement = document.createElement.bind(document);
 
 describe('ThemesPage', () => {
   const mockSystemTheme: Theme = {
-    id: 1,
+    id: '1',
     name: 'dark-chocolate',
     display_name: 'Dark Chocolate',
     description: 'Rich chocolate brown theme',
@@ -46,13 +46,13 @@ describe('ThemesPage', () => {
     },
     spacing: { base: '4px' },
     borderRadius: { sm: '4px', md: '8px', lg: '12px' },
-    organization_id: 1,
+    organization_id: '1',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z',
   };
 
   const mockCustomTheme: Theme = {
-    id: 2,
+    id: '2',
     name: 'custom-blue',
     display_name: 'Custom Blue',
     description: 'A custom blue theme',
@@ -73,7 +73,7 @@ describe('ThemesPage', () => {
     },
     spacing: { base: '8px' },
     borderRadius: { sm: '2px', md: '4px', lg: '8px' },
-    organization_id: 1,
+    organization_id: '1',
     created_at: '2024-06-15T10:30:00Z',
     updated_at: '2024-06-15T10:30:00Z',
   };

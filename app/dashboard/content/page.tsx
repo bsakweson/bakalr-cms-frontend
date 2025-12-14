@@ -8,6 +8,7 @@ import { ContentEntry, ContentType, PaginatedResponse } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { SearchInput } from '@/components/ui/search-input';
 import {
   Select,
@@ -16,12 +17,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { ContentViewDialog, ContentEditDialog } from '@/components/content';
 import { useSearch } from '@/hooks/use-search';
+import { usePreferences } from '@/contexts/preferences-context';
+import { Plus, MoreVertical, Eye, Edit, Trash2, AlertCircle, FileText } from 'lucide-react';
 
 export default function ContentPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { preferences } = usePreferences();
   const [content, setContent] = useState<PaginatedResponse<ContentEntry> | null>(null);
   const [contentTypes, setContentTypes] = useState<ContentType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,6 +49,8 @@ export default function ContentPage() {
   const [selectedEntry, setSelectedEntry] = useState<ContentEntry | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [entryToDelete, setEntryToDelete] = useState<{ id: string; title: string } | null>(null);
   
   // Filters
   const [selectedType, setSelectedType] = useState<string>(searchParams?.get('content_type_id') || 'all');
@@ -76,7 +96,7 @@ export default function ContentPage() {
     try {
       setIsLoading(true);
       setError('');
-      const params: any = { page: currentPage, page_size: 5 };
+      const params: any = { page: currentPage, page_size: preferences.pageSize };
       
       if (selectedType !== 'all') {
         params.content_type_id = selectedType;
@@ -94,12 +114,12 @@ export default function ContentPage() {
         setError('Failed to load content');
       } else {
         // Set empty content for 404 to show empty state
-        setContent({ items: [], total: 0, page: 1, page_size: 20, pages: 0 });
+        setContent({ items: [], total: 0, page: 1, page_size: preferences.pageSize, pages: 0 });
       }
     } finally {
       setIsLoading(false);
     }
-  }, [selectedType, selectedStatus, currentPage]);
+  }, [selectedType, selectedStatus, currentPage, preferences.pageSize]);
 
   useEffect(() => {
     loadContentTypes();
@@ -193,8 +213,34 @@ export default function ContentPage() {
     setSelectedEntry(null);
   };
 
+  // Delete handlers
+  const openDeleteDialog = (id: string, title: string) => {
+    setEntryToDelete({ id, title });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!entryToDelete) return;
+
+    try {
+      await contentApi.deleteContentEntry(entryToDelete.id);
+      setDeleteDialogOpen(false);
+      setEntryToDelete(null);
+      loadContent(); // Reload the list
+    } catch (err: any) {
+      setError('Failed to delete content entry: ' + (err.response?.data?.detail || err.message));
+      setDeleteDialogOpen(false);
+    }
+  };
+
+  // Helper function to get entry title for display
+  const getEntryTitle = (entry: ContentEntry): string => {
+    return entry.data?.title || entry.data?.site_name || entry.data?.name || 
+           entry.data?.template_key || entry.content_data?.title || entry.slug || 'Untitled';
+  };
+
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, 'default' | 'secondary' | 'outline'> = {
+    const variants: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
       published: 'default',
       draft: 'secondary',
       archived: 'outline',
@@ -210,16 +256,15 @@ export default function ContentPage() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-destructive">{error}</div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Content</h1>
@@ -228,7 +273,10 @@ export default function ContentPage() {
           </p>
         </div>
         <Button asChild>
-          <Link href="/dashboard/content/new">Create Content</Link>
+          <Link href="/dashboard/content/new">
+            <Plus className="h-4 w-4 mr-2" />
+            Create Content
+          </Link>
         </Button>
       </div>
 
@@ -291,115 +339,150 @@ export default function ContentPage() {
         </CardContent>
       </Card>
 
-      {/* Always render the grid container for test compatibility */}
-      <div className="grid gap-4" role="grid" data-testid="content-list">
-        {displayContent.length > 0 ? (
-          displayContent.map((entry) => (
-            <Card 
-              key={entry.id} 
-              className="cursor-pointer hover:border-primary/50 hover:shadow-md transition-all"
-              onClick={() => handleEntryClick(entry)}
-            >
+      {/* Content Grid - consistent with content-types page */}
+      {displayContent.length > 0 ? (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" role="grid" data-testid="content-list">
+          {displayContent.map((entry) => (
+            <Card key={entry.id} className="relative hover:shadow-md transition-shadow">
               <CardHeader>
                 <div className="flex items-start justify-between">
-                  <div className="space-y-1 flex-1">
-                    <CardTitle className="text-xl hover:text-primary transition-colors">
-                      {entry.data?.title || entry.data?.site_name || entry.data?.name || entry.content_data?.title || entry.slug}
-                    </CardTitle>
-                    <CardDescription>
-                      {entry.content_type?.name || 'Unknown Type'} • {getStatusBadge(entry.status)}
-                    </CardDescription>
+                  <div className="space-y-1 flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <CardTitle className="text-lg truncate">
+                        {getEntryTitle(entry)}
+                      </CardTitle>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="outline" className="text-xs">
+                        {entry.content_type?.name || 'Unknown Type'}
+                      </Badge>
+                      {getStatusBadge(entry.status)}
+                    </div>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedEntry(entry);
-                      setEditDialogOpen(true);
-                    }}
-                  >
-                    Edit
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleEntryClick(entry)}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Details
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => {
+                        setSelectedEntry(entry);
+                        setEditDialogOpen(true);
+                      }}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-destructive"
+                        onClick={() => openDeleteDialog(entry.id, getEntryTitle(entry))}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </CardHeader>
-              {(entry.data?.description || entry.data?.tagline || entry.content_data?.description) && (
-                <CardContent>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {entry.data?.description || entry.data?.tagline || entry.content_data?.description}
-                  </p>
-                </CardContent>
-              )}
+              <CardContent>
+                <div className="space-y-2 text-sm">
+                  {(entry.data?.description || entry.data?.tagline || entry.content_data?.description || entry.data?.subject) && (
+                    <p className="text-muted-foreground line-clamp-2">
+                      {entry.data?.description || entry.data?.tagline || entry.content_data?.description || entry.data?.subject}
+                    </p>
+                  )}
+                  <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
+                    <span>Slug: {entry.slug}</span>
+                    {entry.updated_at && (
+                      <span>Updated: {new Date(entry.updated_at).toLocaleDateString()}</span>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
             </Card>
-          ))
-        ) : (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-16">
-              <div className="rounded-full bg-gray-100 p-6 mb-6">
-                <span className="text-6xl">📝</span>
-              </div>
-              <h3 className="text-2xl font-semibold mb-2">No content found</h3>
-              <p className="text-muted-foreground mb-6 text-center max-w-lg">
-                {selectedType !== 'all' || selectedStatus !== 'all' || isSearchMode ? (
-                  <>
-                    No content matches your current filters. Try adjusting your search criteria or{' '}
-                    <button
-                      onClick={handleClearFilters}
-                      className="text-primary underline hover:no-underline"
-                    >
-                      clearing all filters
-                    </button>
-                    .
-                  </>
-                ) : contentTypes.length === 0 ? (
-                  <>
-                    You need to create a content type first before you can add content.{' '}
-                    <Link href="/dashboard/content-types/builder" className="text-primary underline hover:no-underline">
-                      Create a content type
-                    </Link>{' '}
-                    to get started.
-                  </>
-                ) : (
-                  'Get started by creating your first content entry. Content entries are instances of your content types.'
-                )}
-              </p>
-              {contentTypes.length > 0 && (
-                <Button asChild size="lg">
-                  <Link href="/dashboard/content/new">Create Your First Content</Link>
-                </Button>
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <div className="rounded-full bg-gray-100 p-6 mb-6">
+              <FileText className="h-12 w-12 text-muted-foreground" />
+            </div>
+            <h3 className="text-2xl font-semibold mb-2">
+              {contentTypes.length === 0 ? 'No Content Types Yet' : 'No content found'}
+            </h3>
+            <p className="text-muted-foreground mb-6 text-center max-w-lg">
+              {selectedType !== 'all' || selectedStatus !== 'all' || isSearchMode ? (
+                <>
+                  No content matches your current filters. Try adjusting your search criteria or{' '}
+                  <button
+                    onClick={handleClearFilters}
+                    className="text-primary underline hover:no-underline"
+                  >
+                    clearing all filters
+                  </button>
+                  .
+                </>
+              ) : contentTypes.length === 0 ? (
+                <>
+                  You need to create a content type first before you can add content.{' '}
+                  <Link href="/dashboard/content-types/builder" className="text-primary underline hover:no-underline">
+                    Create a content type
+                  </Link>{' '}
+                  to get started.
+                </>
+              ) : (
+                'Get started by creating your first content entry. Content entries are instances of your content types.'
               )}
-            </CardContent>
-          </Card>
-        )}
-      </div>
+            </p>
+            {contentTypes.length > 0 && (
+              <Button asChild size="lg">
+                <Link href="/dashboard/content/new">
+                  <Plus className="h-5 w-5 mr-2" />
+                  Create Your First Content
+                </Link>
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Showing count */}
+      {displayContent.length > 0 && (
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <div>
+            Showing {displayContent.length} {isSearchMode ? `result${displayContent.length !== 1 ? 's' : ''}` : `of ${content?.total || 0} entr${(content?.total || 0) !== 1 ? 'ies' : 'y'}`}
+          </div>
+        </div>
+      )}
 
       {/* Pagination - show when not searching and content exists */}
-      {!isSearchMode && content && content.items.length > 0 && (
-        <div className="flex items-center justify-between border-t pt-4">
-          <div className="text-sm text-muted-foreground">
-            Showing {((currentPage - 1) * (content.page_size || 10)) + 1} - {Math.min(currentPage * (content.page_size || 10), content.total)} of {content.total} entries
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage(currentPage - 1)}
-            >
-              ← Previous
-            </Button>
-            <span className="text-sm text-muted-foreground px-2">
-              Page {currentPage} of {content.pages || content.total_pages || 1}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={currentPage >= (content.pages || content.total_pages || 1)}
-              onClick={() => setCurrentPage(currentPage + 1)}
-            >
-              Next →
-            </Button>
-          </div>
+      {!isSearchMode && content && content.items.length > 0 && (content.pages || content.total_pages || 1) > 1 && (
+        <div className="flex items-center justify-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(currentPage - 1)}
+          >
+            ← Previous
+          </Button>
+          <span className="text-sm text-muted-foreground px-4">
+            Page {currentPage} of {content.pages || content.total_pages || 1}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={currentPage >= (content.pages || content.total_pages || 1)}
+            onClick={() => setCurrentPage(currentPage + 1)}
+          >
+            Next →
+          </Button>
         </div>
       )}
 
@@ -419,6 +502,26 @@ export default function ContentPage() {
         onSaved={handleSaved}
         onBack={handleBackToView}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Content Entry</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{entryToDelete?.title}"? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Delete Entry
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

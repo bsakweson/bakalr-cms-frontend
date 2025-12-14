@@ -45,12 +45,12 @@ describe('DashboardLayout', () => {
   const mockLogout = vi.fn();
 
   const mockUser = {
-    id: 1,
+    id: '1',
     email: 'test@example.com',
     first_name: 'Test',
     last_name: 'User',
     organization: {
-      id: 1,
+      id: '1',
       name: 'Test Organization',
     },
   };
@@ -168,9 +168,9 @@ describe('DashboardLayout', () => {
   it('should handle user with only email', async () => {
     (useAuth as any).mockReturnValue({
       user: {
-        id: 1,
+        id: '1',
         email: 'john@example.com',
-        organization: { id: 1, name: 'Test Org' },
+        organization: { id: '1', name: 'Test Org' },
       },
       logout: mockLogout,
     });
@@ -383,10 +383,10 @@ describe('DashboardLayout', () => {
   it('should handle user with only username', async () => {
     (useAuth as any).mockReturnValue({
       user: {
-        id: 1,
+        id: '1',
         username: 'johndoe',
         email: 'john@example.com',
-        organization: { id: 1, name: 'Test Org' },
+        organization: { id: '1', name: 'Test Org' },
       },
       logout: mockLogout,
     });

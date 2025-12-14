@@ -96,7 +96,7 @@ describe('Analytics API', () => {
         ],
         recent_uploads: [
           {
-            id: 1,
+            id: '1',
             filename: 'photo.jpg',
             mime_type: 'image/jpeg',
             size: 2048000,
@@ -140,7 +140,7 @@ describe('Analytics API', () => {
         actions_30d: 1024,
         recent_activities: [
           {
-            id: 1,
+            id: '1',
             action: 'created',
             resource_type: 'content',
             description: 'Created new blog post',
@@ -148,7 +148,7 @@ describe('Analytics API', () => {
             created_at: '2025-11-28T10:30:00Z',
           },
           {
-            id: 2,
+            id: '2',
             action: 'updated',
             resource_type: 'media',
             description: 'Updated media file',
@@ -288,8 +288,8 @@ describe('Analytics API', () => {
           new_users_7d: 5,
           new_users_30d: 8,
           top_contributors: [
-            { id: 1, name: 'John Doe', email: 'john@example.com', entries_count: 42 },
-            { id: 2, name: 'Jane Smith', email: 'jane@example.com', entries_count: 38 },
+            { id: '1', name: 'John Doe', email: 'john@example.com', entries_count: 42 },
+            { id: '2', name: 'Jane Smith', email: 'jane@example.com', entries_count: 38 },
           ],
         },
         media_stats: {

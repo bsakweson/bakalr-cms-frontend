@@ -16,7 +16,7 @@ vi.mock('@/lib/api/tenant', () => ({
 // Mock the auth context
 const mockLogin = vi.fn();
 const mockUser = {
-  id: 1,
+  id: '1',
   email: 'test@example.com',
   first_name: 'Test',
   last_name: 'User',
@@ -60,7 +60,7 @@ Object.defineProperty(window, 'location', {
 describe('OrganizationSelector', () => {
   const mockOrganizations: OrganizationMembership[] = [
     {
-      organization_id: 1,
+      organization_id: '1',
       organization_name: 'Org A',
       organization_slug: 'org-a',
       is_default: true,
@@ -69,7 +69,7 @@ describe('OrganizationSelector', () => {
       joined_at: '2025-01-01T00:00:00Z',
     },
     {
-      organization_id: 2,
+      organization_id: '2',
       organization_name: 'Org B',
       organization_slug: 'org-b',
       is_default: false,
@@ -78,7 +78,7 @@ describe('OrganizationSelector', () => {
       joined_at: '2025-02-01T00:00:00Z',
     },
     {
-      organization_id: 3,
+      organization_id: '3',
       organization_name: 'Org C',
       organization_slug: 'org-c',
       is_default: false,
@@ -89,7 +89,7 @@ describe('OrganizationSelector', () => {
   ];
 
   const mockApiResponse: UserOrganizationsResponse = {
-    current_organization_id: 1,
+    current_organization_id: '1',
     organizations: mockOrganizations,
     total: 3,
   };
@@ -107,7 +107,7 @@ describe('OrganizationSelector', () => {
   describe('Initial Rendering', () => {
     it('should not render when only one organization exists', async () => {
       vi.mocked(tenantApi.listOrganizations).mockResolvedValue({
-        current_organization_id: 1,
+        current_organization_id: '1',
         organizations: [mockOrganizations[0]],
         total: 1,
       });
@@ -248,7 +248,7 @@ describe('OrganizationSelector', () => {
     it('should display "Default" badge for default organization that is not current', async () => {
       const user = userEvent.setup();
       vi.mocked(tenantApi.listOrganizations).mockResolvedValue({
-        current_organization_id: 2, // Org B is current
+        current_organization_id: '2', // Org B is current
         organizations: mockOrganizations,
         total: 3,
       });
@@ -319,7 +319,7 @@ describe('OrganizationSelector', () => {
       vi.mocked(tenantApi.switchOrganization).mockResolvedValue({
         access_token: 'new-access-token',
         refresh_token: 'new-refresh-token',
-        organization_id: 2,
+        organization_id: '2',
         organization_name: 'Org B',
         message: 'Successfully switched to Org B',
       });
@@ -345,7 +345,7 @@ describe('OrganizationSelector', () => {
 
       await waitFor(() => {
         expect(tenantApi.switchOrganization).toHaveBeenCalledWith({
-          organization_id: 2,
+          organization_id: '2',
         });
       });
     });
@@ -384,7 +384,7 @@ describe('OrganizationSelector', () => {
       vi.mocked(tenantApi.switchOrganization).mockResolvedValue({
         access_token: 'new-access-token-123',
         refresh_token: 'new-refresh-token-456',
-        organization_id: 2,
+        organization_id: '2',
         organization_name: 'Org B',
         message: 'Successfully switched to Org B',
       });
@@ -417,7 +417,7 @@ describe('OrganizationSelector', () => {
       vi.mocked(tenantApi.switchOrganization).mockResolvedValue({
         access_token: 'new-access-token',
         refresh_token: 'new-refresh-token',
-        organization_id: 2,
+        organization_id: '2',
         organization_name: 'Org B',
         message: 'Successfully switched to Org B',
       });
@@ -479,7 +479,7 @@ describe('OrganizationSelector', () => {
       resolveSwitch!({
         access_token: 'token',
         refresh_token: 'refresh',
-        organization_id: 2,
+        organization_id: '2',
         organization_name: 'Org B',
         message: 'Switched',
       });
@@ -528,7 +528,7 @@ describe('OrganizationSelector', () => {
       resolveSwitch!({
         access_token: 'token',
         refresh_token: 'refresh',
-        organization_id: 2,
+        organization_id: '2',
         organization_name: 'Org B',
         message: 'Switched',
       });
@@ -575,7 +575,7 @@ describe('OrganizationSelector', () => {
       const user = userEvent.setup();
       const orgsWithNoRoles: OrganizationMembership[] = [
         {
-          organization_id: 1,
+          organization_id: '1',
           organization_name: 'Org A',
           organization_slug: 'org-a',
           is_default: true,
@@ -584,7 +584,7 @@ describe('OrganizationSelector', () => {
           joined_at: '2025-01-01T00:00:00Z',
         },
         {
-          organization_id: 2,
+          organization_id: '2',
           organization_name: 'Org B',
           organization_slug: 'org-b',
           is_default: false,
@@ -595,7 +595,7 @@ describe('OrganizationSelector', () => {
       ];
 
       vi.mocked(tenantApi.listOrganizations).mockResolvedValue({
-        current_organization_id: 1,
+        current_organization_id: '1',
         organizations: orgsWithNoRoles,
         total: 2,
       });
@@ -634,7 +634,7 @@ describe('OrganizationSelector', () => {
 
     it('should display "Select Organization" when current org not found', async () => {
       vi.mocked(tenantApi.listOrganizations).mockResolvedValue({
-        current_organization_id: 999, // Non-existent org
+        current_organization_id: '999', // Non-existent org
         organizations: mockOrganizations,
         total: 3,
       });

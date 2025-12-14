@@ -22,7 +22,7 @@ const originalAlert = window.alert;
 describe('TranslationsPage', () => {
   const mockLocales: Locale[] = [
     {
-      id: 1,
+      id: '1',
       code: 'en',
       name: 'English',
       native_name: 'English',
@@ -30,12 +30,12 @@ describe('TranslationsPage', () => {
       is_enabled: true,
       is_active: true,
       auto_translate: false,
-      organization_id: 1,
+      organization_id: '1',
       created_at: '2025-01-01T00:00:00Z',
       updated_at: '2025-01-01T00:00:00Z',
     },
     {
-      id: 2,
+      id: '2',
       code: 'es',
       name: 'Spanish',
       native_name: 'Español',
@@ -43,12 +43,12 @@ describe('TranslationsPage', () => {
       is_enabled: true,
       is_active: true,
       auto_translate: true,
-      organization_id: 1,
+      organization_id: '1',
       created_at: '2025-01-02T00:00:00Z',
       updated_at: '2025-01-02T00:00:00Z',
     },
     {
-      id: 3,
+      id: '3',
       code: 'fr',
       name: 'French',
       native_name: 'Français',
@@ -56,7 +56,7 @@ describe('TranslationsPage', () => {
       is_enabled: false,
       is_active: true,
       auto_translate: false,
-      organization_id: 1,
+      organization_id: '1',
       created_at: '2025-01-03T00:00:00Z',
       updated_at: '2025-01-03T00:00:00Z',
     },
@@ -269,7 +269,7 @@ describe('TranslationsPage', () => {
     it('should create locale when form is submitted', async () => {
       const user = userEvent.setup();
       vi.mocked(translationApi.createLocale).mockResolvedValue({
-        id: 4,
+        id: '4',
         code: 'de',
         name: 'German',
         native_name: 'Deutsch',
@@ -277,7 +277,7 @@ describe('TranslationsPage', () => {
         is_enabled: true,
         is_active: true,
         auto_translate: false,
-        organization_id: 1,
+        organization_id: '1',
         created_at: '2025-01-04T00:00:00Z',
         updated_at: '2025-01-04T00:00:00Z',
       });
@@ -350,7 +350,7 @@ describe('TranslationsPage', () => {
     it('should close dialog after successful creation', async () => {
       const user = userEvent.setup();
       vi.mocked(translationApi.createLocale).mockResolvedValue({
-        id: 5,
+        id: '5',
         code: 'it',
         name: 'Italian',
         native_name: 'Italiano',
@@ -358,7 +358,7 @@ describe('TranslationsPage', () => {
         is_enabled: true,
         is_active: true,
         auto_translate: false,
-        organization_id: 1,
+        organization_id: '1',
         created_at: '2025-01-05T00:00:00Z',
         updated_at: '2025-01-05T00:00:00Z',
       });
@@ -417,7 +417,7 @@ describe('TranslationsPage', () => {
     it('should update locale when edit form is submitted', async () => {
       const user = userEvent.setup();
       vi.mocked(translationApi.updateLocale).mockResolvedValue({
-        id: 2,
+        id: '2',
         code: 'es',
         name: 'Spanish (Updated)',
         native_name: 'Español',
@@ -425,7 +425,7 @@ describe('TranslationsPage', () => {
         is_enabled: true,
         is_active: true,
         auto_translate: true,
-        organization_id: 1,
+        organization_id: '1',
         created_at: '2025-01-02T00:00:00Z',
         updated_at: '2025-01-06T00:00:00Z',
       });

@@ -815,7 +815,7 @@ describe('RichTextEditor', () => {
 
     it('should apply active class to heading 1 when active', () => {
       mockEditor.isActive.mockImplementation(
-        (type, attrs) => type === 'heading' && attrs?.level === 1
+        (type, attrs) => type === 'heading' && attrs?.level === '1'
       );
 
       render(

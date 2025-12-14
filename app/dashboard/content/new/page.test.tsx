@@ -28,7 +28,7 @@ describe('NewContentPage', () => {
 
   const mockContentTypes = [
     {
-      id: 1,
+      id: '1',
       name: 'Blog Post',
       slug: 'blog-post',
       schema: {
@@ -51,7 +51,7 @@ describe('NewContentPage', () => {
       },
     },
     {
-      id: 2,
+      id: '2',
       name: 'Product',
       slug: 'product',
       schema: {

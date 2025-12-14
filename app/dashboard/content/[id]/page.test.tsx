@@ -555,7 +555,7 @@ describe('ContentEntryEditorPage', () => {
     it('should create new entry in create mode', async () => {
       const user = userEvent.setup();
       mockParams.id = 'new';
-      const newEntry = { ...mockEntry, id: 2 };
+      const newEntry = { ...mockEntry, id: '2' };
       vi.mocked(contentApi.createContentEntry).mockResolvedValue(newEntry);
 
       render(<ContentEntryEditorPage />);

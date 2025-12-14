@@ -40,7 +40,7 @@ vi.mock('@/lib/api/content', () => ({
 describe('Integration: Organization Switching Workflow', () => {
   // Mock data
   const mockOrgA: OrganizationMembership = {
-    organization_id: 1,
+    organization_id: '1',
     organization_name: 'Agency A',
     organization_slug: 'agency-a',
     is_default: true,
@@ -50,7 +50,7 @@ describe('Integration: Organization Switching Workflow', () => {
   };
 
   const mockOrgB: OrganizationMembership = {
-    organization_id: 2,
+    organization_id: '2',
     organization_name: 'Client B',
     organization_slug: 'client-b',
     is_default: false,
@@ -60,7 +60,7 @@ describe('Integration: Organization Switching Workflow', () => {
   };
 
   const mockOrgC: OrganizationMembership = {
-    organization_id: 3,
+    organization_id: '3',
     organization_name: 'Partner C',
     organization_slug: 'partner-c',
     is_default: false,
@@ -70,7 +70,7 @@ describe('Integration: Organization Switching Workflow', () => {
   };
 
   const mockUserOrganizations: UserOrganizationsResponse = {
-    current_organization_id: 1,
+    current_organization_id: '1',
     organizations: [mockOrgA, mockOrgB, mockOrgC],
     total: 3
   };
@@ -79,7 +79,7 @@ describe('Integration: Organization Switching Workflow', () => {
     message: 'Successfully switched to Client B',
     access_token: 'new_jwt_token_for_org_b',
     refresh_token: 'new_refresh_token_for_org_b',
-    organization_id: 2,
+    organization_id: '2',
     organization_name: 'Client B'
   };
 
@@ -87,13 +87,13 @@ describe('Integration: Organization Switching Workflow', () => {
     message: 'Successfully switched to Agency A',
     access_token: 'new_jwt_token_for_org_a',
     refresh_token: 'new_refresh_token_for_org_a',
-    organization_id: 1,
+    organization_id: '1',
     organization_name: 'Agency A'
   };
 
   const mockContentOrgA: ContentEntry = {
-    id: 100,
-    content_type_id: 1,
+    id: '100',
+    content_type_id: '1',
     slug: 'org-a-post',
     status: 'published',
     content_data: {
@@ -101,15 +101,15 @@ describe('Integration: Organization Switching Workflow', () => {
       body: 'This is content from Agency A'
     },
     version: 1,
-    author_id: 1,
+    author_id: '1',
     published_at: '2025-11-20T10:00:00Z',
     created_at: '2025-11-20T09:00:00Z',
     updated_at: '2025-11-20T10:00:00Z'
   };
 
   const mockContentOrgB: ContentEntry = {
-    id: 200,
-    content_type_id: 1,
+    id: '200',
+    content_type_id: '1',
     slug: 'org-b-post',
     status: 'published',
     content_data: {
@@ -117,7 +117,7 @@ describe('Integration: Organization Switching Workflow', () => {
       body: 'This is content from Client B'
     },
     version: 1,
-    author_id: 2,
+    author_id: '2',
     published_at: '2025-11-22T10:00:00Z',
     created_at: '2025-11-22T09:00:00Z',
     updated_at: '2025-11-22T10:00:00Z'
@@ -158,9 +158,9 @@ describe('Integration: Organization Switching Workflow', () => {
 
       const result = await tenantApi.listOrganizations();
 
-      const orgA = result.organizations.find(org => org.organization_id === 1);
-      const orgB = result.organizations.find(org => org.organization_id === 2);
-      const orgC = result.organizations.find(org => org.organization_id === 3);
+      const orgA = result.organizations.find(org => org.organization_id === '1');
+      const orgB = result.organizations.find(org => org.organization_id === '2');
+      const orgC = result.organizations.find(org => org.organization_id === '3');
 
       expect(orgA?.roles).toContain('admin');
       expect(orgA?.roles).toContain('editor');
@@ -171,13 +171,13 @@ describe('Integration: Organization Switching Workflow', () => {
 
   describe('Step 2: Switch Organization', () => {
     it('should switch to another organization', async () => {
-      const switchRequest: SwitchOrganizationRequest = { organization_id: 2 };
+      const switchRequest: SwitchOrganizationRequest = { organization_id: "2" };
       vi.mocked(tenantApi.switchOrganization).mockResolvedValue(mockSwitchToOrgBResponse);
 
       const result = await tenantApi.switchOrganization(switchRequest);
 
       expect(result).toEqual(mockSwitchToOrgBResponse);
-      expect(result.organization_id).toBe(2);
+      expect(result.organization_id).toBe('2');
       expect(result.organization_name).toBe('Client B');
       expect(result.access_token).toBe('new_jwt_token_for_org_b');
       expect(result.refresh_token).toBe('new_refresh_token_for_org_b');
@@ -185,7 +185,7 @@ describe('Integration: Organization Switching Workflow', () => {
     });
 
     it('should return new auth tokens on organization switch', async () => {
-      const switchRequest: SwitchOrganizationRequest = { organization_id: 2 };
+      const switchRequest: SwitchOrganizationRequest = { organization_id: "2" };
       vi.mocked(tenantApi.switchOrganization).mockResolvedValue(mockSwitchToOrgBResponse);
 
       const result = await tenantApi.switchOrganization(switchRequest);
@@ -197,7 +197,7 @@ describe('Integration: Organization Switching Workflow', () => {
     });
 
     it('should handle switch errors gracefully', async () => {
-      const switchRequest: SwitchOrganizationRequest = { organization_id: 999 };
+      const switchRequest: SwitchOrganizationRequest = { organization_id: "999" };
       vi.mocked(tenantApi.switchOrganization).mockRejectedValue(
         new Error('Organization not found or access denied')
       );
@@ -209,14 +209,14 @@ describe('Integration: Organization Switching Workflow', () => {
 
     it('should allow switching back to original organization', async () => {
       // Switch to Org B
-      const switchToB: SwitchOrganizationRequest = { organization_id: 2 };
+      const switchToB: SwitchOrganizationRequest = { organization_id: "2" };
       vi.mocked(tenantApi.switchOrganization).mockResolvedValueOnce(mockSwitchToOrgBResponse);
       
       const resultB = await tenantApi.switchOrganization(switchToB);
-      expect(resultB.organization_id).toBe(2);
+      expect(resultB.organization_id).toBe('2');
 
       // Switch back to Org A
-      const switchToA: SwitchOrganizationRequest = { organization_id: 1 };
+      const switchToA: SwitchOrganizationRequest = { organization_id: "1" };
       vi.mocked(tenantApi.switchOrganization).mockResolvedValueOnce(mockSwitchToOrgAResponse);
       
       const resultA = await tenantApi.switchOrganization(switchToA);
@@ -238,8 +238,8 @@ describe('Integration: Organization Switching Workflow', () => {
       const result = await contentApi.getContentEntries();
 
       expect(result.items).toHaveLength(1);
-      expect(result.items[0].id).toBe(100);
-      expect(result.items[0].content_data.title).toBe('Agency A Blog Post');
+      expect(result.items[0].id).toBe('100');
+      expect(result.items[0]!.content_data!.title).toBe('Agency A Blog Post');
     });
 
     it('should only show content from current organization (Org B)', async () => {
@@ -254,10 +254,10 @@ describe('Integration: Organization Switching Workflow', () => {
       const result = await contentApi.getContentEntries();
 
       expect(result.items).toHaveLength(1);
-      expect(result.items[0].id).toBe(200);
-      expect(result.items[0].content_data.title).toBe('Client B Article');
+      expect(result.items[0].id).toBe('200');
+      expect(result.items[0]!.content_data!.title).toBe('Client B Article');
       // Verify Org A content is not present
-      expect(result.items.find((item: ContentEntry) => item.id === 100)).toBeUndefined();
+      expect(result.items.find((item: ContentEntry) => item.id === '100')).toBeUndefined();
     });
 
     it('should not allow access to content from other organizations', async () => {
@@ -266,14 +266,14 @@ describe('Integration: Organization Switching Workflow', () => {
         new Error('Content not found or access denied')
       );
 
-      await expect(contentApi.getContentEntry(100)).rejects.toThrow(
+      await expect(contentApi.getContentEntry("100")).rejects.toThrow(
         'Content not found or access denied'
       );
     });
 
     it('should isolate content creation per organization', async () => {
       const createRequest: Partial<ContentEntry> = {
-        content_type_id: 1,
+        content_type_id: '1',
         slug: 'new-post',
         status: 'draft',
         content_data: {
@@ -285,7 +285,7 @@ describe('Integration: Organization Switching Workflow', () => {
       // Content created in Org B should belong to Org B
       const createdContent: ContentEntry = {
         ...mockContentOrgB,
-        id: 201,
+        id: '201',
         slug: 'new-post',
         status: 'draft',
         content_data: createRequest.content_data
@@ -296,7 +296,7 @@ describe('Integration: Organization Switching Workflow', () => {
       const result = await contentApi.createContentEntry(createRequest);
 
       expect(result.id).toBe(201);
-      expect(result.content_data.title).toBe('New Post in Org B');
+      expect(result.content_data!.title).toBe('New Post in Org B');
       expect(contentApi.createContentEntry).toHaveBeenCalledWith(createRequest);
     });
   });
@@ -314,7 +314,7 @@ describe('Integration: Organization Switching Workflow', () => {
       const result = await contentApi.getContentEntries();
 
       // All returned content should belong to current org
-      expect(result.items.every((item: ContentEntry) => item.id === 100)).toBe(true);
+      expect(result.items.every((item: ContentEntry) => item.id === '100')).toBe(true);
       expect(result.total).toBe(1);
     });
 
@@ -327,12 +327,12 @@ describe('Integration: Organization Switching Workflow', () => {
       vi.mocked(contentApi.getContentEntries).mockResolvedValueOnce(firstResponse);
 
       const firstResult = await contentApi.getContentEntries();
-      expect(firstResult.items[0].id).toBe(200);
+      expect(firstResult.items[0].id).toBe('200');
 
       // Second request - should still be in same org
       vi.mocked(contentApi.getContentEntries).mockResolvedValueOnce(firstResponse);
       const secondResult = await contentApi.getContentEntries();
-      expect(secondResult.items[0].id).toBe(200);
+      expect(secondResult.items[0].id).toBe('200');
     });
 
     it('should update organization context after switching', async () => {
@@ -344,10 +344,10 @@ describe('Integration: Organization Switching Workflow', () => {
       vi.mocked(contentApi.getContentEntries).mockResolvedValueOnce(orgAResponse);
 
       const beforeSwitch = await contentApi.getContentEntries();
-      expect(beforeSwitch.items[0].id).toBe(100);
+      expect(beforeSwitch.items[0].id).toBe('100');
 
       // Switch to Org B
-      const switchRequest: SwitchOrganizationRequest = { organization_id: 2 };
+      const switchRequest: SwitchOrganizationRequest = { organization_id: "2" };
       vi.mocked(tenantApi.switchOrganization).mockResolvedValue(mockSwitchToOrgBResponse);
       await tenantApi.switchOrganization(switchRequest);
 
@@ -359,7 +359,7 @@ describe('Integration: Organization Switching Workflow', () => {
       vi.mocked(contentApi.getContentEntries).mockResolvedValueOnce(orgBResponse);
 
       const afterSwitch = await contentApi.getContentEntries();
-      expect(afterSwitch.items[0].id).toBe(200);
+      expect(afterSwitch.items[0].id).toBe('200');
     });
   });
 
@@ -378,13 +378,13 @@ describe('Integration: Organization Switching Workflow', () => {
       };
       vi.mocked(contentApi.getContentEntries).mockResolvedValueOnce(orgAContent);
       const contentOrgA = await contentApi.getContentEntries();
-      expect(contentOrgA.items[0].content_data.title).toBe('Agency A Blog Post');
+      expect(contentOrgA.items[0]!.content_data!.title).toBe('Agency A Blog Post');
 
       // Step 3: Switch to Org B
-      const switchToB: SwitchOrganizationRequest = { organization_id: 2 };
+      const switchToB: SwitchOrganizationRequest = { organization_id: "2" };
       vi.mocked(tenantApi.switchOrganization).mockResolvedValueOnce(mockSwitchToOrgBResponse);
       const switchResult = await tenantApi.switchOrganization(switchToB);
-      expect(switchResult.organization_id).toBe(2);
+      expect(switchResult.organization_id).toBe('2');
 
       // Step 4: View content in Org B (different content)
       const orgBContent: PaginatedResponse<ContentEntry> = {
@@ -393,32 +393,32 @@ describe('Integration: Organization Switching Workflow', () => {
       };
       vi.mocked(contentApi.getContentEntries).mockResolvedValueOnce(orgBContent);
       const contentOrgB = await contentApi.getContentEntries();
-      expect(contentOrgB.items[0].content_data.title).toBe('Client B Article');
-      expect(contentOrgB.items[0].id).not.toBe(contentOrgA.items[0].id);
+      expect(contentOrgB.items[0]!.content_data!.title).toBe('Client B Article');
+      expect(contentOrgB.items[0]!.id).not.toBe(contentOrgA.items[0]!.id);
     });
 
     it('should handle multiple organization switches', async () => {
       // Switch A → B
-      const switchToB: SwitchOrganizationRequest = { organization_id: 2 };
+      const switchToB: SwitchOrganizationRequest = { organization_id: "2" };
       vi.mocked(tenantApi.switchOrganization).mockResolvedValueOnce(mockSwitchToOrgBResponse);
       const resultB = await tenantApi.switchOrganization(switchToB);
-      expect(resultB.organization_id).toBe(2);
+      expect(resultB.organization_id).toBe('2');
 
       // Switch B → C
-      const switchToC: SwitchOrganizationRequest = { organization_id: 3 };
+      const switchToC: SwitchOrganizationRequest = { organization_id: "3" };
       const mockSwitchToOrgCResponse: SwitchOrganizationResponse = {
         message: 'Successfully switched to Partner C',
         access_token: 'new_jwt_token_for_org_c',
         refresh_token: 'new_refresh_token_for_org_c',
-        organization_id: 3,
+        organization_id: '3',
         organization_name: 'Partner C'
       };
       vi.mocked(tenantApi.switchOrganization).mockResolvedValueOnce(mockSwitchToOrgCResponse);
       const resultC = await tenantApi.switchOrganization(switchToC);
-      expect(resultC.organization_id).toBe(3);
+      expect(resultC.organization_id).toBe('3');
 
       // Switch C → A
-      const switchToA: SwitchOrganizationRequest = { organization_id: 1 };
+      const switchToA: SwitchOrganizationRequest = { organization_id: "1" };
       vi.mocked(tenantApi.switchOrganization).mockResolvedValueOnce(mockSwitchToOrgAResponse);
       const resultA = await tenantApi.switchOrganization(switchToA);
       expect(resultA.organization_id).toBe(1);
@@ -427,7 +427,7 @@ describe('Integration: Organization Switching Workflow', () => {
     it('should maintain data isolation throughout workflow', async () => {
       // Create content in Org A
       const createInOrgA: Partial<ContentEntry> = {
-        content_type_id: 1,
+        content_type_id: '1',
         slug: 'org-a-exclusive',
         status: 'published',
         content_data: {
@@ -437,7 +437,7 @@ describe('Integration: Organization Switching Workflow', () => {
       };
       vi.mocked(contentApi.createContentEntry).mockResolvedValueOnce({
         ...mockContentOrgA,
-        id: 101,
+        id: '101',
         slug: 'org-a-exclusive',
         content_data: createInOrgA.content_data
       });
@@ -445,7 +445,7 @@ describe('Integration: Organization Switching Workflow', () => {
       expect(createdOrgA.id).toBe(101);
 
       // Switch to Org B
-      const switchToB: SwitchOrganizationRequest = { organization_id: 2 };
+      const switchToB: SwitchOrganizationRequest = { organization_id: "2" };
       vi.mocked(tenantApi.switchOrganization).mockResolvedValue(mockSwitchToOrgBResponse);
       await tenantApi.switchOrganization(switchToB);
 
@@ -458,8 +458,8 @@ describe('Integration: Organization Switching Workflow', () => {
       const contentInOrgB = await contentApi.getContentEntries();
       
       expect(contentInOrgB.items).toHaveLength(1);
-      expect(contentInOrgB.items.find((item: ContentEntry) => item.id === 101)).toBeUndefined(); // Org A content not visible
-      expect(contentInOrgB.items[0].id).toBe(200); // Only Org B content
+      expect(contentInOrgB.items.find((item: ContentEntry) => item.id === '101')).toBeUndefined(); // Org A content not visible
+      expect(contentInOrgB.items[0]!.id).toBe('200'); // Only Org B content
     });
   });
 });

@@ -82,7 +82,7 @@ export const themeApi = {
     return response.data;
   },
 
-  async getTheme(id: number): Promise<Theme> {
+  async getTheme(id: string): Promise<Theme> {
     const response = await apiClient.get(`/themes/${id}`);
     return response.data;
   },
@@ -121,7 +121,7 @@ export const themeApi = {
     return response.data;
   },
 
-  async getCSSVariables(id: number): Promise<{ css: string; variables: Record<string, string> }> {
+  async getCSSVariables(id: string): Promise<{ css: string; variables: Record<string, string> }> {
     const response = await apiClient.get(`/themes/${id}/css-variables`);
     return response.data;
   },

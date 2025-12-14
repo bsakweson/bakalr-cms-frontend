@@ -7,7 +7,7 @@ import { analyticsApi } from '@/lib/api';
 vi.mock('@/contexts/auth-context', () => ({
   useAuth: () => ({
     user: {
-      id: 1,
+      id: '1',
       email: 'test@example.com',
       first_name: 'Test',
       last_name: 'User',
@@ -64,9 +64,9 @@ describe('DashboardPage', () => {
     new_users_7d: 3,
     new_users_30d: 5,
     top_contributors: [
-      { id: 1, name: 'Alice Johnson', email: 'alice@example.com', entries_count: 45 },
-      { id: 2, name: 'Bob Smith', email: 'bob@example.com', entries_count: 38 },
-      { id: 3, name: 'Carol White', email: 'carol@example.com', entries_count: 25 },
+      { id: '1', name: 'Alice Johnson', email: 'alice@example.com', entries_count: 45 },
+      { id: '2', name: 'Bob Smith', email: 'bob@example.com', entries_count: 38 },
+      { id: '3', name: 'Carol White', email: 'carol@example.com', entries_count: 25 },
     ],
   };
 
@@ -87,7 +87,7 @@ describe('DashboardPage', () => {
     actions_30d: 890,
     recent_activities: [
       {
-        id: 1,
+        id: '1',
         action: 'content.created',
         description: 'Created new blog post',
         resource_type: 'content',
@@ -95,7 +95,7 @@ describe('DashboardPage', () => {
         created_at: '2025-11-28T10:00:00Z',
       },
       {
-        id: 2,
+        id: '2',
         action: 'media.uploaded',
         description: 'Uploaded image',
         resource_type: 'media',

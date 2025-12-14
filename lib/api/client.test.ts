@@ -19,7 +19,7 @@ describe('API Client', () => {
       const { graphqlClient } = await import('./client');
       
       const mockResponse = {
-        data: { user: { id: 1, email: 'test@example.com' } },
+        data: { user: { id: '1', email: 'test@example.com' } },
       };
 
       (global.fetch as any).mockResolvedValueOnce({

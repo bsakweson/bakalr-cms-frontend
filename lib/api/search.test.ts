@@ -14,8 +14,8 @@ describe('searchApi', () => {
       const mockResponse: SearchResponse = {
         results: [
           {
-            id: 1,
-            content_type_id: 1,
+            id: '1',
+            content_type_id: "1",
             slug: 'test-article',
             status: 'published',
             content_data: { title: 'Test Article', body: 'Content here' },
@@ -49,12 +49,12 @@ describe('searchApi', () => {
 
       const result = await searchApi.search({
         q: 'article',
-        content_type_id: 2,
+        content_type_id: "2",
       });
 
       expect(result).toEqual(mockResponse);
       expect(apiClient.get).toHaveBeenCalledWith('/search', {
-        params: { q: 'article', content_type_id: 2 },
+        params: { q: 'article', content_type_id: "2" },
       });
     });
 
@@ -62,8 +62,8 @@ describe('searchApi', () => {
       const mockResponse: SearchResponse = {
         results: [
           {
-            id: 5,
-            content_type_id: 1,
+            id: '5',
+            content_type_id: "1",
             slug: 'draft-post',
             status: 'draft',
             content_data: { title: 'Draft Post' },
@@ -114,8 +114,8 @@ describe('searchApi', () => {
       const mockResponse: SearchResponse = {
         results: [
           {
-            id: 10,
-            content_type_id: 3,
+            id: '10',
+            content_type_id: "3",
             slug: 'published-guide',
             status: 'published',
             content_data: { title: 'Complete Guide' },
@@ -134,7 +134,7 @@ describe('searchApi', () => {
 
       const result = await searchApi.search({
         q: 'guide',
-        content_type_id: 3,
+        content_type_id: "3",
         status: 'published',
         limit: 10,
         offset: 0,
@@ -144,7 +144,7 @@ describe('searchApi', () => {
       expect(apiClient.get).toHaveBeenCalledWith('/search', {
         params: {
           q: 'guide',
-          content_type_id: 3,
+          content_type_id: "3",
           status: 'published',
           limit: 10,
           offset: 0,
@@ -156,8 +156,8 @@ describe('searchApi', () => {
       const mockResponse: SearchResponse = {
         results: [
           {
-            id: 15,
-            content_type_id: 1,
+            id: '15',
+            content_type_id: "1",
             slug: 'highlighted-article',
             status: 'published',
             content_data: { title: 'Article Title', body: 'Full content body' },

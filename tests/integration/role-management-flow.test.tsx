@@ -47,20 +47,20 @@ import { userApi } from '@/lib/api/users';
 describe('Integration: Role Creation → Permission Assignment → Access Control', () => {
   // Mock permissions
   const mockPermissions: Permission[] = [
-    { id: 1, name: 'content.create', description: 'Create content', category: 'content' },
-    { id: 2, name: 'content.read', description: 'Read content', category: 'content' },
-    { id: 3, name: 'content.update', description: 'Update content', category: 'content' },
-    { id: 4, name: 'content.delete', description: 'Delete content', category: 'content' },
-    { id: 5, name: 'users.manage', description: 'Manage users', category: 'users' },
-    { id: 6, name: 'roles.manage', description: 'Manage roles', category: 'roles' },
+    { id: '1', name: 'content.create', description: 'Create content', category: 'content' },
+    { id: '2', name: 'content.read', description: 'Read content', category: 'content' },
+    { id: '3', name: 'content.update', description: 'Update content', category: 'content' },
+    { id: '4', name: 'content.delete', description: 'Delete content', category: 'content' },
+    { id: '5', name: 'users.manage', description: 'Manage users', category: 'users' },
+    { id: '6', name: 'roles.manage', description: 'Manage roles', category: 'roles' },
   ];
 
   // Mock roles
   const mockAdminRole: Role = {
-    id: 1,
+    id: '1',
     name: 'Admin',
     description: 'Administrator with full access',
-    organization_id: 1,
+    organization_id: '1',
     is_system_role: true,
     level: 100,
     permissions: ['content.create', 'content.read', 'content.update', 'content.delete', 'users.manage', 'roles.manage'],
@@ -70,10 +70,10 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
   };
 
   const mockEditorRole: Role = {
-    id: 2,
+    id: '2',
     name: 'Editor',
     description: 'Content editor with limited access',
-    organization_id: 1,
+    organization_id: '1',
     is_system_role: false,
     level: 50,
     permissions: ['content.create', 'content.read', 'content.update'],
@@ -139,11 +139,11 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
       const createRequest: CreateRoleRequest = {
         name: 'Content Manager',
         description: 'Manages content creation and editing',
-        permission_ids: [1, 2, 3], // content.create, content.read, content.update
+        permission_ids: ["1", "2", "3"], // content.create, content.read, content.update
       };
 
       const createdRole: RoleResponse = {
-        id: 3,
+        id: '3',
         name: 'Content Manager',
         description: 'Manages content creation and editing',
         is_system_role: false,
@@ -173,7 +173,7 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
       };
 
       const createdRole: RoleResponse = {
-        id: 4,
+        id: '4',
         name: 'Viewer',
         description: 'View-only access',
         is_system_role: false,
@@ -192,7 +192,7 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
       const createRequest: CreateRoleRequest = {
         name: 'Admin', // Duplicate system role name
         description: 'Duplicate role',
-        permission_ids: [1],
+        permission_ids: ["1"],
       };
 
       vi.mocked(roleApi.createRole).mockRejectedValue(new Error('Role name already exists'));
@@ -219,7 +219,7 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
 
     it('should get role with full permission details', async () => {
       const roleResponse: RoleResponse = {
-        id: 2,
+        id: '2',
         name: 'Editor',
         description: 'Content editor with limited access',
         is_system_role: false,
@@ -229,9 +229,9 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
 
       vi.mocked(roleApi.getRole).mockResolvedValue(roleResponse);
 
-      const result = await roleApi.getRole(2);
+      const result = await roleApi.getRole("2");
 
-      expect(roleApi.getRole).toHaveBeenCalledWith(2);
+      expect(roleApi.getRole).toHaveBeenCalledWith("2");
       expect(result.name).toBe('Editor');
       expect(result.permissions).toHaveLength(3);
       expect(result.permissions.map(p => p.name)).toEqual([
@@ -247,7 +247,7 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
         permissions: mockPermissions,
       });
 
-      const result = await roleApi.getRole(1);
+      const result = await roleApi.getRole("1");
 
       expect(result.is_system_role).toBe(true);
       expect(result.level).toBe(100);
@@ -257,7 +257,7 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
   describe('Step 4: Update Role Permissions', () => {
     it('should add permissions to existing role', async () => {
       const updatedRole: RoleResponse = {
-        id: 2,
+        id: '2',
         name: 'Editor',
         description: 'Content editor with limited access',
         is_system_role: false,
@@ -272,12 +272,12 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
 
       vi.mocked(roleApi.updateRole).mockResolvedValue(updatedRole);
 
-      const result = await roleApi.updateRole(2, {
-        permission_ids: [1, 2, 3, 4],
+      const result = await roleApi.updateRole("2", {
+        permission_ids: ["1", "2", "3", "4"],
       });
 
-      expect(roleApi.updateRole).toHaveBeenCalledWith(2, {
-        permission_ids: [1, 2, 3, 4],
+      expect(roleApi.updateRole).toHaveBeenCalledWith("2", {
+        permission_ids: ["1", "2", "3", "4"],
       });
       expect(result.permissions).toHaveLength(4);
       expect(result.permissions.some(p => p.name === 'content.delete')).toBe(true);
@@ -285,7 +285,7 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
 
     it('should remove permissions from role', async () => {
       const updatedRole: RoleResponse = {
-        id: 2,
+        id: '2',
         name: 'Editor',
         description: 'Content editor with limited access',
         is_system_role: false,
@@ -295,8 +295,8 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
 
       vi.mocked(roleApi.updateRole).mockResolvedValue(updatedRole);
 
-      const result = await roleApi.updateRole(2, {
-        permission_ids: [2],
+      const result = await roleApi.updateRole("2", {
+        permission_ids: ["2"],
       });
 
       expect(result.permissions).toHaveLength(1);
@@ -309,8 +309,8 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
       );
 
       await expect(
-        roleApi.updateRole(1, {
-          permission_ids: [1, 2],
+        roleApi.updateRole("1", {
+          permission_ids: ["1", "2"],
         })
       ).rejects.toThrow('Cannot modify system role permissions');
     });
@@ -319,14 +319,14 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
   describe('Step 5: Assign Role to User', () => {
     it('should assign role to user', async () => {
       const updateRequest: UpdateUserRoleRequest = {
-        role_id: 2, // Assign Editor role
+        role_id: '2', // Assign Editor role
       };
 
       vi.mocked(userApi.updateUserRole).mockResolvedValue({
         message: 'User role updated successfully',
       });
 
-      const result = await userApi.updateUserRole(10, updateRequest);
+      const result = await userApi.updateUserRole("10", updateRequest);
 
       expect(userApi.updateUserRole).toHaveBeenCalledWith(10, updateRequest);
       expect(result.message).toBe('User role updated successfully');
@@ -334,14 +334,14 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
 
     it('should change user role', async () => {
       const updateRequest: UpdateUserRoleRequest = {
-        role_id: 3, // Change to Content Manager role
+        role_id: '3', // Change to Content Manager role
       };
 
       vi.mocked(userApi.updateUserRole).mockResolvedValue({
         message: 'User role updated successfully',
       });
 
-      const result = await userApi.updateUserRole(10, updateRequest);
+      const result = await userApi.updateUserRole("10", updateRequest);
 
       expect(result.message).toContain('successfully');
     });
@@ -352,7 +352,7 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
       );
 
       await expect(
-        userApi.updateUserRole(999, { role_id: 2 })
+        userApi.updateUserRole('999', { role_id: '2' })
       ).rejects.toThrow('User not found');
     });
   });
@@ -360,7 +360,7 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
   describe('Step 6: Verify Access Control', () => {
     it('should verify user has correct permissions through role', async () => {
       const roleResponse: RoleResponse = {
-        id: 2,
+        id: '2',
         name: 'Editor',
         description: 'Content editor with limited access',
         is_system_role: false,
@@ -370,7 +370,7 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
 
       vi.mocked(roleApi.getRole).mockResolvedValue(roleResponse);
 
-      const role = await roleApi.getRole(2);
+      const role = await roleApi.getRole("2");
       const hasCreatePermission = role.permissions.some(p => p.name === 'content.create');
       const hasDeletePermission = role.permissions.some(p => p.name === 'content.delete');
 
@@ -386,7 +386,7 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
 
       vi.mocked(roleApi.getRole).mockResolvedValue(roleResponse);
 
-      const role = await roleApi.getRole(1);
+      const role = await roleApi.getRole("1");
       const hasAllPermissions = mockPermissions.every(permission =>
         role.permissions.some(p => p.name === permission.name)
       );
@@ -397,7 +397,7 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
 
     it('should verify viewer role has no write permissions', async () => {
       const viewerRole: RoleResponse = {
-        id: 4,
+        id: '4',
         name: 'Viewer',
         description: 'View-only access',
         is_system_role: false,
@@ -407,7 +407,7 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
 
       vi.mocked(roleApi.getRole).mockResolvedValue(viewerRole);
 
-      const role = await roleApi.getRole(4);
+      const role = await roleApi.getRole("4");
       const hasWritePermissions = role.permissions.some(p =>
         ['content.create', 'content.update', 'content.delete'].includes(p.name)
       );
@@ -432,10 +432,10 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
       const createRequest: CreateRoleRequest = {
         name: 'Content Manager',
         description: 'Manages content',
-        permission_ids: [1, 2, 3], // content.create, read, update
+        permission_ids: ["1", "2", "3"], // content.create, read, update
       };
       const createdRole: RoleResponse = {
-        id: 3,
+        id: '3',
         name: 'Content Manager',
         description: 'Manages content',
         is_system_role: false,
@@ -450,7 +450,7 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
       vi.mocked(userApi.updateUserRole).mockResolvedValue({
         message: 'User role updated successfully',
       });
-      const assignResult = await userApi.updateUserRole(10, { role_id: newRole.id });
+      const assignResult = await userApi.updateUserRole("10", { role_id: newRole.id });
       expect(assignResult.message).toContain('successfully');
 
       // Step 4: Verify user has correct permissions
@@ -465,7 +465,7 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
     it('should handle role update workflow', async () => {
       // Create initial role
       const initialRole: RoleResponse = {
-        id: 3,
+        id: '3',
         name: 'Content Manager',
         description: 'Manages content',
         is_system_role: false,
@@ -475,7 +475,7 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
       vi.mocked(roleApi.createRole).mockResolvedValue(initialRole);
       const created = await roleApi.createRole({
         name: 'Content Manager',
-        permission_ids: [1, 2],
+        permission_ids: ["1", "2"],
       });
 
       // Update role to add more permissions
@@ -485,7 +485,7 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
       };
       vi.mocked(roleApi.updateRole).mockResolvedValue(updatedRole);
       const updated = await roleApi.updateRole(created.id, {
-        permission_ids: [1, 2, 3, 4],
+        permission_ids: ["1", "2", "3", "4"],
       });
 
       expect(updated.permissions).toHaveLength(4);

@@ -14,7 +14,7 @@ export const mediaApi = {
     return response.data;
   },
 
-  async getMediaItem(id: number): Promise<Media> {
+  async getMediaItem(id: string): Promise<Media> {
     const response = await apiClient.get<Media>(`/media/${id}`);
     return response.data;
   },

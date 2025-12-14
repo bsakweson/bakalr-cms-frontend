@@ -20,7 +20,7 @@ describe('organizationApi', () => {
   describe('getProfile', () => {
     it('should fetch organization profile successfully', async () => {
       const mockProfile: OrganizationProfile = {
-        id: 1,
+        id: '1',
         name: 'Test Org',
         slug: 'test-org',
         email: 'contact@test.com',
@@ -56,7 +56,7 @@ describe('organizationApi', () => {
       };
 
       const mockUpdatedProfile: OrganizationProfile = {
-        id: 1,
+        id: '1',
         name: 'Updated Org',
         slug: 'test-org',
         email: 'contact@test.com',
@@ -93,7 +93,7 @@ describe('organizationApi', () => {
       const mockResponse: LocaleListResponse = {
         locales: [
           {
-            id: 1,
+            id: '1',
             code: 'en',
             name: 'English',
             native_name: 'English',
@@ -101,12 +101,12 @@ describe('organizationApi', () => {
             is_enabled: true,
             is_active: true,
             auto_translate: false,
-            organization_id: 1,
+            organization_id: "1",
             created_at: '2025-01-01T00:00:00Z',
             updated_at: '2025-01-01T00:00:00Z',
           },
           {
-            id: 2,
+            id: '2',
             code: 'es',
             name: 'Spanish',
             native_name: 'Español',
@@ -114,7 +114,7 @@ describe('organizationApi', () => {
             is_enabled: true,
             is_active: true,
             auto_translate: true,
-            organization_id: 1,
+            organization_id: "1",
             created_at: '2025-01-02T00:00:00Z',
             updated_at: '2025-01-02T00:00:00Z',
           },
@@ -146,7 +146,7 @@ describe('organizationApi', () => {
       };
 
       const mockCreatedLocale: Locale = {
-        id: 3,
+        id: '3',
         code: 'fr',
         name: 'French',
         native_name: 'Français',
@@ -154,7 +154,7 @@ describe('organizationApi', () => {
         is_enabled: true,
         is_active: true,
         auto_translate: false,
-        organization_id: 1,
+        organization_id: "1",
         created_at: '2025-01-03T00:00:00Z',
         updated_at: '2025-01-03T00:00:00Z',
       };
@@ -187,7 +187,7 @@ describe('organizationApi', () => {
       };
 
       const mockUpdatedLocale: Locale = {
-        id: 3,
+        id: '3',
         code: 'fr',
         name: 'French (France)',
         native_name: 'Français',
@@ -195,14 +195,14 @@ describe('organizationApi', () => {
         is_enabled: false,
         is_active: false,
         auto_translate: false,
-        organization_id: 1,
+        organization_id: "1",
         created_at: '2025-01-03T00:00:00Z',
         updated_at: '2025-01-04T00:00:00Z',
       };
 
       vi.mocked(apiClient.put).mockResolvedValueOnce({ data: mockUpdatedLocale } as any);
 
-      const result = await organizationApi.updateLocale(3, updateData);
+      const result = await organizationApi.updateLocale("3", updateData);
 
       expect(result).toEqual(mockUpdatedLocale);
       expect(apiClient.put).toHaveBeenCalledWith('/organization/locales/3', updateData);
@@ -215,7 +215,7 @@ describe('organizationApi', () => {
 
       vi.mocked(apiClient.put).mockRejectedValueOnce(new Error('Locale not found'));
 
-      await expect(organizationApi.updateLocale(999, updateData)).rejects.toThrow('Locale not found');
+      await expect(organizationApi.updateLocale("999", updateData)).rejects.toThrow('Locale not found');
     });
   });
 
@@ -225,7 +225,7 @@ describe('organizationApi', () => {
 
       vi.mocked(apiClient.delete).mockResolvedValueOnce({ data: mockResponse } as any);
 
-      const result = await organizationApi.deleteLocale(3);
+      const result = await organizationApi.deleteLocale("3");
 
       expect(result).toEqual(mockResponse);
       expect(apiClient.delete).toHaveBeenCalledWith('/organization/locales/3');
@@ -234,13 +234,13 @@ describe('organizationApi', () => {
     it('should handle error when deleting default locale', async () => {
       vi.mocked(apiClient.delete).mockRejectedValueOnce(new Error('Cannot delete default locale'));
 
-      await expect(organizationApi.deleteLocale(1)).rejects.toThrow('Cannot delete default locale');
+      await expect(organizationApi.deleteLocale("1")).rejects.toThrow('Cannot delete default locale');
     });
 
     it('should handle not found error when deleting locale', async () => {
       vi.mocked(apiClient.delete).mockRejectedValueOnce(new Error('Locale not found'));
 
-      await expect(organizationApi.deleteLocale(999)).rejects.toThrow('Locale not found');
+      await expect(organizationApi.deleteLocale("999")).rejects.toThrow('Locale not found');
     });
   });
 });

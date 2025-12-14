@@ -89,10 +89,11 @@ describe('field-types', () => {
     const selectField = FIELD_TYPES.find(ft => ft.type === 'select');
 
     it('should have options in default config', () => {
-      expect(selectField?.defaultConfig.options).toBeDefined();
-      expect(Array.isArray(selectField?.defaultConfig.options)).toBe(true);
-      expect(selectField?.defaultConfig.options).toHaveLength(2);
-      expect(selectField?.defaultConfig.options[0]).toEqual({
+      const options = selectField?.defaultConfig.options as { value: string; label: string }[] | undefined;
+      expect(options).toBeDefined();
+      expect(Array.isArray(options)).toBe(true);
+      expect(options).toHaveLength(2);
+      expect(options?.[0]).toEqual({
         value: 'option1',
         label: 'Option 1',
       });

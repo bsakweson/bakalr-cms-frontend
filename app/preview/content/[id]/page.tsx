@@ -147,11 +147,11 @@ export default function ContentPreviewPage() {
               </div>
               <div>
                 <span className="text-muted-foreground">Created:</span>{' '}
-                {new Date(entry.created_at).toLocaleDateString()}
+                {entry.created_at ? new Date(entry.created_at).toLocaleDateString() : 'N/A'}
               </div>
               <div>
                 <span className="text-muted-foreground">Updated:</span>{' '}
-                {new Date(entry.updated_at).toLocaleDateString()}
+                {entry.updated_at ? new Date(entry.updated_at).toLocaleDateString() : 'N/A'}
               </div>
             </div>
           </CardContent>

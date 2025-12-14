@@ -14,14 +14,14 @@ describe('User API', () => {
       const mockResponse = {
         users: [
           {
-            id: 1,
+            id: '1',
             email: 'admin@example.com',
             full_name: 'Admin User',
             is_active: true,
             roles: ['admin'],
           },
           {
-            id: 2,
+            id: '2',
             email: 'editor@example.com',
             full_name: 'Editor User',
             is_active: true,
@@ -44,7 +44,7 @@ describe('User API', () => {
       const mockResponse = {
         users: [
           {
-            id: 21,
+            id: '21',
             email: 'user21@example.com',
             full_name: 'User Twenty One',
             is_active: true,
@@ -87,7 +87,7 @@ describe('User API', () => {
   describe('inviteUser', () => {
     it('should invite a new user with email, full_name and role_id', async () => {
       const mockResponse = {
-        user_id: 3,
+        user_id: '3',
         email: 'newuser@example.com',
         message: 'Invitation sent successfully',
       };
@@ -95,7 +95,7 @@ describe('User API', () => {
       const inviteData = {
         email: 'newuser@example.com',
         full_name: 'New User',
-        role_id: 2,
+        role_id: '2',
       };
 
       vi.mocked(apiClient.post).mockResolvedValueOnce({ data: mockResponse } as any);
@@ -109,7 +109,7 @@ describe('User API', () => {
 
     it('should invite user with send_invite_email option', async () => {
       const mockResponse = {
-        user_id: 4,
+        user_id: '4',
         email: 'multi@example.com',
         message: 'Invitation sent',
       };
@@ -117,7 +117,7 @@ describe('User API', () => {
       const inviteData = {
         email: 'multi@example.com',
         full_name: 'Multi Role User',
-        role_id: 2,
+        role_id: '2',
         send_invite_email: true,
       };
 
@@ -136,7 +136,7 @@ describe('User API', () => {
       const inviteData = {
         email: 'existing@example.com',
         full_name: 'Existing User',
-        role_id: 3,
+        role_id: '3',
       };
 
       await expect(userApi.inviteUser(inviteData)).rejects.toThrow('User already exists');
@@ -150,12 +150,12 @@ describe('User API', () => {
       };
 
       const updateData = {
-        role_id: 1,
+        role_id: '1',
       };
 
       vi.mocked(apiClient.put).mockResolvedValueOnce({ data: mockResponse } as any);
 
-      const result = await userApi.updateUserRole(5, updateData);
+      const result = await userApi.updateUserRole("5", updateData);
 
       expect(result).toEqual(mockResponse);
       expect(apiClient.put).toHaveBeenCalledWith('/users/5/role', updateData);
@@ -167,12 +167,12 @@ describe('User API', () => {
       };
 
       const updateData = {
-        role_id: 3,
+        role_id: '3',
       };
 
       vi.mocked(apiClient.put).mockResolvedValueOnce({ data: mockResponse } as any);
 
-      await userApi.updateUserRole(10, updateData);
+      await userApi.updateUserRole("10", updateData);
 
       expect(apiClient.put).toHaveBeenCalledWith('/users/10/role', updateData);
     });
@@ -181,9 +181,9 @@ describe('User API', () => {
       const mockError = new Error('User not found');
       vi.mocked(apiClient.put).mockRejectedValueOnce(mockError);
 
-      const updateData = { role_id: 1 };
+      const updateData = { role_id: '1' };
 
-      await expect(userApi.updateUserRole(999, updateData)).rejects.toThrow('User not found');
+      await expect(userApi.updateUserRole("999", updateData)).rejects.toThrow('User not found');
     });
   });
 
@@ -195,7 +195,7 @@ describe('User API', () => {
 
       vi.mocked(apiClient.delete).mockResolvedValueOnce({ data: mockResponse } as any);
 
-      const result = await userApi.removeUser(7);
+      const result = await userApi.removeUser("7");
 
       expect(result).toEqual(mockResponse);
       expect(apiClient.delete).toHaveBeenCalledWith('/users/7');
@@ -205,7 +205,7 @@ describe('User API', () => {
       const mockError = new Error('Cannot remove last admin');
       vi.mocked(apiClient.delete).mockRejectedValueOnce(mockError);
 
-      await expect(userApi.removeUser(1)).rejects.toThrow('Cannot remove last admin');
+      await expect(userApi.removeUser("1")).rejects.toThrow('Cannot remove last admin');
       expect(apiClient.delete).toHaveBeenCalledWith('/users/1');
     });
 
@@ -213,7 +213,7 @@ describe('User API', () => {
       const mockError = new Error('User not found');
       vi.mocked(apiClient.delete).mockRejectedValueOnce(mockError);
 
-      await expect(userApi.removeUser(999)).rejects.toThrow('User not found');
+      await expect(userApi.removeUser("999")).rejects.toThrow('User not found');
     });
   });
 
@@ -221,9 +221,9 @@ describe('User API', () => {
     it('should fetch all available roles', async () => {
       const mockResponse = {
         roles: [
-          { id: 1, name: 'admin', description: 'Administrator', permissions: [] },
-          { id: 2, name: 'editor', description: 'Editor', permissions: [] },
-          { id: 3, name: 'viewer', description: 'Viewer', permissions: [] },
+          { id: '1', name: 'admin', description: 'Administrator', permissions: [] },
+          { id: '2', name: 'editor', description: 'Editor', permissions: [] },
+          { id: '3', name: 'viewer', description: 'Viewer', permissions: [] },
         ],
         total: 3,
       };

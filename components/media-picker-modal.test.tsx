@@ -51,7 +51,7 @@ vi.mock('@/components/ui/select', () => ({
 
 const mockMedia: Media[] = [
   {
-    id: 1,
+    id: '1',
     filename: 'image1.jpg',
     original_filename: 'image1.jpg',
     file_type: 'image',
@@ -60,13 +60,13 @@ const mockMedia: Media[] = [
     storage_path: '/uploads/image1.jpg',
     public_url: 'http://example.com/image1.jpg',
     alt_text: 'Test image 1',
-    organization_id: 1,
-    uploaded_by_id: 1,
+    organization_id: '1',
+    uploaded_by_id: '1',
     created_at: '2025-01-01T00:00:00Z',
     updated_at: '2025-01-01T00:00:00Z',
   },
   {
-    id: 2,
+    id: '2',
     filename: 'document.pdf',
     original_filename: 'document.pdf',
     file_type: 'document',
@@ -74,13 +74,13 @@ const mockMedia: Media[] = [
     mime_type: 'application/pdf',
     storage_path: '/uploads/document.pdf',
     public_url: 'http://example.com/document.pdf',
-    organization_id: 1,
-    uploaded_by_id: 1,
+    organization_id: '1',
+    uploaded_by_id: '1',
     created_at: '2025-01-02T00:00:00Z',
     updated_at: '2025-01-02T00:00:00Z',
   },
   {
-    id: 3,
+    id: '3',
     filename: 'video.mp4',
     original_filename: 'video.mp4',
     file_type: 'video',
@@ -89,8 +89,8 @@ const mockMedia: Media[] = [
     storage_path: '/uploads/video.mp4',
     public_url: 'http://example.com/video.mp4',
     alt_text: 'Test video',
-    organization_id: 1,
-    uploaded_by_id: 1,
+    organization_id: '1',
+    uploaded_by_id: '1',
     created_at: '2025-01-03T00:00:00Z',
     updated_at: '2025-01-03T00:00:00Z',
   },
@@ -106,8 +106,8 @@ describe('MediaPickerModal', () => {
       items: mockMedia,
       total: mockMedia.length,
       page: 1,
-      per_page: 12,
-      total_pages: 1,
+      page_size: 12,
+      pages: 1,
     });
   });
 
@@ -163,7 +163,7 @@ describe('MediaPickerModal', () => {
       await waitFor(() => {
         expect(mediaApi.getMedia).toHaveBeenCalledWith({
           page: 1,
-          per_page: 12,
+          page_size: 12,
         });
       });
     });
@@ -238,8 +238,8 @@ describe('MediaPickerModal', () => {
         items: [],
         total: 0,
         page: 1,
-        per_page: 12,
-        total_pages: 0,
+        page_size: 12,
+        pages: 0,
       });
 
       render(
@@ -414,7 +414,7 @@ describe('MediaPickerModal', () => {
       await waitFor(() => {
         expect(mediaApi.getMedia).toHaveBeenCalledWith({
           page: 1,
-          per_page: 12,
+          page_size: 12,
           search: 'test',
         });
       });
@@ -483,7 +483,7 @@ describe('MediaPickerModal', () => {
       await waitFor(() => {
         expect(mediaApi.getMedia).toHaveBeenCalledWith({
           page: 1,
-          per_page: 12,
+          page_size: 12,
           file_type: 'image',
         });
       });
@@ -527,7 +527,7 @@ describe('MediaPickerModal', () => {
       waitFor(() => {
         expect(mediaApi.getMedia).toHaveBeenCalledWith({
           page: 1,
-          per_page: 12,
+          page_size: 12,
           file_type: 'image',
         });
       });
@@ -574,7 +574,7 @@ describe('MediaPickerModal', () => {
 
     it('should upload file and add to media list', async () => {
       const newMedia: Media = {
-        id: 4,
+        id: '4',
         filename: 'new-image.jpg',
         original_filename: 'new-image.jpg',
         file_type: 'image',
@@ -582,8 +582,8 @@ describe('MediaPickerModal', () => {
         mime_type: 'image/jpeg',
         storage_path: '/uploads/new-image.jpg',
         public_url: 'http://example.com/new-image.jpg',
-        organization_id: 1,
-        uploaded_by_id: 1,
+        organization_id: '1',
+        uploaded_by_id: '1',
         created_at: '2025-01-04T00:00:00Z',
         updated_at: '2025-01-04T00:00:00Z',
       };
@@ -622,7 +622,7 @@ describe('MediaPickerModal', () => {
 
     it('should auto-select uploaded media', async () => {
       const newMedia: Media = {
-        id: 4,
+        id: '4',
         filename: 'new-image.jpg',
         original_filename: 'new-image.jpg',
         file_type: 'image',
@@ -630,8 +630,8 @@ describe('MediaPickerModal', () => {
         mime_type: 'image/jpeg',
         storage_path: '/uploads/new-image.jpg',
         public_url: 'http://example.com/new-image.jpg',
-        organization_id: 1,
-        uploaded_by_id: 1,
+        organization_id: '1',
+        uploaded_by_id: '1',
         created_at: '2025-01-04T00:00:00Z',
         updated_at: '2025-01-04T00:00:00Z',
       };
@@ -675,8 +675,8 @@ describe('MediaPickerModal', () => {
           items: mockMedia,
           total: 3,
           page: 1,
-          per_page: 12,
-          total_pages: 1,
+          page_size: 12,
+          pages: 1,
         }), 100))
       );
 
@@ -710,8 +710,8 @@ describe('MediaPickerModal', () => {
         items: mockMedia,
         total: 25,
         page: 1,
-        per_page: 12,
-        total_pages: 3,
+        page_size: 12,
+        pages: 3,
       });
     });
 
@@ -781,7 +781,7 @@ describe('MediaPickerModal', () => {
       await waitFor(() => {
         expect(mediaApi.getMedia).toHaveBeenCalledWith({
           page: 2,
-          per_page: 12,
+          page_size: 12,
         });
       });
     });
@@ -794,8 +794,8 @@ describe('MediaPickerModal', () => {
         items: mockMedia,
         total: 25,
         page: 1,
-        per_page: 12,
-        total_pages: 3,
+        page_size: 12,
+        pages: 3,
       });
 
       render(
@@ -815,8 +815,8 @@ describe('MediaPickerModal', () => {
         items: mockMedia,
         total: 25,
         page: 2,
-        per_page: 12,
-        total_pages: 3,
+        page_size: 12,
+        pages: 3,
       });
 
       const nextButton = screen.getByRole('button', { name: /next/i });
@@ -837,7 +837,7 @@ describe('MediaPickerModal', () => {
       await waitFor(() => {
         expect(mediaApi.getMedia).toHaveBeenCalledWith({
           page: 1,
-          per_page: 12,
+          page_size: 12,
         });
       });
     });
@@ -847,8 +847,8 @@ describe('MediaPickerModal', () => {
         items: mockMedia,
         total: 3,
         page: 1,
-        per_page: 12,
-        total_pages: 1,
+        page_size: 12,
+        pages: 1,
       });
 
       render(

@@ -15,7 +15,7 @@ describe('Auth API', () => {
       const mockResponse = {
         access_token: 'token123',
         refresh_token: 'refresh123',
-        user: { id: 1, email: 'test@example.com' },
+        user: { id: '1', email: 'test@example.com' },
       };
 
       vi.mocked(apiClient.post).mockResolvedValueOnce({ data: mockResponse } as any);
@@ -33,7 +33,7 @@ describe('Auth API', () => {
       const mockResponse = {
         access_token: 'token123',
         refresh_token: 'refresh123',
-        user: { id: 1, email: 'new@example.com' },
+        user: { id: '1', email: 'new@example.com' },
       };
 
       vi.mocked(apiClient.post).mockResolvedValueOnce({ data: mockResponse } as any);
@@ -54,7 +54,7 @@ describe('Auth API', () => {
 
   describe('getCurrentUser', () => {
     it('should get current user', async () => {
-      const mockUser = { id: 1, email: 'test@example.com', full_name: 'Test User' };
+      const mockUser = { id: '1', email: 'test@example.com', full_name: 'Test User' };
 
       vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockUser } as any);
 
@@ -116,7 +116,7 @@ describe('Auth API', () => {
   describe('updateProfile', () => {
     it('should update user profile', async () => {
       const mockUser = {
-        id: 1,
+        id: '1',
         email: 'updated@example.com',
         full_name: 'Updated Name',
       };
@@ -131,7 +131,7 @@ describe('Auth API', () => {
     });
 
     it('should update partial profile fields', async () => {
-      const mockUser = { id: 1, email: 'test@example.com', first_name: 'New', last_name: 'Name' };
+      const mockUser = { id: '1', email: 'test@example.com', first_name: 'New', last_name: 'Name' };
 
       vi.mocked(apiClient.put).mockResolvedValueOnce({ data: mockUser } as any);
 
@@ -146,7 +146,7 @@ describe('Auth API', () => {
 
     it('should update profile with bio and preferences', async () => {
       const mockUser = {
-        id: 1,
+        id: '1',
         email: 'test@example.com',
         first_name: 'Test',
         last_name: 'User',
@@ -170,7 +170,7 @@ describe('Auth API', () => {
 
     it('should handle updating username and avatar_url', async () => {
       const mockUser = {
-        id: 1,
+        id: '1',
         email: 'test@example.com',
         username: 'testuser123',
         avatar_url: 'https://cdn.example.com/avatars/user123.jpg',
@@ -190,7 +190,7 @@ describe('Auth API', () => {
 
     it('should handle all profile fields together', async () => {
       const mockUser = {
-        id: 1,
+        id: '1',
         email: 'complete@example.com',
         username: 'completeuser',
         first_name: 'Complete',

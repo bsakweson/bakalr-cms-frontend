@@ -14,28 +14,28 @@ describe('Audit Log API', () => {
       const mockResponse = {
         logs: [
           {
-            id: 1,
+            id: '1',
             action: 'created',
             resource_type: 'content',
-            resource_id: 42,
+            resource_id: '42',
             description: 'Created new blog post',
             severity: 'info',
             status: 'success',
-            user_id: 1,
+            user_id: '1',
             user_email: 'john@example.com',
             user_name: 'John Doe',
             ip_address: '192.168.1.1',
             created_at: '2025-11-28T10:30:00Z',
           },
           {
-            id: 2,
+            id: '2',
             action: 'updated',
             resource_type: 'user',
-            resource_id: 10,
+            resource_id: '10',
             description: 'Updated user profile',
             severity: 'info',
             status: 'success',
-            user_id: 2,
+            user_id: '2',
             user_email: 'jane@example.com',
             user_name: 'Jane Smith',
             created_at: '2025-11-28T10:15:00Z',
@@ -60,14 +60,14 @@ describe('Audit Log API', () => {
       const mockResponse = {
         logs: [
           {
-            id: 3,
+            id: '3',
             action: 'deleted',
             resource_type: 'content',
-            resource_id: 15,
+            resource_id: '15',
             description: 'Deleted draft post',
             severity: 'warning',
             status: 'success',
-            user_id: 1,
+            user_id: '1',
             created_at: '2025-11-27T14:20:00Z',
           },
         ],
@@ -90,14 +90,14 @@ describe('Audit Log API', () => {
       const mockResponse = {
         logs: [
           {
-            id: 1,
+            id: '1',
             action: 'created',
             resource_type: 'content',
-            resource_id: 42,
+            resource_id: '42',
             description: 'Created blog post',
             severity: 'info',
             status: 'success',
-            user_id: 1,
+            user_id: '1',
             created_at: '2025-11-28T10:30:00Z',
           },
         ],
@@ -121,14 +121,14 @@ describe('Audit Log API', () => {
       const mockResponse = {
         logs: [
           {
-            id: 2,
+            id: '2',
             action: 'updated',
             resource_type: 'user',
-            resource_id: 10,
+            resource_id: '10',
             description: 'Updated user',
             severity: 'info',
             status: 'success',
-            user_id: 2,
+            user_id: '2',
             created_at: '2025-11-28T09:00:00Z',
           },
         ],
@@ -151,14 +151,14 @@ describe('Audit Log API', () => {
       const mockResponse = {
         logs: [
           {
-            id: 1,
+            id: '1',
             action: 'created',
             resource_type: 'content',
-            resource_id: 42,
+            resource_id: '42',
             description: 'User action',
             severity: 'info',
             status: 'success',
-            user_id: 5,
+            user_id: '5',
             user_email: 'specific@example.com',
             created_at: '2025-11-28T10:00:00Z',
           },
@@ -170,11 +170,11 @@ describe('Audit Log API', () => {
 
       vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockResponse } as any);
 
-      const result = await auditLogApi.listLogs({ user_id: 5 });
+      const result = await auditLogApi.listLogs({ user_id: '5' });
 
-      expect(result.logs[0].user_id).toBe(5);
+      expect(result.logs[0].user_id).toBe('5');
       expect(apiClient.get).toHaveBeenCalledWith('/audit-logs/', {
-        params: { user_id: 5 },
+        params: { user_id: '5' },
       });
     });
 
@@ -182,14 +182,14 @@ describe('Audit Log API', () => {
       const mockResponse = {
         logs: [
           {
-            id: 3,
+            id: '3',
             action: 'failed_login',
             resource_type: 'auth',
-            resource_id: 0,
+            resource_id: '0',
             description: 'Failed login attempt',
             severity: 'error',
             status: 'failed',
-            user_id: 1,
+            user_id: '1',
             created_at: '2025-11-28T08:00:00Z',
           },
         ],
@@ -212,14 +212,14 @@ describe('Audit Log API', () => {
       const mockResponse = {
         logs: [
           {
-            id: 4,
+            id: '4',
             action: 'delete',
             resource_type: 'content',
-            resource_id: 20,
+            resource_id: '20',
             description: 'Delete failed',
             severity: 'error',
             status: 'failed',
-            user_id: 1,
+            user_id: '1',
             created_at: '2025-11-28T07:00:00Z',
           },
         ],

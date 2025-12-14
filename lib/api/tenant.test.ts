@@ -19,7 +19,7 @@ describe('tenantApi', () => {
       const mockResponse: UserOrganizationsResponse = {
         organizations: [
           {
-            organization_id: 1,
+            organization_id: "1",
             organization_name: 'Acme Corp',
             organization_slug: 'acme-corp',
             is_default: true,
@@ -28,7 +28,7 @@ describe('tenantApi', () => {
             joined_at: '2025-01-01T00:00:00Z',
           },
           {
-            organization_id: 2,
+            organization_id: "2",
             organization_name: 'Beta Inc',
             organization_slug: 'beta-inc',
             is_default: false,
@@ -37,7 +37,7 @@ describe('tenantApi', () => {
             joined_at: '2025-01-15T00:00:00Z',
           },
           {
-            organization_id: 3,
+            organization_id: "3",
             organization_name: 'Gamma LLC',
             organization_slug: 'gamma-llc',
             is_default: false,
@@ -46,7 +46,7 @@ describe('tenantApi', () => {
             joined_at: '2025-02-01T00:00:00Z',
           },
         ],
-        current_organization_id: 1,
+        current_organization_id: "1",
         total: 3,
       };
 
@@ -64,7 +64,7 @@ describe('tenantApi', () => {
       const mockResponse: UserOrganizationsResponse = {
         organizations: [
           {
-            organization_id: 1,
+            organization_id: "1",
             organization_name: 'Solo Org',
             organization_slug: 'solo-org',
             is_default: true,
@@ -73,7 +73,7 @@ describe('tenantApi', () => {
             joined_at: '2025-01-01T00:00:00Z',
           },
         ],
-        current_organization_id: 1,
+        current_organization_id: "1",
         total: 1,
       };
 
@@ -88,7 +88,7 @@ describe('tenantApi', () => {
     it('should handle empty organizations list', async () => {
       const mockResponse: UserOrganizationsResponse = {
         organizations: [],
-        current_organization_id: 0,
+        current_organization_id: "0",
         total: 0,
       };
 
@@ -110,12 +110,12 @@ describe('tenantApi', () => {
   describe('switchOrganization', () => {
     it('should switch organization successfully', async () => {
       const switchData: SwitchOrganizationRequest = {
-        organization_id: 2,
+        organization_id: "2",
       };
 
       const mockResponse: SwitchOrganizationResponse = {
         message: 'Organization switched successfully',
-        organization_id: 2,
+        organization_id: "2",
         organization_name: 'Beta Inc',
         access_token: 'new-jwt-token-here',
         refresh_token: 'new-refresh-token-here',
@@ -133,12 +133,12 @@ describe('tenantApi', () => {
 
     it('should handle switching to same organization', async () => {
       const switchData: SwitchOrganizationRequest = {
-        organization_id: 1,
+        organization_id: "1",
       };
 
       const mockResponse: SwitchOrganizationResponse = {
         message: 'Already in this organization',
-        organization_id: 1,
+        organization_id: "1",
         organization_name: 'Acme Corp',
         access_token: 'same-token',
         refresh_token: 'same-refresh-token',
@@ -154,7 +154,7 @@ describe('tenantApi', () => {
 
     it('should handle unauthorized organization access', async () => {
       const switchData: SwitchOrganizationRequest = {
-        organization_id: 999,
+        organization_id: "999",
       };
 
       vi.mocked(apiClient.post).mockRejectedValueOnce(new Error('Not authorized to access this organization'));
@@ -164,7 +164,7 @@ describe('tenantApi', () => {
 
     it('should handle non-existent organization', async () => {
       const switchData: SwitchOrganizationRequest = {
-        organization_id: 888,
+        organization_id: "888",
       };
 
       vi.mocked(apiClient.post).mockRejectedValueOnce(new Error('Organization not found'));
@@ -174,7 +174,7 @@ describe('tenantApi', () => {
 
     it('should handle network error during switch', async () => {
       const switchData: SwitchOrganizationRequest = {
-        organization_id: 2,
+        organization_id: "2",
       };
 
       vi.mocked(apiClient.post).mockRejectedValueOnce(new Error('Network error'));

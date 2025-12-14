@@ -13,12 +13,12 @@ describe('Media API', () => {
     it('should fetch media items without params', async () => {
       const mockResponse = {
         items: [
-          { id: 1, filename: 'image1.jpg', file_type: 'image/jpeg' },
-          { id: 2, filename: 'image2.png', file_type: 'image/png' },
+          { id: '1', filename: 'image1.jpg', file_type: 'image/jpeg' },
+          { id: '2', filename: 'image2.png', file_type: 'image/png' },
         ],
         total: 2,
         page: 1,
-        per_page: 20,
+        page_size: 20,
       };
 
       vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockResponse } as any);
@@ -33,7 +33,7 @@ describe('Media API', () => {
 
     it('should fetch media items with filters', async () => {
       const mockResponse = {
-        items: [{ id: 1, filename: 'image1.jpg' }],
+        items: [{ id: '1', filename: 'image1.jpg' }],
         total: 1,
       };
 
@@ -41,7 +41,7 @@ describe('Media API', () => {
 
       const params = {
         page: 2,
-        per_page: 10,
+        page_size: 10,
         file_type: 'image',
         search: 'logo',
       };
@@ -56,7 +56,7 @@ describe('Media API', () => {
   describe('getMediaItem', () => {
     it('should fetch single media item', async () => {
       const mockMedia = {
-        id: 1,
+        id: '1',
         filename: 'test.jpg',
         file_type: 'image/jpeg',
         public_url: 'https://example.com/test.jpg',
@@ -64,7 +64,7 @@ describe('Media API', () => {
 
       vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockMedia } as any);
 
-      const result = await mediaApi.getMediaItem(1);
+      const result = await mediaApi.getMediaItem("1");
 
       expect(result).toEqual(mockMedia);
       expect(apiClient.get).toHaveBeenCalledWith('/media/1');
@@ -74,7 +74,7 @@ describe('Media API', () => {
   describe('uploadMedia', () => {
     it('should upload media file with FormData', async () => {
       const mockResponse = {
-        id: 3,
+        id: '3',
         filename: 'uploaded.jpg',
         file_type: 'image/jpeg',
       };
@@ -96,7 +96,7 @@ describe('Media API', () => {
 
     it('should upload media with metadata', async () => {
       const mockResponse = {
-        id: 4,
+        id: '4',
         filename: 'photo.jpg',
         alt_text: 'A photo',
       };
@@ -126,7 +126,7 @@ describe('Media API', () => {
     it('should update media metadata', async () => {
       const updateData = { alt_text: 'Updated alt text', caption: 'New caption' };
       const mockResponse = {
-        id: 1,
+        id: '1',
         filename: 'image.jpg',
         alt_text: 'Updated alt text',
         caption: 'New caption',
@@ -134,18 +134,18 @@ describe('Media API', () => {
 
       vi.mocked(apiClient.put).mockResolvedValueOnce({ data: mockResponse } as any);
 
-      const result = await mediaApi.updateMedia(1, updateData);
+      const result = await mediaApi.updateMedia("1", updateData);
 
       expect(result).toEqual(mockResponse);
       expect(apiClient.put).toHaveBeenCalledWith('/media/1', updateData);
     });
 
     it('should update partial media fields', async () => {
-      const mockResponse = { id: 1, alt_text: 'New alt' };
+      const mockResponse = { id: '1', alt_text: 'New alt' };
 
       vi.mocked(apiClient.put).mockResolvedValueOnce({ data: mockResponse } as any);
 
-      const result = await mediaApi.updateMedia(1, { alt_text: 'New alt' });
+      const result = await mediaApi.updateMedia("1", { alt_text: 'New alt' });
 
       expect(result).toEqual(mockResponse);
       expect(apiClient.put).toHaveBeenCalledWith('/media/1', { alt_text: 'New alt' });
@@ -156,7 +156,7 @@ describe('Media API', () => {
     it('should delete media item', async () => {
       vi.mocked(apiClient.delete).mockResolvedValueOnce({} as any);
 
-      await mediaApi.deleteMedia(1);
+      await mediaApi.deleteMedia("1");
 
       expect(apiClient.delete).toHaveBeenCalledWith('/media/1');
     });
@@ -165,9 +165,9 @@ describe('Media API', () => {
       vi.mocked(apiClient.delete).mockResolvedValue({} as any);
 
       await Promise.all([
-        mediaApi.deleteMedia(1),
-        mediaApi.deleteMedia(2),
-        mediaApi.deleteMedia(3),
+        mediaApi.deleteMedia("1"),
+        mediaApi.deleteMedia("2"),
+        mediaApi.deleteMedia("3"),
       ]);
 
       expect(apiClient.delete).toHaveBeenCalledTimes(3);

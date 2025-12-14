@@ -56,16 +56,16 @@ vi.mock('next/navigation', () => ({
 
 describe('Integration: Auth to Content Creation Flow', () => {
   const mockUser = {
-    id: 1,
+    id: '1',
     email: 'newuser@example.com',
     first_name: 'New',
     last_name: 'User',
-    organization_id: 1,
+    organization_id: '1',
     is_active: true,
     created_at: '2025-11-29T00:00:00Z',
     updated_at: '2025-11-29T00:00:00Z',
     organization: {
-      id: 1,
+      id: '1',
       name: 'Test Org',
       slug: 'test-org',
       is_active: true,
@@ -82,7 +82,7 @@ describe('Integration: Auth to Content Creation Flow', () => {
   };
 
   const mockContentType = {
-    id: 1,
+    id: '1',
     name: 'Blog Post',
     slug: 'blog-post',
     schema: {
@@ -90,14 +90,14 @@ describe('Integration: Auth to Content Creation Flow', () => {
       body: { type: 'textarea', required: true },
       author: { type: 'text' },
     },
-    organization_id: 1,
+    organization_id: '1',
     created_at: '2025-11-29T00:00:00Z',
     updated_at: '2025-11-29T00:00:00Z',
   };
 
   const mockContentEntry = {
-    id: 1,
-    content_type_id: 1,
+    id: '1',
+    content_type_id: '1',
     slug: 'my-first-blog-post',
     status: 'draft' as const,
     content_data: {
@@ -106,7 +106,7 @@ describe('Integration: Auth to Content Creation Flow', () => {
       author: 'New User',
     },
     version: 1,
-    author_id: 1,
+    author_id: '1',
     created_at: '2025-11-29T00:00:00Z',
     updated_at: '2025-11-29T00:00:00Z',
   };
@@ -260,8 +260,8 @@ describe('Integration: Auth to Content Creation Flow', () => {
       expect(result.schema).toHaveProperty('title');
       expect(result.schema).toHaveProperty('body');
       expect(result.schema).toHaveProperty('author');
-      expect(result.schema.title.required).toBe(true);
-      expect(result.schema.body.required).toBe(true);
+      expect(result.schema!.title.required).toBe(true);
+      expect(result.schema!.body.required).toBe(true);
     });
 
     it('should associate content type with user organization', async () => {
@@ -282,7 +282,7 @@ describe('Integration: Auth to Content Creation Flow', () => {
       const createEntrySpy = vi.spyOn(contentApi, 'createContentEntry').mockResolvedValue(mockContentEntry);
 
       const entryData = {
-        content_type_id: 1,
+        content_type_id: '1',
         slug: 'my-first-blog-post',
         status: 'draft' as const,
         content_data: {
@@ -296,7 +296,7 @@ describe('Integration: Auth to Content Creation Flow', () => {
 
       expect(createEntrySpy).toHaveBeenCalledWith(entryData);
       expect(result).toEqual(mockContentEntry);
-      expect(result.content_data.title).toBe('My First Blog Post');
+      expect(result.content_data!.title).toBe('My First Blog Post');
       expect(result.status).toBe('draft');
     });
 
@@ -304,7 +304,7 @@ describe('Integration: Auth to Content Creation Flow', () => {
       vi.spyOn(contentApi, 'createContentEntry').mockResolvedValue(mockContentEntry);
 
       const result = await contentApi.createContentEntry({
-        content_type_id: 1,
+        content_type_id: '1',
         slug: 'my-first-blog-post',
         status: 'draft',
         content_data: {
@@ -318,7 +318,7 @@ describe('Integration: Auth to Content Creation Flow', () => {
       expect(result.content_data).toHaveProperty('title');
       expect(result.content_data).toHaveProperty('body');
       expect(result.content_data).toHaveProperty('author');
-      expect(result.content_data.title).toBe('My First Blog Post');
+      expect(result.content_data!.title).toBe('My First Blog Post');
     });
 
     it('should handle missing required fields', async () => {
@@ -328,7 +328,7 @@ describe('Integration: Auth to Content Creation Flow', () => {
 
       await expect(
         contentApi.createContentEntry({
-          content_type_id: 1,
+          content_type_id: '1',
           slug: 'invalid-entry',
           status: 'draft',
           content_data: {
@@ -349,8 +349,8 @@ describe('Integration: Auth to Content Creation Flow', () => {
         items: [mockContentEntry],
         total: 1,
         page: 1,
-        per_page: 10,
-        total_pages: 1,
+        page_size: 10,
+        pages: 1,
       });
 
       const result = await contentApi.getContentEntries();
@@ -358,7 +358,7 @@ describe('Integration: Auth to Content Creation Flow', () => {
       expect(listSpy).toHaveBeenCalled();
       expect(result.items).toHaveLength(1);
       expect(result.items[0]).toEqual(mockContentEntry);
-      expect(result.items[0].content_data.title).toBe('My First Blog Post');
+      expect(result.items[0]!.content_data!.title).toBe('My First Blog Post');
     });
 
     it('should filter content by content type', async () => {
@@ -366,14 +366,14 @@ describe('Integration: Auth to Content Creation Flow', () => {
         items: [mockContentEntry],
         total: 1,
         page: 1,
-        per_page: 10,
-        total_pages: 1,
+        page_size: 10,
+        pages: 1,
       });
 
-      const result = await contentApi.getContentEntries({ content_type_id: 1 });
+      const result = await contentApi.getContentEntries({ content_type_id: "1" });
 
-      expect(listSpy).toHaveBeenCalledWith({ content_type_id: 1 });
-      expect(result.items[0].content_type_id).toBe(1);
+      expect(listSpy).toHaveBeenCalledWith({ content_type_id: "1" });
+      expect(result.items[0].content_type_id).toBe("1");
     });
 
     it('should filter content by status', async () => {
@@ -381,8 +381,8 @@ describe('Integration: Auth to Content Creation Flow', () => {
         items: [mockContentEntry],
         total: 1,
         page: 1,
-        per_page: 10,
-        total_pages: 1,
+        page_size: 10,
+        pages: 1,
       });
 
       const result = await contentApi.getContentEntries({ status: 'draft' });
@@ -443,8 +443,8 @@ describe('Integration: Auth to Content Creation Flow', () => {
         items: [entry],
         total: 1,
         page: 1,
-        per_page: 10,
-        total_pages: 1,
+        page_size: 10,
+        pages: 1,
       });
       const list = await contentApi.getContentEntries();
       expect(list.items).toContainEqual(entry);

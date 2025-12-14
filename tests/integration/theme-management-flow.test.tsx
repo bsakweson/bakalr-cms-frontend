@@ -41,8 +41,8 @@ vi.mock('@/lib/api/themes', () => ({
 describe('Integration: Theme Customization Workflow', () => {
   // Mock data
   const mockSystemTheme: Theme = {
-    id: 1,
-    organization_id: 1,
+    id: '1',
+    organization_id: '1',
     name: 'dark-chocolate',
     display_name: 'Dark Chocolate Brown',
     description: 'Professional dark theme with chocolate brown accent',
@@ -142,8 +142,8 @@ describe('Integration: Theme Customization Workflow', () => {
   };
 
   const mockCustomTheme: Theme = {
-    id: 2,
-    organization_id: 1,
+    id: '2',
+    organization_id: '1',
     name: 'vibrant-modern',
     display_name: 'Vibrant Modern',
     description: 'Bright and colorful theme with modern aesthetics',
@@ -331,12 +331,12 @@ describe('Integration: Theme Customization Workflow', () => {
 
       vi.mocked(themeApi.exportTheme).mockResolvedValue(mockExport);
 
-      const result = await themeApi.exportTheme(2);
+      const result = await themeApi.exportTheme("2");
 
       expect(result).toEqual(mockExport);
       expect(result.name).toBe('vibrant-modern');
       expect(result.colors).toBeDefined();
-      expect(themeApi.exportTheme).toHaveBeenCalledWith(2);
+      expect(themeApi.exportTheme).toHaveBeenCalledWith("2");
     });
 
     it('should get CSS variables for theme preview', async () => {
@@ -353,7 +353,7 @@ describe('Integration: Theme Customization Workflow', () => {
 
       vi.mocked(themeApi.getCSSVariables).mockResolvedValue(mockCSSVariables);
 
-      const result = await themeApi.getCSSVariables(2);
+      const result = await themeApi.getCSSVariables("2");
 
       expect(result.css).toContain('--primary: #2563EB');
       expect(result.variables.primary).toBe('#2563EB');
@@ -363,7 +363,7 @@ describe('Integration: Theme Customization Workflow', () => {
     it('should preview theme without activating it', async () => {
       vi.mocked(themeApi.getTheme).mockResolvedValue(mockCustomTheme);
 
-      const result = await themeApi.getTheme(2);
+      const result = await themeApi.getTheme("2");
 
       expect(result.is_active).toBe(false); // Not activated yet
       expect(result.colors).toBeDefined();
@@ -389,12 +389,12 @@ describe('Integration: Theme Customization Workflow', () => {
 
       vi.mocked(themeApi.updateTheme).mockResolvedValue(updatedTheme);
 
-      const result = await themeApi.updateTheme(2, updateRequest);
+      const result = await themeApi.updateTheme("2", updateRequest);
 
       expect(result.colors.primary).toBe('#1D4ED8');
       expect(result.colors.accent).toBe('#DB2777');
       expect(result.updated_at).not.toBe(mockCustomTheme.updated_at);
-      expect(themeApi.updateTheme).toHaveBeenCalledWith(2, updateRequest);
+      expect(themeApi.updateTheme).toHaveBeenCalledWith("2", updateRequest);
     });
 
     it('should update theme display name and description', async () => {
@@ -412,7 +412,7 @@ describe('Integration: Theme Customization Workflow', () => {
 
       vi.mocked(themeApi.updateTheme).mockResolvedValue(updatedTheme);
 
-      const result = await themeApi.updateTheme(2, updateRequest);
+      const result = await themeApi.updateTheme("2", updateRequest);
 
       expect(result.display_name).toBe('Vibrant Modern v2');
       expect(result.description).toBe('Updated vibrant theme with improved contrast');
@@ -427,7 +427,7 @@ describe('Integration: Theme Customization Workflow', () => {
         new Error('Cannot modify system theme')
       );
 
-      await expect(themeApi.updateTheme(1, updateRequest)).rejects.toThrow(
+      await expect(themeApi.updateTheme("1", updateRequest)).rejects.toThrow(
         'Cannot modify system theme'
       );
     });
@@ -443,11 +443,11 @@ describe('Integration: Theme Customization Workflow', () => {
 
       vi.mocked(themeApi.setActiveTheme).mockResolvedValue(activatedTheme);
 
-      const result = await themeApi.setActiveTheme(2);
+      const result = await themeApi.setActiveTheme("2");
 
       expect(result.is_active).toBe(true);
       expect(result.id).toBe(2);
-      expect(themeApi.setActiveTheme).toHaveBeenCalledWith(2);
+      expect(themeApi.setActiveTheme).toHaveBeenCalledWith("2");
     });
 
     it('should deactivate previous theme when activating new one', async () => {
@@ -462,7 +462,7 @@ describe('Integration: Theme Customization Workflow', () => {
         is_active: true
       };
       vi.mocked(themeApi.setActiveTheme).mockResolvedValue(activatedCustomTheme);
-      const newActiveTheme = await themeApi.setActiveTheme(2);
+      const newActiveTheme = await themeApi.setActiveTheme("2");
       expect(newActiveTheme.is_active).toBe(true);
 
       // Verify new active theme
@@ -481,7 +481,7 @@ describe('Integration: Theme Customization Workflow', () => {
 
       vi.mocked(themeApi.setActiveTheme).mockResolvedValue(reactivatedSystemTheme);
 
-      const result = await themeApi.setActiveTheme(1);
+      const result = await themeApi.setActiveTheme("1");
 
       expect(result.is_active).toBe(true);
       expect(result.is_system_theme).toBe(true);
@@ -497,7 +497,7 @@ describe('Integration: Theme Customization Workflow', () => {
 
       vi.mocked(themeApi.getTheme).mockResolvedValue(activatedTheme);
 
-      const result = await themeApi.getTheme(2);
+      const result = await themeApi.getTheme("2");
 
       expect(result.is_active).toBe(true);
       expect(result.id).toBe(2);
@@ -533,7 +533,7 @@ describe('Integration: Theme Customization Workflow', () => {
 
       vi.mocked(themeApi.getCSSVariables).mockResolvedValue(mockCSSVariables);
 
-      const result = await themeApi.getCSSVariables(2);
+      const result = await themeApi.getCSSVariables("2");
 
       expect(result.css).toBeTruthy();
       expect(result.variables.primary).toBe('#2563EB');
@@ -573,13 +573,13 @@ describe('Integration: Theme Customization Workflow', () => {
         name: 'vibrant-modern',
         colors: mockCustomThemeColors
       });
-      const exportedTheme = await themeApi.exportTheme(2);
+      const exportedTheme = await themeApi.exportTheme("2");
       expect(exportedTheme.name).toBe('vibrant-modern');
 
       // Step 5: Activate custom theme
       const activatedTheme: Theme = { ...mockCustomTheme, is_active: true };
       vi.mocked(themeApi.setActiveTheme).mockResolvedValue(activatedTheme);
-      const activeCustomTheme = await themeApi.setActiveTheme(2);
+      const activeCustomTheme = await themeApi.setActiveTheme("2");
       expect(activeCustomTheme.is_active).toBe(true);
 
       // Step 6: Verify activation
@@ -608,7 +608,7 @@ describe('Integration: Theme Customization Workflow', () => {
         }
       };
       vi.mocked(themeApi.updateTheme).mockResolvedValue(updatedTheme);
-      const updated = await themeApi.updateTheme(2, {
+      const updated = await themeApi.updateTheme("2", {
         colors: updatedTheme.colors
       });
       expect(updated.colors.primary).toBe('#1D4ED8');
@@ -616,7 +616,7 @@ describe('Integration: Theme Customization Workflow', () => {
       // Activate updated theme
       const activatedUpdated: Theme = { ...updatedTheme, is_active: true };
       vi.mocked(themeApi.setActiveTheme).mockResolvedValue(activatedUpdated);
-      const activated = await themeApi.setActiveTheme(2);
+      const activated = await themeApi.setActiveTheme("2");
       expect(activated.is_active).toBe(true);
       expect(activated.colors.primary).toBe('#1D4ED8');
     });
@@ -631,7 +631,7 @@ describe('Integration: Theme Customization Workflow', () => {
       // Rollback to system theme
       const reactivatedSystem: Theme = { ...mockSystemTheme, is_active: true };
       vi.mocked(themeApi.setActiveTheme).mockResolvedValue(reactivatedSystem);
-      const rolledBack = await themeApi.setActiveTheme(1);
+      const rolledBack = await themeApi.setActiveTheme("1");
       expect(rolledBack.name).toBe('dark-chocolate');
       expect(rolledBack.is_system_theme).toBe(true);
 

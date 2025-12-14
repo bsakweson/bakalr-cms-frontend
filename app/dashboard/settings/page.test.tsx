@@ -10,12 +10,13 @@ vi.mock('@/contexts/auth-context');
 vi.mock('@/lib/api');
 
 const mockUser = {
-  id: 1,
+  id: '1',
   email: 'test@example.com',
   first_name: 'John',
   last_name: 'Doe',
   is_active: true,
-  organization_id: 1,
+  is_email_verified: true,
+  organization_id: '1',
   created_at: '2025-01-01T00:00:00Z',
   updated_at: '2025-01-01T00:00:00Z',
 };

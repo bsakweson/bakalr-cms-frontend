@@ -31,8 +31,8 @@ describe('themeApi', () => {
       const mockResponse: ThemeListResponse = {
         themes: [
           {
-            id: 1,
-            organization_id: 1,
+            id: '1',
+            organization_id: "1",
             name: 'default',
             display_name: 'Default Theme',
             is_system_theme: true,
@@ -101,8 +101,8 @@ describe('themeApi', () => {
   describe('getTheme', () => {
     it('should fetch theme by id successfully', async () => {
       const mockTheme: Theme = {
-        id: 2,
-        organization_id: 1,
+        id: '2',
+        organization_id: "1",
         name: 'custom-theme',
         display_name: 'Custom Theme',
         description: 'A custom branded theme',
@@ -120,7 +120,7 @@ describe('themeApi', () => {
 
       vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockTheme } as any);
 
-      const result = await themeApi.getTheme(2);
+      const result = await themeApi.getTheme("2");
 
       expect(result).toEqual(mockTheme);
       expect(apiClient.get).toHaveBeenCalledWith('/themes/2');
@@ -129,15 +129,15 @@ describe('themeApi', () => {
     it('should handle not found error', async () => {
       vi.mocked(apiClient.get).mockRejectedValueOnce(new Error('Theme not found'));
 
-      await expect(themeApi.getTheme(999)).rejects.toThrow('Theme not found');
+      await expect(themeApi.getTheme("999")).rejects.toThrow('Theme not found');
     });
   });
 
   describe('getActiveTheme', () => {
     it('should fetch active theme successfully', async () => {
       const mockTheme: Theme = {
-        id: 1,
-        organization_id: 1,
+        id: '1',
+        organization_id: "1",
         name: 'default',
         display_name: 'Default Theme',
         is_system_theme: true,
@@ -173,8 +173,8 @@ describe('themeApi', () => {
       };
 
       const mockCreatedTheme: Theme = {
-        id: 3,
-        organization_id: 1,
+        id: '3',
+        organization_id: "1",
         name: 'brand-theme',
         display_name: 'Brand Theme',
         description: 'Company brand colors',
@@ -227,8 +227,8 @@ describe('themeApi', () => {
       };
 
       const mockUpdatedTheme: Theme = {
-        id: 3,
-        organization_id: 1,
+        id: '3',
+        organization_id: "1",
         name: 'brand-theme',
         display_name: 'Updated Theme Name',
         description: 'Updated description',
@@ -241,7 +241,7 @@ describe('themeApi', () => {
 
       vi.mocked(apiClient.put).mockResolvedValueOnce({ data: mockUpdatedTheme } as any);
 
-      const result = await themeApi.updateTheme(3, updateData);
+      const result = await themeApi.updateTheme("3", updateData);
 
       expect(result).toEqual(mockUpdatedTheme);
       expect(apiClient.put).toHaveBeenCalledWith('/themes/3', updateData);
@@ -254,7 +254,7 @@ describe('themeApi', () => {
 
       vi.mocked(apiClient.put).mockRejectedValueOnce(new Error('Cannot modify system theme'));
 
-      await expect(themeApi.updateTheme(1, updateData)).rejects.toThrow('Cannot modify system theme');
+      await expect(themeApi.updateTheme("1", updateData)).rejects.toThrow('Cannot modify system theme');
     });
   });
 
@@ -262,7 +262,7 @@ describe('themeApi', () => {
     it('should delete theme successfully', async () => {
       vi.mocked(apiClient.delete).mockResolvedValueOnce({ data: undefined } as any);
 
-      await themeApi.deleteTheme(3);
+      await themeApi.deleteTheme("3");
 
       expect(apiClient.delete).toHaveBeenCalledWith('/themes/3');
     });
@@ -270,21 +270,21 @@ describe('themeApi', () => {
     it('should handle active theme deletion error', async () => {
       vi.mocked(apiClient.delete).mockRejectedValueOnce(new Error('Cannot delete active theme'));
 
-      await expect(themeApi.deleteTheme(1)).rejects.toThrow('Cannot delete active theme');
+      await expect(themeApi.deleteTheme("1")).rejects.toThrow('Cannot delete active theme');
     });
 
     it('should handle system theme deletion error', async () => {
       vi.mocked(apiClient.delete).mockRejectedValueOnce(new Error('Cannot delete system theme'));
 
-      await expect(themeApi.deleteTheme(1)).rejects.toThrow('Cannot delete system theme');
+      await expect(themeApi.deleteTheme("1")).rejects.toThrow('Cannot delete system theme');
     });
   });
 
   describe('setActiveTheme', () => {
     it('should activate theme successfully', async () => {
       const mockActivatedTheme: Theme = {
-        id: 3,
-        organization_id: 1,
+        id: '3',
+        organization_id: "1",
         name: 'brand-theme',
         display_name: 'Brand Theme',
         is_system_theme: false,
@@ -296,7 +296,7 @@ describe('themeApi', () => {
 
       vi.mocked(apiClient.post).mockResolvedValueOnce({ data: mockActivatedTheme } as any);
 
-      const result = await themeApi.setActiveTheme(3);
+      const result = await themeApi.setActiveTheme("3");
 
       expect(result).toEqual(mockActivatedTheme);
       expect(result.is_active).toBe(true);
@@ -306,7 +306,7 @@ describe('themeApi', () => {
     it('should handle theme not found error', async () => {
       vi.mocked(apiClient.post).mockRejectedValueOnce(new Error('Theme not found'));
 
-      await expect(themeApi.setActiveTheme(999)).rejects.toThrow('Theme not found');
+      await expect(themeApi.setActiveTheme("999")).rejects.toThrow('Theme not found');
     });
   });
 
@@ -321,7 +321,7 @@ describe('themeApi', () => {
 
       vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockExport } as any);
 
-      const result = await themeApi.exportTheme(3);
+      const result = await themeApi.exportTheme("3");
 
       expect(result).toEqual(mockExport);
       expect(apiClient.get).toHaveBeenCalledWith('/themes/3/export');
@@ -330,7 +330,7 @@ describe('themeApi', () => {
     it('should handle export error', async () => {
       vi.mocked(apiClient.get).mockRejectedValueOnce(new Error('Export failed'));
 
-      await expect(themeApi.exportTheme(3)).rejects.toThrow('Export failed');
+      await expect(themeApi.exportTheme("3")).rejects.toThrow('Export failed');
     });
   });
 
@@ -347,7 +347,7 @@ describe('themeApi', () => {
 
       vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockCSSResponse } as any);
 
-      const result = await themeApi.getCSSVariables(1);
+      const result = await themeApi.getCSSVariables("1");
 
       expect(result).toEqual(mockCSSResponse);
       expect(result.css).toContain('--primary');
@@ -358,7 +358,7 @@ describe('themeApi', () => {
     it('should handle theme not found error', async () => {
       vi.mocked(apiClient.get).mockRejectedValueOnce(new Error('Theme not found'));
 
-      await expect(themeApi.getCSSVariables(999)).rejects.toThrow('Theme not found');
+      await expect(themeApi.getCSSVariables("999")).rejects.toThrow('Theme not found');
     });
   });
 });

@@ -372,7 +372,7 @@ export default function EditContentPage() {
                                   {JSON.stringify(value, null, 2)}
                                 </pre>
                               ) : (
-                                <span className="break-words">{String(value)}</span>
+                                <span className="wrap-break-words">{String(value)}</span>
                               )}
                             </div>
                             {field.help_text && (

@@ -25,9 +25,9 @@ vi.mock('@/lib/api/content', () => ({
 describe('TemplatesPage', () => {
   const mockTemplates = [
     {
-      id: 1,
-      organization_id: 1,
-      content_type_id: 1,
+      id: '1',
+      organization_id: '1',
+      content_type_id: '1',
       name: 'Blog Post Template',
       description: 'Standard blog post template',
       is_published: true,
@@ -37,14 +37,14 @@ describe('TemplatesPage', () => {
       icon: '📝',
       field_defaults: {},
       usage_count: 10,
-      content_type: { id: 1, name: 'Blog Post', slug: 'blog-post' },
+      content_type: { id: '1', name: 'Blog Post', slug: 'blog-post' },
       created_at: '2025-01-01T00:00:00Z',
       updated_at: '2025-01-01T00:00:00Z',
     },
     {
-      id: 2,
-      organization_id: 1,
-      content_type_id: 2,
+      id: '2',
+      organization_id: '1',
+      content_type_id: '2',
       name: 'Product Template',
       description: 'E-commerce product template',
       is_published: false,
@@ -54,14 +54,14 @@ describe('TemplatesPage', () => {
       icon: '🛒',
       field_defaults: {},
       usage_count: 5,
-      content_type: { id: 2, name: 'Product', slug: 'product' },
+      content_type: { id: '2', name: 'Product', slug: 'product' },
       created_at: '2025-01-02T00:00:00Z',
       updated_at: '2025-01-02T00:00:00Z',
     },
     {
-      id: 3,
-      organization_id: 1,
-      content_type_id: 1,
+      id: '3',
+      organization_id: '1',
+      content_type_id: '1',
       name: 'Tutorial Template',
       description: 'Step-by-step tutorial template',
       is_published: true,
@@ -71,16 +71,16 @@ describe('TemplatesPage', () => {
       icon: '📚',
       field_defaults: {},
       usage_count: 8,
-      content_type: { id: 1, name: 'Blog Post', slug: 'blog-post' },
+      content_type: { id: '1', name: 'Blog Post', slug: 'blog-post' },
       created_at: '2025-01-03T00:00:00Z',
       updated_at: '2025-01-03T00:00:00Z',
     },
   ];
 
   const mockContentTypes = [
-    { id: 1, name: 'Blog Post', slug: 'blog-post', schema: {}, organization_id: 1, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-    { id: 2, name: 'Product', slug: 'product', schema: {}, organization_id: 1, created_at: '2025-01-02T00:00:00Z', updated_at: '2025-01-02T00:00:00Z' },
-    { id: 3, name: 'Landing Page', slug: 'landing-page', schema: {}, organization_id: 1, created_at: '2025-01-03T00:00:00Z', updated_at: '2025-01-03T00:00:00Z' },
+    { id: '1', name: 'Blog Post', api_id: 'blog-post', fields: [], is_active: true, organization_id: '1', created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
+    { id: '2', name: 'Product', api_id: 'product', fields: [], is_active: true, organization_id: '1', created_at: '2025-01-02T00:00:00Z', updated_at: '2025-01-02T00:00:00Z' },
+    { id: '3', name: 'Landing Page', api_id: 'landing-page', fields: [], is_active: true, organization_id: '1', created_at: '2025-01-03T00:00:00Z', updated_at: '2025-01-03T00:00:00Z' },
   ];
 
   const mockCategories = ['Blog', 'Product', 'Marketing'];
@@ -377,9 +377,9 @@ describe('TemplatesPage', () => {
     it('should create template when form is submitted', async () => {
       const user = userEvent.setup();
       vi.mocked(templateApi.templateApi.createTemplate).mockResolvedValue({
-        id: 4,
-        organization_id: 1,
-        content_type_id: 1,
+        id: '4',
+        organization_id: '1',
+        content_type_id: '1',
         name: 'New Template',
         description: 'A new template',
         is_published: true,
@@ -389,7 +389,7 @@ describe('TemplatesPage', () => {
         icon: '✨',
         field_defaults: {},
         usage_count: 0,
-        content_type: { id: 1, name: 'Blog Post', slug: 'blog-post' },
+        content_type: { id: '1', name: 'Blog Post', slug: 'blog-post' },
         created_at: '2025-01-04T00:00:00Z',
         updated_at: '2025-01-04T00:00:00Z',
       });
@@ -435,9 +435,9 @@ describe('TemplatesPage', () => {
     it('should close dialog after successful creation', async () => {
       const user = userEvent.setup();
       vi.mocked(templateApi.templateApi.createTemplate).mockResolvedValue({
-        id: 4,
-        organization_id: 1,
-        content_type_id: 1,
+        id: '4',
+        organization_id: '1',
+        content_type_id: '1',
         name: 'New Template',
         description: '',
         is_published: true,
@@ -447,7 +447,7 @@ describe('TemplatesPage', () => {
         icon: '',
         field_defaults: {},
         usage_count: 0,
-        content_type: { id: 1, name: 'Blog Post', slug: 'blog-post' },
+        content_type: { id: '1', name: 'Blog Post', slug: 'blog-post' },
         created_at: '2025-01-04T00:00:00Z',
         updated_at: '2025-01-04T00:00:00Z',
       });
@@ -508,7 +508,7 @@ describe('TemplatesPage', () => {
       vi.mocked(templateApi.templateApi.updateTemplate).mockResolvedValue({
         ...mockTemplates[0],
         name: 'Updated Template',
-        organization_id: 1,
+        organization_id: '1',
         is_system_template: false,
       });
 

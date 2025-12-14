@@ -23,15 +23,15 @@ vi.mock('@/lib/api/search');
 
 describe('ContentPage', () => {
   const mockContentTypes = [
-    { id: 1, name: 'Blog Post', slug: 'blog-post' },
-    { id: 2, name: 'Product', slug: 'product' },
+    { id: '1', name: 'Blog Post', slug: 'blog-post' },
+    { id: '2', name: 'Product', slug: 'product' },
   ];
 
   const mockContentEntries = {
     items: [
       {
-        id: 1,
-        content_type_id: 1,
+        id: '1',
+        content_type_id: '1',
         slug: 'my-first-post',
         status: 'published',
         content_data: {
@@ -40,13 +40,13 @@ describe('ContentPage', () => {
         },
         content_type: { name: 'Blog Post' },
         version: 1,
-        author_id: 1,
+        author_id: '1',
         created_at: '2025-01-01T00:00:00Z',
         updated_at: '2025-01-01T00:00:00Z',
       },
       {
-        id: 2,
-        content_type_id: 2,
+        id: '2',
+        content_type_id: '2',
         slug: 'product-1',
         status: 'draft',
         content_data: {
@@ -55,22 +55,22 @@ describe('ContentPage', () => {
         },
         content_type: { name: 'Product' },
         version: 1,
-        author_id: 1,
+        author_id: '1',
         created_at: '2025-01-02T00:00:00Z',
         updated_at: '2025-01-02T00:00:00Z',
       },
     ],
     total: 2,
     page: 1,
-    per_page: 20,
-    total_pages: 1,
+    page_size: 20,
+    pages: 1,
   };
 
   const mockSearchResults = {
     results: [
       {
-        id: 1,
-        content_type_id: 1,
+        id: '1',
+        content_type_id: '1',
         slug: 'my-first-post',
         status: 'published',
         content_data: {
@@ -81,7 +81,7 @@ describe('ContentPage', () => {
     ],
     total: 1,
     page: 1,
-    per_page: 20,
+    page_size: 20,
   };
 
   beforeEach(() => {
@@ -137,7 +137,7 @@ describe('ContentPage', () => {
       await waitFor(() => {
         expect(contentApiModule.contentApi.getContentEntries).toHaveBeenCalledWith({
           page: 1,
-          per_page: 20,
+          page_size: 20,
         });
       });
     });
@@ -192,8 +192,8 @@ describe('ContentPage', () => {
         items: [],
         total: 0,
         page: 1,
-        per_page: 20,
-        total_pages: 0,
+        page_size: 20,
+        pages: 0,
       } as any);
 
       render(<ContentPage />);
@@ -209,21 +209,21 @@ describe('ContentPage', () => {
     it('should use slug as fallback when title is missing', async () => {
       vi.mocked(contentApiModule.contentApi.getContentEntries).mockResolvedValue({
         items: [{
-          id: 1,
-          content_type_id: 1,
+          id: '1',
+          content_type_id: '1',
           slug: 'untitled-post',
           status: 'draft',
           content_data: {},
           content_type: { name: 'Blog Post' },
           version: 1,
-          author_id: 1,
+          author_id: '1',
           created_at: '2025-01-01T00:00:00Z',
           updated_at: '2025-01-01T00:00:00Z',
         }],
         total: 1,
         page: 1,
-        per_page: 20,
-        total_pages: 1,
+        page_size: 20,
+        pages: 1,
       } as any);
 
       render(<ContentPage />);
@@ -368,7 +368,7 @@ describe('ContentPage', () => {
       vi.mocked(contentApiModule.contentApi.getContentEntries).mockResolvedValue({
         ...mockContentEntries,
         total: 50,
-        total_pages: 3,
+        pages: 3,
       } as any);
 
       render(<ContentPage />);
@@ -385,7 +385,7 @@ describe('ContentPage', () => {
       vi.mocked(contentApiModule.contentApi.getContentEntries).mockResolvedValue({
         ...mockContentEntries,
         total: 50,
-        total_pages: 3,
+        pages: 3,
       } as any);
 
       render(<ContentPage />);
@@ -402,7 +402,7 @@ describe('ContentPage', () => {
       await waitFor(() => {
         expect(contentApiModule.contentApi.getContentEntries).toHaveBeenCalledWith({
           page: 2,
-          per_page: 20,
+          page_size: 20,
         });
       });
     });
@@ -414,7 +414,7 @@ describe('ContentPage', () => {
           ...mockContentEntries,
           page: 1,
           total: 50,
-          total_pages: 3,
+          pages: 3,
         } as any);
 
       render(<ContentPage />);
@@ -430,7 +430,7 @@ describe('ContentPage', () => {
           ...mockContentEntries,
           page: 2,
           total: 50,
-          total_pages: 3,
+          pages: 3,
         } as any);
       
       const nextButton = screen.getByRole('button', { name: /next/i });
@@ -447,7 +447,7 @@ describe('ContentPage', () => {
           ...mockContentEntries,
           page: 1,
           total: 50,
-          total_pages: 3,
+          pages: 3,
         } as any);
       
       const prevButton = screen.getByRole('button', { name: /previous/i });
@@ -456,7 +456,7 @@ describe('ContentPage', () => {
       await waitFor(() => {
         expect(contentApiModule.contentApi.getContentEntries).toHaveBeenCalledWith({
           page: 1,
-          per_page: 20,
+          page_size: 20,
         });
       });
     });
@@ -473,7 +473,7 @@ describe('ContentPage', () => {
           ...mockContentEntries,
           page: 1,
           total: 50,
-          total_pages: 3,
+          pages: 3,
         } as any);
 
       render(<ContentPage />);
@@ -491,7 +491,7 @@ describe('ContentPage', () => {
           ...mockContentEntries,
           page: 2,
           total: 50,
-          total_pages: 3,
+          pages: 3,
         } as any);
       fireEvent.click(nextButton);
       
@@ -505,7 +505,7 @@ describe('ContentPage', () => {
           ...mockContentEntries,
           page: 3,
           total: 50,
-          total_pages: 3,
+          pages: 3,
         } as any);
       fireEvent.click(nextButton);
       
@@ -608,21 +608,21 @@ describe('ContentPage', () => {
     it('should render archived status with outline variant', async () => {
       vi.mocked(contentApiModule.contentApi.getContentEntries).mockResolvedValue({
         items: [{
-          id: 1,
-          content_type_id: 1,
+          id: '1',
+          content_type_id: '1',
           slug: 'archived-post',
           status: 'archived',
           content_data: { title: 'Archived Post' },
           content_type: { name: 'Blog Post' },
           version: 1,
-          author_id: 1,
+          author_id: '1',
           created_at: '2025-01-01T00:00:00Z',
           updated_at: '2025-01-01T00:00:00Z',
         }],
         total: 1,
         page: 1,
-        per_page: 20,
-        total_pages: 1,
+        page_size: 20,
+        pages: 1,
       } as any);
 
       render(<ContentPage />);

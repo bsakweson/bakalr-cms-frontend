@@ -22,7 +22,7 @@ const originalConfirm = window.confirm;
 
 describe('OrganizationSettingsPage', () => {
   const mockProfile: OrganizationProfile = {
-    id: 1,
+    id: '1',
     name: 'Acme Inc',
     slug: 'acme-inc',
     description: 'Leading provider of innovative solutions',
@@ -37,38 +37,38 @@ describe('OrganizationSettingsPage', () => {
 
   const mockLocales: Locale[] = [
     {
-      id: 1,
+      id: '1',
       code: 'en',
       name: 'English',
       is_default: true,
       is_enabled: true,
       is_active: true,
       auto_translate: false,
-      organization_id: 1,
+      organization_id: '1',
       created_at: '2024-01-15T10:00:00Z',
       updated_at: '2024-01-15T10:00:00Z',
     },
     {
-      id: 2,
+      id: '2',
       code: 'fr',
       name: 'French',
       is_default: false,
       is_enabled: true,
       is_active: true,
       auto_translate: true,
-      organization_id: 1,
+      organization_id: '1',
       created_at: '2024-03-20T14:30:00Z',
       updated_at: '2024-03-20T14:30:00Z',
     },
     {
-      id: 3,
+      id: '3',
       code: 'es',
       name: 'Spanish',
       is_default: false,
       is_enabled: false,
       is_active: false,
       auto_translate: false,
-      organization_id: 1,
+      organization_id: '1',
       created_at: '2024-06-10T09:15:00Z',
       updated_at: '2024-06-10T09:15:00Z',
     },

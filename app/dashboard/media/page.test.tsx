@@ -34,7 +34,7 @@ vi.mock('@/components/media/MediaDetailsModal', () => ({
 
 const mockMediaFiles = [
   {
-    id: 1,
+    id: '1',
     filename: 'image1.jpg',
     file_type: 'image/jpeg',
     file_size: 1024000,
@@ -45,7 +45,7 @@ const mockMediaFiles = [
     created_at: '2024-01-01T00:00:00Z',
   },
   {
-    id: 2,
+    id: '2',
     filename: 'video1.mp4',
     file_type: 'video/mp4',
     file_size: 5120000,
@@ -55,7 +55,7 @@ const mockMediaFiles = [
     created_at: '2024-01-02T00:00:00Z',
   },
   {
-    id: 3,
+    id: '3',
     filename: 'document.pdf',
     file_type: 'application/pdf',
     file_size: 512000,
@@ -147,7 +147,7 @@ describe('MediaPage', () => {
       });
 
       // Check how many times API was called
-      console.log('API call count:', mediaApi.getMedia.mock.calls.length);
+      console.log('API call count:', vi.mocked(mediaApi.getMedia).mock.calls.length);
       console.log('Router push count:', mockPush.mock.calls.length);
 
       // Wait directly for media to render
@@ -210,7 +210,7 @@ describe('MediaPage', () => {
     });
 
     it('should show empty state when no media files', async () => {
-      vi.mocked(mediaApi.getMedia).mockResolvedValue({ items: [] });
+      vi.mocked(mediaApi.getMedia).mockResolvedValue({ items: [], total: 0 });
       render(<MediaPage />);
 
       await waitFor(() => {
@@ -374,7 +374,7 @@ describe('MediaPage', () => {
     it('should format bytes correctly', async () => {
       const smallFile = {
         ...mockMediaFiles[0],
-        id: 10,
+        id: '10',
         filename: 'tiny.txt',
         file_size: 512, // bytes
       };
@@ -395,7 +395,7 @@ describe('MediaPage', () => {
     it('should format kilobytes correctly', async () => {
       const mediumFile = {
         ...mockMediaFiles[0],
-        id: 11,
+        id: '11',
         filename: 'medium.jpg',
         file_size: 2048, // 2 KB
       };

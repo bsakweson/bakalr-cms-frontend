@@ -69,7 +69,7 @@ export default function MediaPickerModal({
 
       const data = await mediaApi.getMedia(params);
       setMedia(data.items);
-      setTotal(data.total);
+      setTotal(data.total ?? 0);
     } catch (err) {
       console.error('Failed to load media:', err);
     } finally {

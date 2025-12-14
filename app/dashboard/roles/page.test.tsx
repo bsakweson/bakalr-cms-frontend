@@ -23,10 +23,10 @@ const originalConfirm = window.confirm;
 describe('RolesPage', () => {
   const mockRoles: Role[] = [
     {
-      id: 1,
+      id: '1',
       name: 'Admin',
       description: 'Full system access',
-      organization_id: 1,
+      organization_id: '1',
       is_system_role: true,
       level: 100,
       permissions: ['*'],
@@ -35,10 +35,10 @@ describe('RolesPage', () => {
       updated_at: '2024-01-01T00:00:00Z',
     },
     {
-      id: 2,
+      id: '2',
       name: 'Editor',
       description: 'Can create and edit content',
-      organization_id: 1,
+      organization_id: '1',
       is_system_role: false,
       level: 50,
       permissions: ['content.create', 'content.update'],
@@ -47,10 +47,10 @@ describe('RolesPage', () => {
       updated_at: '2024-03-20T14:30:00Z',
     },
     {
-      id: 3,
+      id: '3',
       name: 'Viewer',
       description: 'Read-only access',
-      organization_id: 1,
+      organization_id: '1',
       is_system_role: false,
       level: 10,
       permissions: ['content.read'],
@@ -62,37 +62,37 @@ describe('RolesPage', () => {
 
   const mockPermissions: Permission[] = [
     {
-      id: 1,
+      id: '1',
       name: 'content.read',
       description: 'View content',
       category: 'Content',
     },
     {
-      id: 2,
+      id: '2',
       name: 'content.create',
       description: 'Create new content',
       category: 'Content',
     },
     {
-      id: 3,
+      id: '3',
       name: 'content.update',
       description: 'Edit existing content',
       category: 'Content',
     },
     {
-      id: 4,
+      id: '4',
       name: 'content.delete',
       description: 'Delete content',
       category: 'Content',
     },
     {
-      id: 5,
+      id: '5',
       name: 'users.read',
       description: 'View users',
       category: 'Users',
     },
     {
-      id: 6,
+      id: '6',
       name: 'users.manage',
       description: 'Manage users',
       category: 'Users',
@@ -447,7 +447,7 @@ describe('RolesPage', () => {
     it('should handle permissions without categories', async () => {
       const permissionsWithoutCategory: Permission[] = [
         {
-          id: 1,
+          id: '1',
           name: 'test.permission',
           description: 'Test permission',
         },
