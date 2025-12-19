@@ -30,7 +30,7 @@ import { useAuth } from '@/contexts/auth-context';
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [contentStats, setContentStats] = useState<ContentStats | null>(null);
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [mediaStats, setMediaStats] = useState<MediaStats | null>(null);
@@ -41,9 +41,12 @@ export default function DashboardPage() {
 
   // SEO and accessibility
 
+  // Only load analytics once auth is ready and user is authenticated
   useEffect(() => {
-    loadAnalytics();
-  }, []);
+    if (!authLoading && isAuthenticated) {
+      loadAnalytics();
+    }
+  }, [authLoading, isAuthenticated]);
 
   const loadAnalytics = async () => {
     try {

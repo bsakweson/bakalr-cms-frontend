@@ -64,9 +64,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   /**
-   * Refresh the access token
+   * Schedule automatic token refresh before expiration
+   * Uses a ref to store the refresh function to avoid circular dependencies
    */
-  const refreshAccessToken = useCallback(async (): Promise<boolean> => {
+  const refreshAccessTokenRef = useRef<((silent?: boolean) => Promise<boolean>) | null>(null);
+  
+  const scheduleTokenRefresh = useCallback((token: string) => {
+    // Clear any existing timeout
+    if (refreshTimeoutRef.current) {
+      clearTimeout(refreshTimeoutRef.current);
+      refreshTimeoutRef.current = null;
+    }
+
+    const expiration = getTokenExpiration(token);
+    if (!expiration) return;
+
+    const timeUntilRefresh = expiration - Date.now() - TOKEN_REFRESH_BUFFER_MS;
+    
+    if (timeUntilRefresh <= 0) {
+      // Token already needs refresh
+      refreshAccessTokenRef.current?.();
+    } else {
+      // Schedule refresh
+      refreshTimeoutRef.current = setTimeout(() => {
+        refreshAccessTokenRef.current?.();
+      }, timeUntilRefresh);
+    }
+  }, []);
+
+  /**
+   * Refresh the access token
+   * @param silent - If true, don't redirect on failure (used during initial validation)
+   */
+  const refreshAccessToken = useCallback(async (silent: boolean = false): Promise<boolean> => {
     // Prevent rapid refresh attempts
     const now = Date.now();
     if (now - lastRefreshAttemptRef.current < MIN_REFRESH_INTERVAL_MS) {
@@ -108,35 +138,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return true;
     } catch (error) {
       console.error('Token refresh failed:', error);
-      clearAuthAndRedirect();
+      // Only redirect if not silent mode
+      if (!silent) {
+        clearAuthAndRedirect();
+      }
       return false;
     }
-  }, [clearAuthAndRedirect]);
+  }, [clearAuthAndRedirect, scheduleTokenRefresh]);
 
-  /**
-   * Schedule automatic token refresh before expiration
-   */
-  const scheduleTokenRefresh = useCallback((token: string) => {
-    // Clear any existing timeout
-    if (refreshTimeoutRef.current) {
-      clearTimeout(refreshTimeoutRef.current);
-      refreshTimeoutRef.current = null;
-    }
-
-    const expiration = getTokenExpiration(token);
-    if (!expiration) return;
-
-    const timeUntilRefresh = expiration - Date.now() - TOKEN_REFRESH_BUFFER_MS;
-    
-    if (timeUntilRefresh <= 0) {
-      // Token already needs refresh
-      refreshAccessToken();
-    } else {
-      // Schedule refresh
-      refreshTimeoutRef.current = setTimeout(() => {
-        refreshAccessToken();
-      }, timeUntilRefresh);
-    }
+  // Keep the ref updated with the latest refreshAccessToken function
+  useEffect(() => {
+    refreshAccessTokenRef.current = refreshAccessToken;
   }, [refreshAccessToken]);
 
   /**
@@ -152,24 +164,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Check if token is expired
+      // Try to parse and set user first - this makes isAuthenticated true
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+      } catch (error) {
+        console.error('Failed to parse stored user:', error);
+        localStorage.removeItem('user');
+        setIsLoading(false);
+        return;
+      }
+
+      // Check if token is expired and try to refresh silently (don't redirect on failure)
       if (isTokenExpired(token)) {
-        // Try to refresh
-        const refreshed = await refreshAccessToken();
-        if (!refreshed) {
-          setIsLoading(false);
-          return;
-        }
+        // Try to refresh silently - if it fails, the API interceptor will handle 401s
+        await refreshAccessToken(true);
       } else {
         // Token is valid, schedule refresh
         scheduleTokenRefresh(token);
-      }
-
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Failed to parse stored user:', error);
-        clearAuthAndRedirect();
       }
 
       setIsLoading(false);

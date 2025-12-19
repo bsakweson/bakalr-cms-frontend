@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api';
+import { useAuth } from '@/contexts/auth-context';
 
 interface Locale {
   id: number;
@@ -17,6 +18,7 @@ interface UseLocalesResult {
 }
 
 export function useLocales(): UseLocalesResult {
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [locales, setLocales] = useState<Locale[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -66,8 +68,21 @@ export function useLocales(): UseLocalesResult {
   };
 
   useEffect(() => {
-    fetchLocales();
-  }, []);
+    // Only fetch locales once auth is ready and user is authenticated
+    if (!authLoading && isAuthenticated) {
+      fetchLocales();
+    } else if (!authLoading && !isAuthenticated) {
+      // Not authenticated, use default locale
+      setLocales([{
+        id: 0,
+        code: 'en',
+        name: 'English',
+        native_name: 'English',
+        enabled: true,
+      }]);
+      setLoading(false);
+    }
+  }, [authLoading, isAuthenticated]);
 
   return {
     locales,

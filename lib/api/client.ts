@@ -29,14 +29,32 @@ apiClient.interceptors.request.use(
   }
 );
 
+/**
+ * Check if a JWT token is expired
+ */
+function isTokenExpired(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return !payload.exp || Date.now() >= payload.exp * 1000;
+  } catch {
+    return true;
+  }
+}
+
 // Response interceptor to handle token refresh
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // If 401 and not already retried, try to refresh token
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Skip token refresh for auth endpoints (login, register, refresh, etc.)
+    const isAuthEndpoint = originalRequest?.url?.includes('/auth/login') ||
+                           originalRequest?.url?.includes('/auth/register') ||
+                           originalRequest?.url?.includes('/auth/refresh') ||
+                           originalRequest?.url?.includes('/auth/social');
+
+    // If 401 and not already retried and not an auth endpoint, try to refresh token
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       originalRequest._retry = true;
 
       try {
@@ -59,11 +77,21 @@ apiClient.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${access_token}`;
         return apiClient(originalRequest);
       } catch (refreshError) {
-        // Refresh failed, clear tokens and redirect to login
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user');
-        window.location.href = '/login';
+        // Before redirecting, check if we actually have valid tokens
+        // This prevents redirect loops when old requests fail after a new login
+        const currentToken = localStorage.getItem('access_token');
+        const hasValidToken = currentToken && !isTokenExpired(currentToken);
+        
+        if (!hasValidToken) {
+          // Only clear and redirect if we don't have valid tokens
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          localStorage.removeItem('user');
+          // Only redirect if not already on login page
+          if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+            window.location.href = '/login';
+          }
+        }
         return Promise.reject(refreshError);
       }
     }

@@ -65,10 +65,17 @@ export default function LoginPage() {
     setError('');
     setIsLoading(true);
 
+    // Clear any stale tokens before attempting login
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user');
+
     try {
       console.log('Attempting login with:', email);
       await login({ email, password });
       console.log('Login successful, redirecting to dashboard');
+      // Small delay to ensure state is synchronized, then use client-side navigation
+      await new Promise(resolve => setTimeout(resolve, 100));
       router.push('/dashboard');
     } catch (err: any) {
       console.error('Login error:', err);

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { organizationApi } from '@/lib/api';
 import { apiKeysApi, type APIKey, type APIKeyWithSecret } from '@/lib/api/api-keys';
+import { apiScopesApi } from '@/lib/api/api-scopes';
 import { translationApi, LocaleCreate, LocaleUpdate } from '@/lib/api/translation';
 import type { OrganizationProfile, Locale } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -26,17 +27,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-const AVAILABLE_SCOPES = [
-  { value: 'read:content', label: 'Read Content', description: 'View content entries and types' },
-  { value: 'write:content', label: 'Write Content', description: 'Create and update content' },
-  { value: 'delete:content', label: 'Delete Content', description: 'Delete content entries' },
-  { value: 'read:media', label: 'Read Media', description: 'Access media files' },
-  { value: 'write:media', label: 'Upload Media', description: 'Upload media files' },
-  { value: 'delete:media', label: 'Delete Media', description: 'Delete media files' },
-  { value: 'read:translation', label: 'Read Translations', description: 'Access translations' },
-  { value: 'read:analytics', label: 'Read Analytics', description: 'View analytics data' },
-  { value: 'themes.read', label: 'Read Themes', description: 'View themes' },
-];
+// Scope dropdown option type
+interface ScopeOption {
+  value: string;
+  label: string;
+  description?: string;
+  category?: string;
+  platform?: string;
+}
 
 export default function OrganizationSettingsPage() {
   const searchParams = useSearchParams();
@@ -46,6 +44,7 @@ export default function OrganizationSettingsPage() {
   const [profile, setProfile] = useState<OrganizationProfile | null>(null);
   const [locales, setLocales] = useState<Locale[]>([]);
   const [apiKeys, setApiKeys] = useState<APIKey[]>([]);
+  const [availableScopes, setAvailableScopes] = useState<ScopeOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -109,10 +108,11 @@ export default function OrganizationSettingsPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [profileData, localesData, apiKeysData] = await Promise.all([
+      const [profileData, localesData, apiKeysData, scopesData] = await Promise.all([
         organizationApi.getProfile(),
         translationApi.getLocales(false),
         apiKeysApi.listAPIKeys(),
+        apiScopesApi.getForDropdown(),
       ]);
 
       setProfile(profileData);
@@ -125,6 +125,7 @@ export default function OrganizationSettingsPage() {
       });
       setLocales(localesData);
       setApiKeys(apiKeysData.items || []);
+      setAvailableScopes(scopesData);
     } catch (error) {
       console.error('Failed to load organization data:', error);
       setMessage({ type: 'error', text: 'Failed to load organization data' });
@@ -819,23 +820,40 @@ export default function OrganizationSettingsPage() {
             <div className="space-y-2">
               <Label>Permissions</Label>
               <div className="border rounded-lg p-4 space-y-3 max-h-64 overflow-y-auto">
-                {AVAILABLE_SCOPES.map((scope) => (
-                  <div key={scope.value} className="flex items-start space-x-3">
-                    <input
-                      type="checkbox"
-                      id={`scope-${scope.value}`}
-                      checked={createKeyForm.scopes.includes(scope.value)}
-                      onChange={() => toggleScope(scope.value)}
-                      className="mt-1"
-                    />
-                    <div className="flex-1">
-                      <Label htmlFor={`scope-${scope.value}`} className="font-medium">
-                        {scope.label}
-                      </Label>
-                      <p className="text-xs text-muted-foreground">{scope.description}</p>
+                {availableScopes.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No scopes available. Go to API Scopes tab to create some.</p>
+                ) : (
+                  // Group scopes by category
+                  Object.entries(
+                    availableScopes.reduce((acc, scope) => {
+                      const cat = scope.category || 'Other';
+                      if (!acc[cat]) acc[cat] = [];
+                      acc[cat].push(scope);
+                      return acc;
+                    }, {} as Record<string, ScopeOption[]>)
+                  ).map(([category, scopes]) => (
+                    <div key={category} className="space-y-2">
+                      <h4 className="text-sm font-semibold text-muted-foreground">{category}</h4>
+                      {scopes.map((scope) => (
+                        <div key={scope.value} className="flex items-start space-x-3 pl-2">
+                          <input
+                            type="checkbox"
+                            id={`scope-${scope.value}`}
+                            checked={createKeyForm.scopes.includes(scope.value)}
+                            onChange={() => toggleScope(scope.value)}
+                            className="mt-1"
+                          />
+                          <div className="flex-1">
+                            <Label htmlFor={`scope-${scope.value}`} className="font-medium">
+                              {scope.label}
+                            </Label>
+                            <p className="text-xs text-muted-foreground">{scope.description}</p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -905,23 +923,40 @@ export default function OrganizationSettingsPage() {
             <div className="space-y-2">
               <Label>Permissions</Label>
               <div className="border rounded-lg p-4 space-y-3 max-h-64 overflow-y-auto">
-                {AVAILABLE_SCOPES.map((scope) => (
-                  <div key={scope.value} className="flex items-start space-x-3">
-                    <input
-                      type="checkbox"
-                      id={`edit-scope-${scope.value}`}
-                      checked={editKeyForm.scopes.includes(scope.value)}
-                      onChange={() => toggleEditScope(scope.value)}
-                      className="mt-1"
-                    />
-                    <div className="flex-1">
-                      <Label htmlFor={`edit-scope-${scope.value}`} className="font-medium">
-                        {scope.label}
-                      </Label>
-                      <p className="text-xs text-muted-foreground">{scope.description}</p>
+                {availableScopes.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No scopes available. Go to API Scopes tab to create some.</p>
+                ) : (
+                  // Group scopes by category
+                  Object.entries(
+                    availableScopes.reduce((acc, scope) => {
+                      const cat = scope.category || 'Other';
+                      if (!acc[cat]) acc[cat] = [];
+                      acc[cat].push(scope);
+                      return acc;
+                    }, {} as Record<string, ScopeOption[]>)
+                  ).map(([category, scopes]) => (
+                    <div key={category} className="space-y-2">
+                      <h4 className="text-sm font-semibold text-muted-foreground">{category}</h4>
+                      {scopes.map((scope) => (
+                        <div key={scope.value} className="flex items-start space-x-3 pl-2">
+                          <input
+                            type="checkbox"
+                            id={`edit-scope-${scope.value}`}
+                            checked={editKeyForm.scopes.includes(scope.value)}
+                            onChange={() => toggleEditScope(scope.value)}
+                            className="mt-1"
+                          />
+                          <div className="flex-1">
+                            <Label htmlFor={`edit-scope-${scope.value}`} className="font-medium">
+                              {scope.label}
+                            </Label>
+                            <p className="text-xs text-muted-foreground">{scope.description}</p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           </div>

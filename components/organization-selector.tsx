@@ -16,17 +16,18 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 export function OrganizationSelector() {
-  const { user, login } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [organizations, setOrganizations] = useState<OrganizationMembership[]>([]);
   const [currentOrgId, setCurrentOrgId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [switching, setSwitching] = useState(false);
 
   useEffect(() => {
-    if (user) {
+    // Only load organizations once auth is ready and user exists
+    if (!authLoading && user) {
       loadOrganizations();
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   const loadOrganizations = async () => {
     try {
