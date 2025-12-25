@@ -1,15 +1,35 @@
 import apiClient from './client';
 import { Media, PaginatedResponse } from '@/types';
+import { PageRequest, DEFAULT_PAGE_SIZE } from '@/lib/pagination';
+
+export interface MediaListParams extends PageRequest {
+  file_type?: string;
+  search?: string;
+}
 
 export const mediaApi = {
-  async getMedia(params?: {
-    page?: number;
-    per_page?: number;
-    file_type?: string;
-    search?: string;
-  }): Promise<PaginatedResponse<Media>> {
+  /**
+   * Get paginated list of media files.
+   *
+   * @param params - Pagination and filter parameters
+   * @returns Paginated response with media items
+   */
+  async getMedia(params?: MediaListParams): Promise<PaginatedResponse<Media>> {
+    // Convert to backend expected format (backend uses 'size' not 'page_size')
+    const apiParams: Record<string, any> = {
+      page: params?.page ?? 1,
+      size: params?.page_size ?? DEFAULT_PAGE_SIZE,
+    };
+
+    if (params?.file_type) {
+      apiParams.file_type = params.file_type;
+    }
+    if (params?.search) {
+      apiParams.search = params.search;
+    }
+
     const response = await apiClient.get<PaginatedResponse<Media>>('/media', {
-      params,
+      params: apiParams,
     });
     return response.data;
   },

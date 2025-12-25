@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 export default function TemplatesPage() {
   const [templates, setTemplates] = useState<ContentTemplate[]>([]);
@@ -25,6 +26,8 @@ export default function TemplatesPage() {
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [filterPublished, setFilterPublished] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [templateToDelete, setTemplateToDelete] = useState<{ id: string; name: string } | null>(null);
   const [formData, setFormData] = useState<ContentTemplateCreate>({
     content_type_id: '',
     name: '',
@@ -76,8 +79,8 @@ export default function TemplatesPage() {
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(t => 
-        t.name.toLowerCase().includes(query) || 
+      filtered = filtered.filter(t =>
+        t.name.toLowerCase().includes(query) ||
         t.description?.toLowerCase().includes(query)
       );
     }
@@ -116,10 +119,17 @@ export default function TemplatesPage() {
     setShowDialog(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this template?')) return;
+  const handleDelete = (id: string, name: string) => {
+    setTemplateToDelete({ id, name });
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!templateToDelete) return;
     try {
-      await templateApi.deleteTemplate(id);
+      await templateApi.deleteTemplate(templateToDelete.id);
+      setDeleteDialogOpen(false);
+      setTemplateToDelete(null);
       loadData();
     } catch (error) {
       console.error('Failed to delete:', error);
@@ -205,8 +215,8 @@ export default function TemplatesPage() {
         <Card className="col-span-full">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <p className="text-muted-foreground mb-4">
-              {searchQuery || filterCategory !== 'all' || filterPublished !== 'all' 
-                ? 'No templates match your filters' 
+              {searchQuery || filterCategory !== 'all' || filterPublished !== 'all'
+                ? 'No templates match your filters'
                 : 'No templates yet. Create your first template!'}
             </p>
             {!searchQuery && filterCategory === 'all' && filterPublished === 'all' && (
@@ -238,7 +248,7 @@ export default function TemplatesPage() {
               </div>
               <div className="flex gap-2">
                 <Button size="sm" variant="outline" className="flex-1" onClick={() => handleEdit(template)}>Edit</Button>
-                <Button size="sm" variant="destructive" onClick={() => handleDelete(template.id)}>Delete</Button>
+                <Button size="sm" variant="destructive" onClick={() => handleDelete(template.id, template.name)}>Delete</Button>
               </div>
             </CardContent>
           </Card>
@@ -286,13 +296,13 @@ export default function TemplatesPage() {
             </div>
             <div className="grid gap-2">
               <Label>Tags (comma-separated)</Label>
-              <Input 
-                value={formData.tags?.join(', ') || ''} 
-                onChange={(e) => setFormData({ 
-                  ...formData, 
-                  tags: e.target.value.split(',').map(t => t.trim()).filter(t => t) 
-                })} 
-                placeholder="article, blog, news" 
+              <Input
+                value={formData.tags?.join(', ') || ''}
+                onChange={(e) => setFormData({
+                  ...formData,
+                  tags: e.target.value.split(',').map(t => t.trim()).filter(t => t)
+                })}
+                placeholder="article, blog, news"
               />
             </div>
             <div className="flex items-center justify-between">
@@ -306,6 +316,16 @@ export default function TemplatesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Template"
+        description={`Are you sure you want to delete "${templateToDelete?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

@@ -1,9 +1,26 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { translationApi, type LocaleCreate, type LocaleUpdate } from './translation';
-import apiClient from './client';
 import { Translation, Locale } from '@/types';
 
-vi.mock('./client');
+// Mock the apiClient
+vi.mock('./client', () => ({
+  default: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+  },
+  apiClient: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
+
+import apiClient from './client';
 
 describe('translationApi', () => {
   beforeEach(() => {

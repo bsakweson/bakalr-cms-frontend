@@ -1,6 +1,6 @@
 /**
  * Integration Test: Organization Switching Workflow
- * 
+ *
  * This test validates the complete multi-tenant organization switching flow:
  * 1. List user's organizations (multiple orgs with different roles)
  * 2. Switch between organizations (new auth token)
@@ -12,10 +12,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { tenantApi } from '@/lib/api/tenant';
 import { contentApi } from '@/lib/api/content';
-import type { 
-  UserOrganizationsResponse, 
+import type {
+  UserOrganizationsResponse,
   OrganizationMembership,
-  SwitchOrganizationRequest, 
+  SwitchOrganizationRequest,
   SwitchOrganizationResponse,
   ContentEntry,
   PaginatedResponse
@@ -136,7 +136,7 @@ describe('Integration: Organization Switching Workflow', () => {
       expect(result).toEqual(mockUserOrganizations);
       expect(result.organizations).toHaveLength(3);
       expect(result.total).toBe(3);
-      expect(result.current_organization_id).toBe(1);
+      expect(result.current_organization_id).toBe('1');
     });
 
     it('should indicate current organization', async () => {
@@ -211,16 +211,16 @@ describe('Integration: Organization Switching Workflow', () => {
       // Switch to Org B
       const switchToB: SwitchOrganizationRequest = { organization_id: "2" };
       vi.mocked(tenantApi.switchOrganization).mockResolvedValueOnce(mockSwitchToOrgBResponse);
-      
+
       const resultB = await tenantApi.switchOrganization(switchToB);
       expect(resultB.organization_id).toBe('2');
 
       // Switch back to Org A
       const switchToA: SwitchOrganizationRequest = { organization_id: "1" };
       vi.mocked(tenantApi.switchOrganization).mockResolvedValueOnce(mockSwitchToOrgAResponse);
-      
+
       const resultA = await tenantApi.switchOrganization(switchToA);
-      expect(resultA.organization_id).toBe(1);
+      expect(resultA.organization_id).toBe('1');
       expect(resultA.organization_name).toBe('Agency A');
     });
   });
@@ -295,7 +295,7 @@ describe('Integration: Organization Switching Workflow', () => {
 
       const result = await contentApi.createContentEntry(createRequest);
 
-      expect(result.id).toBe(201);
+      expect(result.id).toBe('201');
       expect(result.content_data!.title).toBe('New Post in Org B');
       expect(contentApi.createContentEntry).toHaveBeenCalledWith(createRequest);
     });
@@ -369,7 +369,7 @@ describe('Integration: Organization Switching Workflow', () => {
       vi.mocked(tenantApi.listOrganizations).mockResolvedValue(mockUserOrganizations);
       const orgs = await tenantApi.listOrganizations();
       expect(orgs.total).toBe(3);
-      expect(orgs.current_organization_id).toBe(1);
+      expect(orgs.current_organization_id).toBe('1');
 
       // Step 2: View content in Org A
       const orgAContent: PaginatedResponse<ContentEntry> = {
@@ -421,7 +421,7 @@ describe('Integration: Organization Switching Workflow', () => {
       const switchToA: SwitchOrganizationRequest = { organization_id: "1" };
       vi.mocked(tenantApi.switchOrganization).mockResolvedValueOnce(mockSwitchToOrgAResponse);
       const resultA = await tenantApi.switchOrganization(switchToA);
-      expect(resultA.organization_id).toBe(1);
+      expect(resultA.organization_id).toBe('1');
     });
 
     it('should maintain data isolation throughout workflow', async () => {
@@ -442,7 +442,7 @@ describe('Integration: Organization Switching Workflow', () => {
         content_data: createInOrgA.content_data
       });
       const createdOrgA = await contentApi.createContentEntry(createInOrgA);
-      expect(createdOrgA.id).toBe(101);
+      expect(createdOrgA.id).toBe('101');
 
       // Switch to Org B
       const switchToB: SwitchOrganizationRequest = { organization_id: "2" };
@@ -456,7 +456,7 @@ describe('Integration: Organization Switching Workflow', () => {
       };
       vi.mocked(contentApi.getContentEntries).mockResolvedValue(orgBContent);
       const contentInOrgB = await contentApi.getContentEntries();
-      
+
       expect(contentInOrgB.items).toHaveLength(1);
       expect(contentInOrgB.items.find((item: ContentEntry) => item.id === '101')).toBeUndefined(); // Org A content not visible
       expect(contentInOrgB.items[0]!.id).toBe('200'); // Only Org B content

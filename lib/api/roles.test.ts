@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { roleApi } from './roles';
-import { apiClient } from './client';
 import type {
   RoleListResponse,
   PermissionListResponse,
@@ -9,7 +8,25 @@ import type {
   RoleResponse,
 } from '@/types';
 
-vi.mock('./client');
+// Mock the apiClient
+vi.mock('./client', () => ({
+  default: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+  },
+  apiClient: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
+
+import { apiClient } from './client';
 
 describe('roleApi', () => {
   beforeEach(() => {
@@ -27,7 +44,7 @@ describe('roleApi', () => {
             organization_id: "1",
             is_system_role: true,
             level: 100,
-            permissions: ['content:read', 'content:write'],
+            permissions: ['content.read', 'content.create'],
             created_at: '2025-01-01T00:00:00Z',
             updated_at: '2025-01-01T00:00:00Z',
           },
@@ -38,7 +55,7 @@ describe('roleApi', () => {
             organization_id: "1",
             is_system_role: false,
             level: 50,
-            permissions: ['content:read', 'content:write'],
+            permissions: ['content.read', 'content.create'],
             created_at: '2025-01-02T00:00:00Z',
             updated_at: '2025-01-02T00:00:00Z',
           },

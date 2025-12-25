@@ -12,12 +12,24 @@ import {
   CommandList,
   CommandSeparator,
 } from '@/components/ui/command';
+import {
+  Plus,
+  FileText,
+  Upload,
+  UserPlus,
+  Settings,
+  Building2,
+  Palette,
+} from 'lucide-react';
+
+// Generic icon component type to match layout.tsx
+type IconComponent = React.ComponentType<{ className?: string }>;
 
 interface CommandPaletteProps {
   navigation: Array<{
     name: string;
     href: string;
-    icon: string;
+    icon: IconComponent;
   }>;
 }
 
@@ -62,17 +74,20 @@ export function CommandPalette({ navigation }: CommandPaletteProps) {
           <CommandEmpty>No results found.</CommandEmpty>
           
           <CommandGroup heading="Navigation">
-            {navigation.map((item) => (
-              <CommandItem
-                key={item.href}
-                onSelect={() => {
-                  runCommand(() => router.push(item.href));
-                }}
-              >
-                <span className="mr-2">{item.icon}</span>
-                <span>{item.name}</span>
-              </CommandItem>
-            ))}
+            {navigation.map((item) => {
+              const Icon = item.icon;
+              return (
+                <CommandItem
+                  key={item.href}
+                  onSelect={() => {
+                    runCommand(() => router.push(item.href));
+                  }}
+                >
+                  <Icon className="mr-2 h-4 w-4" />
+                  <span>{item.name}</span>
+                </CommandItem>
+              );
+            })}
           </CommandGroup>
 
           <CommandSeparator />
@@ -83,7 +98,7 @@ export function CommandPalette({ navigation }: CommandPaletteProps) {
                 runCommand(() => router.push('/dashboard/content/new'));
               }}
             >
-              <span className="mr-2">➕</span>
+              <Plus className="mr-2 h-4 w-4" />
               <span>Create New Content</span>
             </CommandItem>
             <CommandItem
@@ -91,7 +106,7 @@ export function CommandPalette({ navigation }: CommandPaletteProps) {
                 runCommand(() => router.push('/dashboard/content-types/new'));
               }}
             >
-              <span className="mr-2">📋</span>
+              <FileText className="mr-2 h-4 w-4" />
               <span>Create Content Type</span>
             </CommandItem>
             <CommandItem
@@ -99,7 +114,7 @@ export function CommandPalette({ navigation }: CommandPaletteProps) {
                 runCommand(() => router.push('/dashboard/media'));
               }}
             >
-              <span className="mr-2">⬆️</span>
+              <Upload className="mr-2 h-4 w-4" />
               <span>Upload Media</span>
             </CommandItem>
             <CommandItem
@@ -107,7 +122,7 @@ export function CommandPalette({ navigation }: CommandPaletteProps) {
                 runCommand(() => router.push('/dashboard/users'));
               }}
             >
-              <span className="mr-2">✉️</span>
+              <UserPlus className="mr-2 h-4 w-4" />
               <span>Invite User</span>
             </CommandItem>
           </CommandGroup>
@@ -120,7 +135,7 @@ export function CommandPalette({ navigation }: CommandPaletteProps) {
                 runCommand(() => router.push('/dashboard/settings'));
               }}
             >
-              <span className="mr-2">⚙️</span>
+              <Settings className="mr-2 h-4 w-4" />
               <span>User Settings</span>
             </CommandItem>
             <CommandItem
@@ -128,7 +143,7 @@ export function CommandPalette({ navigation }: CommandPaletteProps) {
                 runCommand(() => router.push('/dashboard/organization'));
               }}
             >
-              <span className="mr-2">🏢</span>
+              <Building2 className="mr-2 h-4 w-4" />
               <span>Organization Settings</span>
             </CommandItem>
             <CommandItem
@@ -136,7 +151,7 @@ export function CommandPalette({ navigation }: CommandPaletteProps) {
                 runCommand(() => router.push('/dashboard/themes'));
               }}
             >
-              <span className="mr-2">🎨</span>
+              <Palette className="mr-2 h-4 w-4" />
               <span>Manage Themes</span>
             </CommandItem>
           </CommandGroup>

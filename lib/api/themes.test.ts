@@ -1,8 +1,25 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { themeApi, type Theme, type ThemeCreate, type ThemeUpdate, type ThemeListResponse, type ThemeColors } from './themes';
-import { apiClient } from './client';
 
-vi.mock('./client');
+// Mock the apiClient
+vi.mock('./client', () => ({
+  default: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+  },
+  apiClient: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
+
+import { apiClient } from './client';
 
 describe('themeApi', () => {
   beforeEach(() => {
@@ -153,7 +170,7 @@ describe('themeApi', () => {
 
       expect(result).toEqual(mockTheme);
       expect(result.is_active).toBe(true);
-      expect(apiClient.get).toHaveBeenCalledWith('/themes/active');
+      expect(apiClient.get).toHaveBeenCalledWith('/themes/active/current');
     });
 
     it('should handle no active theme error', async () => {

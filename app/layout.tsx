@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/contexts/auth-context";
 import { PreferencesProvider } from "@/contexts/preferences-context";
+import { getRuntimeConfigScript } from "@/lib/runtime-config";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -31,6 +32,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* Inject runtime configuration for client-side access */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: getRuntimeConfigScript(),
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

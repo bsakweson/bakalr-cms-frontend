@@ -1,13 +1,30 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { tenantApi } from './tenant';
-import { apiClient } from './client';
 import type {
   UserOrganizationsResponse,
   SwitchOrganizationRequest,
   SwitchOrganizationResponse,
 } from '@/types';
 
-vi.mock('./client');
+// Mock the apiClient
+vi.mock('./client', () => ({
+  default: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+  },
+  apiClient: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
+
+import { apiClient } from './client';
 
 describe('tenantApi', () => {
   beforeEach(() => {
@@ -56,7 +73,7 @@ describe('tenantApi', () => {
 
       expect(result).toEqual(mockResponse);
       expect(result.organizations).toHaveLength(3);
-      expect(result.current_organization_id).toBe(1);
+      expect(result.current_organization_id).toBe("1");
       expect(apiClient.get).toHaveBeenCalledWith('/tenant/organizations');
     });
 
@@ -126,7 +143,7 @@ describe('tenantApi', () => {
       const result = await tenantApi.switchOrganization(switchData);
 
       expect(result).toEqual(mockResponse);
-      expect(result.organization_id).toBe(2);
+      expect(result.organization_id).toBe("2");
       expect(result.access_token).toBeDefined();
       expect(apiClient.post).toHaveBeenCalledWith('/tenant/switch', switchData);
     });
@@ -149,7 +166,7 @@ describe('tenantApi', () => {
       const result = await tenantApi.switchOrganization(switchData);
 
       expect(result).toEqual(mockResponse);
-      expect(result.organization_id).toBe(1);
+      expect(result.organization_id).toBe("1");
     });
 
     it('should handle unauthorized organization access', async () => {

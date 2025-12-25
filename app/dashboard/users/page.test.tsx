@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import UsersPage from './page';
-import { userApi } from '@/lib/api';
+import { userApi, organizationApi } from '@/lib/api';
 import type { UserListItem, Role } from '@/types';
 
 // Mock the API
@@ -14,6 +14,9 @@ vi.mock('@/lib/api', () => ({
     updateUserRole: vi.fn(),
     removeUser: vi.fn(),
   },
+  organizationApi: {
+    getProfile: vi.fn(),
+  },
 }));
 
 // Mock useRouter
@@ -24,10 +27,6 @@ vi.mock('next/navigation', () => ({
     prefetch: vi.fn(),
   }),
 }));
-
-// Mock window.confirm and alert
-const originalConfirm = window.confirm;
-const originalAlert = window.alert;
 
 describe('UsersPage', () => {
   const mockUsers: UserListItem[] = [
@@ -103,19 +102,26 @@ describe('UsersPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    window.confirm = originalConfirm;
-    window.alert = originalAlert;
-    
+
     // Default successful responses
     vi.mocked(userApi.listUsers).mockResolvedValue({ users: mockUsers, total: mockUsers.length });
     vi.mocked(userApi.listRoles).mockResolvedValue({ roles: mockRoles, total: mockRoles.length });
+    vi.mocked(organizationApi.getProfile).mockResolvedValue({
+      id: '1',
+      name: 'Test Org',
+      slug: 'test-org',
+      plan_type: 'professional',
+      is_active: true,
+      created_at: '2024-01-01T00:00:00Z',
+      updated_at: '2024-01-01T00:00:00Z'
+    });
   });
 
   describe('Initial Rendering', () => {
     it('should show loading state initially', async () => {
       render(<UsersPage />);
       expect(screen.getByText('Loading users...')).toBeInTheDocument();
-      
+
       // Wait for loading to complete
       await waitFor(() => {
         expect(screen.queryByText('Loading users...')).not.toBeInTheDocument();
@@ -191,7 +197,7 @@ describe('UsersPage', () => {
 
       const editorBadges = screen.getAllByText('Editor');
       expect(editorBadges.length).toBeGreaterThan(0);
-      
+
       const viewerBadges = screen.getAllByText('Viewer');
       expect(viewerBadges.length).toBeGreaterThan(0);
     });

@@ -96,7 +96,7 @@ const docSections: DocSection[] = [
     title: 'API reference',
     description: 'Interactive OpenAPI documentation',
     icon: FileText,
-    href: 'http://localhost:8000/api/docs',
+    href: `${process.env.NEXT_PUBLIC_API_URL || ''}/api/docs`,
     external: true,
   },
   {

@@ -14,6 +14,21 @@ global.ResizeObserver = class ResizeObserver {
   disconnect() {}
 }
 
+// Mock window.matchMedia (used by theme detection)
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(), // deprecated
+    removeListener: vi.fn(), // deprecated
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+})
+
 // Mock scrollIntoView (used by cmdk library)
 Element.prototype.scrollIntoView = vi.fn()
 
@@ -36,6 +51,43 @@ vi.mock('next/navigation', () => ({
   useSearchParams() {
     return new URLSearchParams()
   },
+}))
+
+// Mock auth context (default authenticated user)
+vi.mock('@/contexts/auth-context', () => ({
+  useAuth: () => ({
+    user: {
+      id: '1',
+      email: 'test@example.com',
+      full_name: 'Test User',
+      first_name: 'Test',
+      last_name: 'User',
+    },
+    isAuthenticated: true,
+    isLoading: false,
+    login: vi.fn(),
+    logout: vi.fn(),
+    refreshToken: vi.fn(),
+  }),
+  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
+}))
+
+// Mock preferences context
+vi.mock('@/contexts/preferences-context', () => ({
+  usePreferences: () => ({
+    preferences: {
+      theme: 'system',
+      language: 'en',
+      pageSize: 10,
+      sidebarCollapsed: false,
+      dateFormat: 'YYYY-MM-DD',
+      timeFormat: '24h',
+    },
+    setPreferences: vi.fn(),
+    updatePreference: vi.fn(),
+    resetPreferences: vi.fn(),
+  }),
+  PreferencesProvider: ({ children }: { children: React.ReactNode }) => children,
 }))
 
 // Mock environment variables

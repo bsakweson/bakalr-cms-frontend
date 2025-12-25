@@ -24,17 +24,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { ArrowLeft, Eye } from 'lucide-react';
 
 export default function EditContentPage() {
   const router = useRouter();
   const params = useParams();
   const contentId = params?.id as string;
-  
+
   const [content, setContent] = useState<ContentEntry | null>(null);
   const [contentType, setContentType] = useState<ContentType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [formData, setFormData] = useState<any>({
     slug: '',
     status: 'draft',
@@ -51,13 +53,13 @@ export default function EditContentPage() {
       setIsLoading(true);
       const entry = await contentApi.getContentEntry(contentId);
       setContent(entry);
-      
+
       // Load content type
       if (entry.content_type_id) {
         const type = await contentApi.getContentType(entry.content_type_id);
         setContentType(type);
       }
-      
+
       // Set form data - API returns 'data', not 'content_data'
       setFormData({
         slug: entry.slug || '',
@@ -85,7 +87,7 @@ export default function EditContentPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       setIsSaving(true);
       await contentApi.updateContentEntry(contentId, {
@@ -104,12 +106,9 @@ export default function EditContentPage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this content? This action cannot be undone.')) {
-      return;
-    }
-
     try {
       await contentApi.deleteContentEntry(contentId);
+      setDeleteDialogOpen(false);
       router.push('/dashboard/content');
     } catch (error: any) {
       console.error('Failed to delete content:', error);
@@ -339,7 +338,7 @@ export default function EditContentPage() {
                     <p className="text-sm">{content?.updated_at ? new Date(content.updated_at).toLocaleDateString() : '-'}</p>
                   </div>
                 </div>
-                
+
                 {/* Fields Preview */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold border-b pb-2">Content Fields</h3>
@@ -389,11 +388,21 @@ export default function EditContentPage() {
               </div>
             </DialogContent>
           </Dialog>
-          <Button variant="destructive" onClick={handleDelete}>
+          <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
             Delete
           </Button>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Content"
+        description="Are you sure you want to delete this content? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={handleDelete}
+      />
 
       <form onSubmit={handleSubmit}>
         <Card>
@@ -434,7 +443,7 @@ export default function EditContentPage() {
               <div className="border-t pt-6">
                 <h3 className="text-lg font-semibold mb-4">Content Fields</h3>
                 <div className="space-y-4">
-                  {contentType.fields.map((field) => 
+                  {contentType.fields.map((field) =>
                     renderField(field.name, field)
                   )}
                 </div>

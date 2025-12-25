@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+
+// Unmock auth-context since we want to test the actual implementation
+vi.unmock('@/contexts/auth-context')
+
+// Import after unmock
 import { AuthProvider, useAuth } from '@/contexts/auth-context'
 
 // Mock the entire API module

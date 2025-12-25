@@ -1,0 +1,587 @@
+'use client';
+
+import { useAuth } from '@/contexts/auth-context';
+import { useRequireAuth } from '@/hooks/use-require-auth';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Separator } from '@/components/ui/separator';
+import { OrganizationSelector } from '@/components/organization-selector';
+import { CommandPalette } from '@/components/command-palette';
+import { OnboardingTour } from '@/components/onboarding-tour';
+import { DynamicBreadcrumbs } from '@/components/dynamic-breadcrumbs';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { KeyboardShortcutsHelp, useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
+import { EmailVerificationBanner } from '@/components/EmailVerificationBanner';
+
+// Navigation item types with permission requirements
+type NavLink = { 
+  name: string; 
+  href: string; 
+  icon: string;
+  key?: string; // key for permission checking
+  permissions?: string[]; // required permissions (any match allows access)
+};
+
+type NavSection = { 
+  type: 'section'; 
+  label: string;
+  key: string;
+  permissions?: string[]; // required permissions to see section
+  items: NavLink[];
+};
+
+type NavItem = NavLink | NavSection;
+
+// Permission definitions
+const PERMISSIONS = {
+  // CMS Content
+  CONTENT_READ: 'content.read',
+  CONTENT_WRITE: 'content.write',
+  CONTENT_TYPES_READ: 'content_types.read',
+  CONTENT_TYPES_WRITE: 'content_types.write',
+  MEDIA_READ: 'media.read',
+  MEDIA_UPLOAD: 'media.upload',
+  TEMPLATES_READ: 'templates.read',
+  THEMES_READ: 'themes.read',
+  
+  // Store Management
+  STORE_READ: 'store.read',
+  STORE_ADMIN: 'store.admin',
+  ORDERS_READ: 'orders.read',
+  ORDERS_WRITE: 'orders.write',
+  CUSTOMERS_READ: 'customers.read',
+  INVENTORY_READ: 'inventory.read',
+  INVENTORY_WRITE: 'inventory.write',
+  EMPLOYEES_READ: 'employees.read',
+  ANALYTICS_READ: 'analytics.read',
+  
+  // Administration
+  USERS_READ: 'users.read',
+  USERS_WRITE: 'users.write',
+  ROLES_READ: 'roles.read',
+  ROLES_WRITE: 'roles.write',
+  ORG_READ: 'organization.read',
+  AUDIT_READ: 'audit.read',
+  SETTINGS_READ: 'settings.read',
+};
+
+// Navigation structure with sections
+const navigationConfig: NavItem[] = [
+  // Top-level items (always visible)
+  { name: 'Dashboard', href: '/dashboard', icon: '📊', key: 'dashboard' },
+  { name: 'Content', href: '/dashboard/content', icon: '📝', key: 'content', permissions: [PERMISSIONS.CONTENT_READ] },
+  { name: 'Content Types', href: '/dashboard/content-types', icon: '📋', key: 'content-types', permissions: [PERMISSIONS.CONTENT_TYPES_READ] },
+  { name: 'Navigation', href: '/dashboard/navigation', icon: '🧭', key: 'navigation' },
+  { name: 'Media', href: '/dashboard/media', icon: '🖼️', key: 'media', permissions: [PERMISSIONS.MEDIA_READ] },
+  { name: 'Templates', href: '/dashboard/templates', icon: '📄', key: 'templates', permissions: [PERMISSIONS.TEMPLATES_READ] },
+  { name: 'Themes', href: '/dashboard/themes', icon: '🎨', key: 'themes', permissions: [PERMISSIONS.THEMES_READ] },
+  
+  // Store Management Section
+  {
+    type: 'section',
+    label: 'Store Management',
+    key: 'store-management',
+    permissions: [PERMISSIONS.STORE_READ, PERMISSIONS.ORDERS_READ, PERMISSIONS.INVENTORY_READ],
+    items: [
+      { name: 'Store Dashboard', href: '/dashboard/boutique-admin', icon: '🏪', key: 'store-dashboard', permissions: [PERMISSIONS.STORE_READ] },
+      { name: 'Orders', href: '/dashboard/boutique-admin/orders', icon: '🛒', key: 'orders', permissions: [PERMISSIONS.ORDERS_READ] },
+      { name: 'Customers', href: '/dashboard/boutique-admin/customers', icon: '👤', key: 'customers', permissions: [PERMISSIONS.CUSTOMERS_READ] },
+      { name: 'Inventory', href: '/dashboard/inventory', icon: '📦', key: 'inventory', permissions: [PERMISSIONS.INVENTORY_READ] },
+      { name: 'Employees', href: '/dashboard/boutique-admin/employees', icon: '👔', key: 'employees', permissions: [PERMISSIONS.EMPLOYEES_READ] },
+      { name: 'Analytics', href: '/dashboard/boutique-admin/analytics', icon: '📈', key: 'analytics', permissions: [PERMISSIONS.ANALYTICS_READ] },
+      { name: 'Store Settings', href: '/dashboard/boutique-admin/settings', icon: '🔧', key: 'store-settings', permissions: [PERMISSIONS.STORE_ADMIN] },
+    ],
+  },
+  
+  // Administration Section
+  {
+    type: 'section',
+    label: 'Administration',
+    key: 'administration',
+    permissions: [PERMISSIONS.USERS_READ, PERMISSIONS.ROLES_READ, PERMISSIONS.ORG_READ, PERMISSIONS.AUDIT_READ],
+    items: [
+      { name: 'Users', href: '/dashboard/users', icon: '👥', key: 'users', permissions: [PERMISSIONS.USERS_READ] },
+      { name: 'Roles', href: '/dashboard/roles', icon: '🔐', key: 'roles', permissions: [PERMISSIONS.ROLES_READ] },
+      { name: 'Organization', href: '/dashboard/organization', icon: '🏢', key: 'organization', permissions: [PERMISSIONS.ORG_READ] },
+      { name: 'Audit Logs', href: '/dashboard/audit-logs', icon: '📋', key: 'audit-logs', permissions: [PERMISSIONS.AUDIT_READ] },
+      { name: 'Documentation', href: '/dashboard/documentation', icon: '📚', key: 'documentation' },
+      { name: 'Settings', href: '/dashboard/settings', icon: '⚙️', key: 'settings', permissions: [PERMISSIONS.SETTINGS_READ] },
+    ],
+  },
+];
+
+// Hook for checking permissions
+function useUserPermissions() {
+  // In production, this would fetch from an API or context
+  // For now, we'll assume admin has all permissions
+  const { user } = useAuth();
+  
+  // TODO: Replace with actual permission fetching
+  // This is a placeholder that gives all permissions to logged-in users
+  const hasPermission = (permission: string): boolean => {
+    // For now, all logged-in users have access
+    // In production: check user.roles or fetch from API
+    return !!user;
+  };
+
+  const hasAnyPermission = (permissions?: string[]): boolean => {
+    if (!permissions || permissions.length === 0) return true;
+    return permissions.some(p => hasPermission(p));
+  };
+
+  return { hasPermission, hasAnyPermission };
+}
+
+// Get flat navigation for CommandPalette
+function getFlatNavigation(): NavLink[] {
+  const items: NavLink[] = [];
+  navigationConfig.forEach(item => {
+    if ('type' in item && item.type === 'section') {
+      items.push(...item.items);
+    } else {
+      items.push(item as NavLink);
+    }
+  });
+  return items;
+}
+
+// Collapsible Section Component
+function CollapsibleSection({
+  label,
+  sectionKey,
+  items,
+  pathname,
+  expandedSections,
+  toggleSection,
+  setIsMobileMenuOpen,
+  hasAnyPermission,
+}: {
+  label: string;
+  sectionKey: string;
+  items: NavLink[];
+  pathname: string | null;
+  expandedSections: Set<string>;
+  toggleSection: (key: string) => void;
+  setIsMobileMenuOpen: (open: boolean) => void;
+  hasAnyPermission: (permissions?: string[]) => boolean;
+}) {
+  const isExpanded = expandedSections.has(sectionKey);
+  const visibleItems = items.filter(item => hasAnyPermission(item.permissions));
+  
+  // Don't render section if no items are visible
+  if (visibleItems.length === 0) return null;
+  
+  // Check if any item in section is active
+  const hasActiveItem = visibleItems.some(item => 
+    pathname === item.href || 
+    (item.href !== '/dashboard' && pathname?.startsWith(item.href + '/'))
+  );
+
+  return (
+    <div className="mt-2">
+      <button
+        onClick={() => toggleSection(sectionKey)}
+        className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold transition-colors hover:bg-muted ${
+          hasActiveItem ? 'text-primary' : 'text-muted-foreground'
+        }`}
+      >
+        <span className="uppercase tracking-wider text-xs">{label}</span>
+        <span className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
+          ▾
+        </span>
+      </button>
+      
+      <div className={`overflow-hidden transition-all duration-200 ${
+        isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+      }`}>
+        <div className="ml-2 space-y-1 border-l border-border pl-2 mt-1">
+          {visibleItems.map((item) => {
+            const isActive = pathname === item.href || 
+              (item.href !== '/dashboard' && pathname?.startsWith(item.href + '/'));
+            
+            return (
+              <Link
+                key={item.key || item.name}
+                href={item.href}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                }`}
+              >
+                <span className="text-lg">{item.icon}</span>
+                {item.name}
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Sidebar component
+function Sidebar({ 
+  user, 
+  pathname, 
+  setIsMobileMenuOpen,
+  expandedSections,
+  toggleSection,
+}: { 
+  user: any; 
+  pathname: string | null; 
+  setIsMobileMenuOpen: (open: boolean) => void;
+  expandedSections: Set<string>;
+  toggleSection: (key: string) => void;
+}) {
+  const { hasAnyPermission } = useUserPermissions();
+
+  return (
+    <div className="flex h-full flex-col gap-4">
+      <div className="flex h-16 items-center border-b px-6">
+        <h1 className="text-2xl font-bold text-primary">Bakalr CMS</h1>
+      </div>
+      <nav className="flex-1 space-y-1 px-4 overflow-y-auto">
+        {navigationConfig.map((item, index) => {
+          // Handle collapsible sections
+          if ('type' in item && item.type === 'section') {
+            // Check if user has permission to see this section
+            if (!hasAnyPermission(item.permissions)) return null;
+            
+            return (
+              <CollapsibleSection
+                key={item.key}
+                label={item.label}
+                sectionKey={item.key}
+                items={item.items}
+                pathname={pathname}
+                expandedSections={expandedSections}
+                toggleSection={toggleSection}
+                setIsMobileMenuOpen={setIsMobileMenuOpen}
+                hasAnyPermission={hasAnyPermission}
+              />
+            );
+          }
+
+          // Handle top-level navigation items
+          const navItem = item as NavLink;
+          
+          // Check permission
+          if (!hasAnyPermission(navItem.permissions)) return null;
+          
+          const isActive = pathname === navItem.href || 
+            (navItem.href !== '/dashboard' && pathname?.startsWith(navItem.href + '/'));
+          
+          return (
+            <Link
+              key={navItem.key || navItem.name}
+              href={navItem.href}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                isActive
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+              }`}
+            >
+              <span className="text-xl">{navItem.icon}</span>
+              {navItem.name}
+            </Link>
+          );
+        })}
+      </nav>
+      <Separator />
+      <div className="px-4 pb-4">
+        <div className="rounded-lg border bg-card p-4">
+          <p className="text-sm font-medium">Organization</p>
+          <p className="text-xs text-muted-foreground">
+            {user?.organization?.name || 'Default Org'}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { user, logout } = useAuth();
+  const { isLoading } = useRequireAuth();
+  const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const router = useRouter();
+  
+  // Manage expanded sections state with localStorage persistence
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('sidebar-sections-v3');
+      if (saved) {
+        try {
+          return new Set(JSON.parse(saved));
+        } catch {
+          return new Set(); // Default collapsed
+        }
+      }
+    }
+    return new Set(); // Default collapsed
+  });
+
+  // Track if this is the initial render (don't auto-expand on initial load)
+  const [isInitialRender, setIsInitialRender] = useState(true);
+  
+  useEffect(() => {
+    // Mark initial render as complete after first mount
+    setIsInitialRender(false);
+  }, []);
+
+  // Auto-expand section containing active route (only on navigation, not initial load)
+  useEffect(() => {
+    if (!pathname || isInitialRender) return;
+    
+    navigationConfig.forEach(item => {
+      if ('type' in item && item.type === 'section') {
+        const hasActiveItem = item.items.some(navItem => 
+          pathname === navItem.href || pathname?.startsWith(navItem.href + '/')
+        );
+        if (hasActiveItem && !expandedSections.has(item.key)) {
+          setExpandedSections(prev => {
+            const next = new Set(prev);
+            next.add(item.key);
+            return next;
+          });
+        }
+      }
+    });
+  }, [pathname, isInitialRender]);
+
+  // Persist expanded state
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('sidebar-sections-v3', JSON.stringify([...expandedSections]));
+    }
+  }, [expandedSections]);
+
+  const toggleSection = (key: string) => {
+    setExpandedSections(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
+
+  // Global keyboard shortcuts
+  useKeyboardShortcuts([
+    {
+      key: 'n',
+      metaKey: true,
+      description: 'Create new content',
+      action: () => router.push('/dashboard/content/new'),
+    },
+    {
+      key: 's',
+      metaKey: true,
+      description: 'Focus search',
+      action: () => {
+        const searchButton = document.querySelector('[data-search-trigger]') as HTMLElement;
+        searchButton?.click();
+      },
+    },
+    {
+      key: 'h',
+      metaKey: true,
+      description: 'Go to dashboard home',
+      action: () => router.push('/dashboard'),
+    },
+    {
+      key: 'u',
+      metaKey: true,
+      description: 'Go to users',
+      action: () => router.push('/dashboard/users'),
+    },
+    {
+      key: ',',
+      metaKey: true,
+      description: 'Open settings',
+      action: () => router.push('/dashboard/settings'),
+    },
+  ]);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <title>Loading Dashboard - Bakalr CMS</title>
+        <main className="text-center">
+          <h1 className="sr-only">Dashboard Loading</h1>
+          <div className="text-lg">Loading...</div>
+        </main>
+      </div>
+    );
+  }
+
+  const handleLogout = async () => {
+    await logout();
+    window.location.href = '/login';
+  };
+
+  const getUserInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const getUserDisplayName = () => {
+    if (user?.first_name && user?.last_name) {
+      return `${user.first_name} ${user.last_name}`;
+    }
+    if (user?.first_name) return user.first_name;
+    if (user?.last_name) return user.last_name;
+    if (user?.username) return user.username;
+    if (user?.email) return user.email.split('@')[0];
+    return 'User';
+  };
+
+  const getUserInitialsFromUser = () => {
+    if (user?.first_name && user?.last_name) {
+      return (user.first_name[0] + user.last_name[0]).toUpperCase();
+    }
+    if (user?.first_name) return user.first_name.slice(0, 2).toUpperCase();
+    if (user?.last_name) return user.last_name.slice(0, 2).toUpperCase();
+    if (user?.username) return getUserInitials(user.username);
+    if (user?.email) {
+      const emailName = user.email.split('@')[0];
+      return getUserInitials(emailName);
+    }
+    return 'U';
+  };
+
+  return (
+    <div className="flex h-screen overflow-hidden">
+      <OnboardingTour />
+      <KeyboardShortcutsHelp shortcuts={[
+        { key: 'k', metaKey: true, description: 'Open command palette' },
+        { key: 'n', metaKey: true, description: 'Create new content' },
+        { key: 's', metaKey: true, description: 'Focus search' },
+        { key: 'h', metaKey: true, description: 'Go to dashboard home' },
+        { key: 'u', metaKey: true, description: 'Go to users' },
+        { key: ',', metaKey: true, description: 'Open settings' },
+        { key: '?', shiftKey: true, description: 'Show keyboard shortcuts' },
+      ]} />
+      {/* Desktop Sidebar */}
+      <aside className="hidden w-64 border-r bg-card lg:block">
+        <Sidebar 
+          user={user} 
+          pathname={pathname} 
+          setIsMobileMenuOpen={setIsMobileMenuOpen}
+          expandedSections={expandedSections}
+          toggleSection={toggleSection}
+        />
+      </aside>
+
+      {/* Mobile Menu */}
+      <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+        <SheetContent side="left" className="w-64 p-0">
+          <Sidebar 
+            user={user} 
+            pathname={pathname} 
+            setIsMobileMenuOpen={setIsMobileMenuOpen}
+            expandedSections={expandedSections}
+            toggleSection={toggleSection}
+          />
+        </SheetContent>
+      </Sheet>
+
+      {/* Main Content */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Header */}
+        <header className="flex h-16 items-center justify-between border-b bg-card px-6">
+          <div className="flex items-center gap-4">
+            <Sheet>
+              <SheetTrigger asChild className="lg:hidden">
+                <Button variant="outline" size="icon" onClick={() => setIsMobileMenuOpen(true)}>
+                  ☰
+                </Button>
+              </SheetTrigger>
+            </Sheet>
+            {(() => {
+              const navLinks = getFlatNavigation();
+              const currentNav = navLinks.find((item) => pathname === item.href || 
+                (item.href !== '/dashboard' && pathname?.startsWith(item.href + '/')));
+              return (
+                <div className="flex items-center gap-2">
+                  {currentNav && <span className="text-2xl">{currentNav.icon}</span>}
+                  <h2 className="text-xl font-semibold">
+                    {currentNav?.name || 'Dashboard'}
+                  </h2>
+                </div>
+              );
+            })()}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <CommandPalette navigation={getFlatNavigation()} />
+            <LanguageSwitcher />
+            <OrganizationSelector />
+            <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                <Avatar>
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    {getUserInitialsFromUser()}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium">{getUserDisplayName()}</p>
+                  <p className="text-xs text-muted-foreground">{user?.email}</p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/settings">Settings</Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+                Log out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          </div>
+        </header>
+
+        {/* Email Verification Banner */}
+        <EmailVerificationBanner />
+
+        {/* Page Content */}
+        <main className="flex-1 overflow-y-auto bg-muted/30 p-6">
+          <DynamicBreadcrumbs />
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}

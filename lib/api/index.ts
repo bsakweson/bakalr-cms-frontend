@@ -18,3 +18,16 @@ export { apiScopesApi } from './api-scopes';
 export { deviceApi } from './devices';
 export { sessionApi } from './sessions';
 export { socialLoginApi } from './social-login';
+export { inventoryApi } from './inventory';
+export type {
+  InventoryItem,
+  InventoryItemResponse,
+  PaginatedInventoryResponse,
+  InventoryStatsResponse,
+  CreateInventoryItemRequest,
+  AdjustInventoryRequest,
+  BulkUpdateRequest,
+  BulkUpdateResponse,
+  BulkUpdateItem,
+  InventoryListParams,
+} from './inventory';

@@ -1,8 +1,25 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { templateApi, type ContentTemplate, type ContentTemplateCreate, type ContentTemplateUpdate, type ContentTemplateListResponse } from './templates';
-import { apiClient } from './client';
 
-vi.mock('./client');
+// Mock the apiClient
+vi.mock('./client', () => ({
+  default: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+  },
+  apiClient: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
+
+import { apiClient } from './client';
 
 describe('templateApi', () => {
   beforeEach(() => {

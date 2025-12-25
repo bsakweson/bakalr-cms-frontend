@@ -4,16 +4,16 @@ const nextConfig: NextConfig = {
   /* config options here */
   output: 'standalone', // Enable standalone output for Docker
   reactStrictMode: true,
-  
+
   // Empty turbopack config to silence Next.js 16 warning
   // (webpack config still used when explicitly building with --webpack)
   turbopack: {},
-  
+
   // Performance optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
-  
+
   // Image optimization
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -31,7 +31,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  
+
   // Bundle analysis
   webpack: (config, { isServer }) => {
     // Enable production optimizations
@@ -81,22 +81,13 @@ const nextConfig: NextConfig = {
         },
       };
     }
-    
+
     return config;
   },
-  
-  // API configuration
-  async rewrites() {
-    // Use internal Docker network for server-side requests
-    const apiUrl = process.env.API_INTERNAL_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${apiUrl}/api/:path*`,
-      },
-    ];
-  },
-  
+
+  // No rewrites needed - frontend calls CMS backend directly at localhost:8000
+  // Inventory proxy is handled by Next.js API route at /app/api/v1/inventory
+
   // Headers for performance
   async headers() {
     return [

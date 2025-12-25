@@ -12,6 +12,8 @@ vi.mock('@/contexts/auth-context', () => ({
       first_name: 'Test',
       last_name: 'User',
     },
+    isAuthenticated: true,
+    isLoading: false,
   }),
 }));
 
@@ -131,7 +133,7 @@ describe('DashboardPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Set up default successful responses
     vi.mocked(analyticsApi.getContentStats).mockResolvedValue(mockContentStats);
     vi.mocked(analyticsApi.getUserStats).mockResolvedValue(mockUserStats);
@@ -148,21 +150,21 @@ describe('DashboardPage', () => {
 
     it('should render dashboard title and description after loading', async () => {
       render(<DashboardPage />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Dashboard')).toBeInTheDocument();
       });
-      
+
       expect(screen.getByText('Overview of your content, users, and activity')).toBeInTheDocument();
     });
 
     it('should display user name in welcome message', async () => {
       render(<DashboardPage />);
-      
+
       await waitFor(() => {
         expect(screen.queryByText('Loading analytics...')).not.toBeInTheDocument();
       });
-      
+
       // User name appears in error state welcome message
       const welcomeText = screen.queryByText(/Welcome back/i);
       if (welcomeText) {
@@ -174,11 +176,11 @@ describe('DashboardPage', () => {
   describe('Key Metrics Cards', () => {
     it('should render all four metric cards', async () => {
       render(<DashboardPage />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Total Content')).toBeInTheDocument();
       });
-      
+
       expect(screen.getByText('Total Users')).toBeInTheDocument();
       expect(screen.getByText('Media Files')).toBeInTheDocument();
       expect(screen.getByText('Actions (30d)')).toBeInTheDocument();
@@ -186,11 +188,11 @@ describe('DashboardPage', () => {
 
     it('should display content stats correctly', async () => {
       render(<DashboardPage />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('150')).toBeInTheDocument();
       });
-      
+
       expect(screen.getByText('120')).toBeInTheDocument(); // published
       expect(screen.getByText('published')).toBeInTheDocument();
       expect(screen.getByText('30')).toBeInTheDocument(); // drafts
@@ -199,11 +201,11 @@ describe('DashboardPage', () => {
 
     it('should display user stats correctly', async () => {
       render(<DashboardPage />);
-      
+
       await waitFor(() => {
         expect(screen.getAllByText('25').length).toBeGreaterThan(0);
       });
-      
+
       expect(screen.getByText('18')).toBeInTheDocument(); // active 7d
       expect(screen.getByText('active (7d)')).toBeInTheDocument();
       expect(screen.getByText('+3')).toBeInTheDocument(); // new users
@@ -212,22 +214,22 @@ describe('DashboardPage', () => {
 
     it('should display media stats correctly', async () => {
       render(<DashboardPage />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('320')).toBeInTheDocument();
       });
-      
+
       expect(screen.getByText('1250.5 MB')).toBeInTheDocument();
       expect(screen.getByText('total storage')).toBeInTheDocument();
     });
 
     it('should display activity stats correctly', async () => {
       render(<DashboardPage />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('890')).toBeInTheDocument();
       });
-      
+
       expect(screen.getAllByText('45').length).toBeGreaterThan(0); // today (also appears in contributors)
       expect(screen.getByText('today')).toBeInTheDocument();
       expect(screen.getAllByText('250').length).toBeGreaterThan(0); // 7d
@@ -238,41 +240,41 @@ describe('DashboardPage', () => {
   describe('Charts and Visualizations', () => {
     it('should render content creation trend chart', async () => {
       render(<DashboardPage />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Content Creation (30d)')).toBeInTheDocument();
       });
-      
+
       expect(screen.getAllByTestId('line-chart').length).toBeGreaterThan(0);
     });
 
     it('should render activity trend chart', async () => {
       render(<DashboardPage />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Activity Trend (30d)')).toBeInTheDocument();
       });
-      
+
       expect(screen.getAllByTestId('line-chart').length).toBeGreaterThan(0);
     });
 
     it('should render content by type pie chart', async () => {
       render(<DashboardPage />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Content by Type')).toBeInTheDocument();
       });
-      
+
       expect(screen.getByTestId('pie-chart')).toBeInTheDocument();
     });
 
     it('should render top actions bar chart', async () => {
       render(<DashboardPage />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Top Actions (30d)')).toBeInTheDocument();
       });
-      
+
       expect(screen.getByTestId('bar-chart')).toBeInTheDocument();
     });
 
@@ -281,9 +283,9 @@ describe('DashboardPage', () => {
         ...mockContentStats,
         entries_by_type: [],
       });
-      
+
       render(<DashboardPage />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('No content data')).toBeInTheDocument();
       });
@@ -294,9 +296,9 @@ describe('DashboardPage', () => {
         ...mockActivityStats,
         actions_by_type: [],
       });
-      
+
       render(<DashboardPage />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('No activity data')).toBeInTheDocument();
       });
@@ -306,7 +308,7 @@ describe('DashboardPage', () => {
   describe('Recent Activity Section', () => {
     it('should render recent activity card', async () => {
       render(<DashboardPage />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Recent Activity')).toBeInTheDocument();
       });
@@ -314,11 +316,11 @@ describe('DashboardPage', () => {
 
     it('should display recent activities', async () => {
       render(<DashboardPage />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('content.created')).toBeInTheDocument();
       });
-      
+
       expect(screen.getByText('Created new blog post')).toBeInTheDocument();
       expect(screen.getByText('media.uploaded')).toBeInTheDocument();
       expect(screen.getByText('Uploaded image')).toBeInTheDocument();
@@ -326,7 +328,7 @@ describe('DashboardPage', () => {
 
     it('should display user names in activities', async () => {
       render(<DashboardPage />);
-      
+
       await waitFor(() => {
         const activities = screen.getAllByText(/Test User|Alice Johnson/);
         expect(activities.length).toBeGreaterThan(0);
@@ -338,9 +340,9 @@ describe('DashboardPage', () => {
         ...mockActivityStats,
         recent_activities: [],
       });
-      
+
       render(<DashboardPage />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('No recent activity')).toBeInTheDocument();
       });
@@ -350,7 +352,7 @@ describe('DashboardPage', () => {
   describe('Top Contributors Section', () => {
     it('should render top contributors card', async () => {
       render(<DashboardPage />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Top Contributors')).toBeInTheDocument();
       });
@@ -358,11 +360,11 @@ describe('DashboardPage', () => {
 
     it('should display contributors with rankings', async () => {
       render(<DashboardPage />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Alice Johnson')).toBeInTheDocument();
       });
-      
+
       expect(screen.getByText('alice@example.com')).toBeInTheDocument();
       expect(screen.getByText('Bob Smith')).toBeInTheDocument();
       expect(screen.getByText('bob@example.com')).toBeInTheDocument();
@@ -372,11 +374,11 @@ describe('DashboardPage', () => {
 
     it('should display contributor entry counts', async () => {
       render(<DashboardPage />);
-      
+
       await waitFor(() => {
         expect(screen.getAllByText('45').length).toBeGreaterThan(0);
       });
-      
+
       expect(screen.getByText('38')).toBeInTheDocument();
       // Note: '25' appears in both user stats card and contributors
       expect(screen.getAllByText('25').length).toBeGreaterThan(0);
@@ -384,7 +386,7 @@ describe('DashboardPage', () => {
 
     it('should show ranking numbers for contributors', async () => {
       render(<DashboardPage />);
-      
+
       await waitFor(() => {
         const rankings = screen.getAllByText(/^[1-3]$/);
         expect(rankings.length).toBe(3);
@@ -396,9 +398,9 @@ describe('DashboardPage', () => {
         ...mockUserStats,
         top_contributors: [],
       });
-      
+
       render(<DashboardPage />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('No contributors yet')).toBeInTheDocument();
       });
@@ -423,14 +425,14 @@ describe('DashboardPage', () => {
       vi.mocked(analyticsApi.getTrends).mockRejectedValue(
         new Error('API Error')
       );
-      
+
       render(<DashboardPage />);
-      
+
       // Component uses graceful degradation - renders with fallback data
       await waitFor(() => {
         expect(screen.getByText('Dashboard')).toBeInTheDocument();
       });
-      
+
       // Should still render stats cards with zero values
       expect(screen.getByText('Total Content')).toBeInTheDocument();
       expect(screen.getByText('Total Users')).toBeInTheDocument();
@@ -446,14 +448,14 @@ describe('DashboardPage', () => {
       vi.mocked(analyticsApi.getMediaStats).mockRejectedValue(error);
       vi.mocked(analyticsApi.getActivityStats).mockRejectedValue(error);
       vi.mocked(analyticsApi.getTrends).mockRejectedValue(error);
-      
+
       render(<DashboardPage />);
-      
+
       // Component renders with graceful degradation
       await waitFor(() => {
         expect(screen.getByText('Dashboard')).toBeInTheDocument();
       });
-      
+
       // Error is logged but UI still renders
       expect(screen.getByText('Total Content')).toBeInTheDocument();
     });
@@ -466,14 +468,14 @@ describe('DashboardPage', () => {
       vi.mocked(analyticsApi.getMediaStats).mockRejectedValue(error);
       vi.mocked(analyticsApi.getActivityStats).mockRejectedValue(error);
       vi.mocked(analyticsApi.getTrends).mockRejectedValue(error);
-      
+
       render(<DashboardPage />);
-      
+
       // Component renders with graceful degradation - shows metric cards with zeros
       await waitFor(() => {
         expect(screen.getByText('Total Content')).toBeInTheDocument();
       });
-      
+
       expect(screen.getByText('Total Users')).toBeInTheDocument();
       expect(screen.getByText('Media Files')).toBeInTheDocument();
       expect(screen.getByText('Actions (30d)')).toBeInTheDocument();
@@ -487,14 +489,14 @@ describe('DashboardPage', () => {
       vi.mocked(analyticsApi.getMediaStats).mockRejectedValue(error);
       vi.mocked(analyticsApi.getActivityStats).mockRejectedValue(error);
       vi.mocked(analyticsApi.getTrends).mockRejectedValue(error);
-      
+
       render(<DashboardPage />);
-      
+
       // With graceful degradation, shows normal dashboard (no error message with user name)
       await waitFor(() => {
         expect(screen.getByText('Dashboard')).toBeInTheDocument();
       });
-      
+
       // Shows description instead
       expect(screen.getByText('Overview of your content, users, and activity')).toBeInTheDocument();
     });
@@ -506,17 +508,17 @@ describe('DashboardPage', () => {
       vi.mocked(analyticsApi.getMediaStats).mockRejectedValue(new Error('Media API failed'));
       vi.mocked(analyticsApi.getActivityStats).mockRejectedValue(new Error('Activity API failed'));
       vi.mocked(analyticsApi.getTrends).mockRejectedValue(new Error('Trends API failed'));
-      
+
       render(<DashboardPage />);
-      
+
       // Should still render successfully with fallback values
       await waitFor(() => {
         expect(screen.getByText('Total Content')).toBeInTheDocument();
       });
-      
+
       // Content stats should show real data
       expect(screen.getByText('150')).toBeInTheDocument();
-      
+
       // Other stats should show fallback zeros
       // Note: Multiple "0" texts exist, just verify rendering doesn't crash
       expect(screen.getByText('Total Users')).toBeInTheDocument();
@@ -528,11 +530,11 @@ describe('DashboardPage', () => {
   describe('API Integration', () => {
     it('should call all analytics APIs on mount', async () => {
       render(<DashboardPage />);
-      
+
       await waitFor(() => {
         expect(analyticsApi.getContentStats).toHaveBeenCalledTimes(1);
       });
-      
+
       expect(analyticsApi.getUserStats).toHaveBeenCalledTimes(1);
       expect(analyticsApi.getMediaStats).toHaveBeenCalledTimes(1);
       expect(analyticsApi.getActivityStats).toHaveBeenCalledTimes(1);
@@ -541,24 +543,24 @@ describe('DashboardPage', () => {
 
     it('should make parallel API requests', async () => {
       const startTime = Date.now();
-      
+
       // Add small delays to simulate network
-      vi.mocked(analyticsApi.getContentStats).mockImplementation(() => 
+      vi.mocked(analyticsApi.getContentStats).mockImplementation(() =>
         new Promise(resolve => setTimeout(() => resolve(mockContentStats), 50))
       );
-      vi.mocked(analyticsApi.getUserStats).mockImplementation(() => 
+      vi.mocked(analyticsApi.getUserStats).mockImplementation(() =>
         new Promise(resolve => setTimeout(() => resolve(mockUserStats), 50))
       );
-      
+
       render(<DashboardPage />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Total Content')).toBeInTheDocument();
       });
-      
+
       const endTime = Date.now();
       const duration = endTime - startTime;
-      
+
       // If sequential, would take 250ms+ (5 * 50ms)
       // If parallel, should take ~50-100ms
       // Allow generous buffer for test environment
@@ -576,7 +578,7 @@ describe('DashboardPage', () => {
         entries_by_type: [],
         recent_entries: [],
       });
-      
+
       vi.mocked(analyticsApi.getUserStats).mockResolvedValue({
         total_users: 0,
         active_users_7d: 0,
@@ -585,13 +587,13 @@ describe('DashboardPage', () => {
         new_users_30d: 0,
         top_contributors: [],
       });
-      
+
       render(<DashboardPage />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Total Content')).toBeInTheDocument();
       });
-      
+
       // Should display zeros without crashing
       expect(screen.getByText('No content data')).toBeInTheDocument();
       expect(screen.getByText('No contributors yet')).toBeInTheDocument();

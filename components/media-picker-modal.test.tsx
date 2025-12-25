@@ -4,12 +4,21 @@ import userEvent from '@testing-library/user-event';
 import MediaPickerModal from './media-picker-modal';
 import { mediaApi } from '@/lib/api/media';
 import { Media } from '@/types';
+import { toast } from 'sonner';
 
 // Mock the media API
 vi.mock('@/lib/api/media', () => ({
   mediaApi: {
     getMedia: vi.fn(),
     uploadMedia: vi.fn(),
+  },
+}));
+
+// Mock sonner toast
+vi.mock('sonner', () => ({
+  toast: {
+    error: vi.fn(),
+    success: vi.fn(),
   },
 }));
 
@@ -609,7 +618,7 @@ describe('MediaPickerModal', () => {
       const fileInput = label?.querySelector('input[type="file"]') as HTMLInputElement;
       expect(fileInput).not.toBeNull();
       expect(fileInput).not.toBeDisabled();
-      
+
       const file = new File(['content'], 'new-image.jpg', { type: 'image/jpeg' });
 
       await userEvent.upload(fileInput, file);
@@ -657,7 +666,7 @@ describe('MediaPickerModal', () => {
       const fileInput = label?.querySelector('input[type="file"]') as HTMLInputElement;
       expect(fileInput).not.toBeNull();
       expect(fileInput).not.toBeDisabled();
-      
+
       const file = new File(['content'], 'new-image.jpg', { type: 'image/jpeg' });
 
       await userEvent.upload(fileInput, file);
@@ -788,7 +797,7 @@ describe('MediaPickerModal', () => {
 
     it('should load previous page when previous button clicked', async () => {
       const user = userEvent.setup();
-      
+
       // Initially return page 1
       vi.mocked(mediaApi.getMedia).mockResolvedValue({
         items: mockMedia,
@@ -934,8 +943,7 @@ describe('MediaPickerModal', () => {
       consoleError.mockRestore();
     });
 
-    it('should show alert on upload error', async () => {
-      const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+    it('should show toast on upload error', async () => {
       const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
       vi.mocked(mediaApi.uploadMedia).mockRejectedValue(new Error('Upload failed'));
 
@@ -958,17 +966,16 @@ describe('MediaPickerModal', () => {
       const fileInput = label?.querySelector('input[type="file"]') as HTMLInputElement;
       expect(fileInput).not.toBeNull();
       expect(fileInput).not.toBeDisabled();
-      
+
       const file = new File(['content'], 'test.jpg', { type: 'image/jpeg' });
 
       await userEvent.upload(fileInput, file);
 
       await waitFor(() => {
-        expect(alertSpy).toHaveBeenCalledWith('Failed to upload file');
+        expect(toast.error).toHaveBeenCalledWith('Failed to upload file');
         expect(consoleError).toHaveBeenCalled();
       });
 
-      alertSpy.mockRestore();
       consoleError.mockRestore();
     });
   });

@@ -17,8 +17,7 @@ vi.mock('@/lib/api/themes', () => ({
   },
 }));
 
-// Mock window.confirm and URL APIs
-const originalConfirm = window.confirm;
+// Mock URL APIs
 const originalCreateObjectURL = URL.createObjectURL;
 const originalRevokeObjectURL = URL.revokeObjectURL;
 const originalCreateElement = document.createElement.bind(document);
@@ -82,7 +81,6 @@ describe('ThemesPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    window.confirm = originalConfirm;
     URL.createObjectURL = originalCreateObjectURL;
     URL.revokeObjectURL = originalRevokeObjectURL;
 
@@ -340,7 +338,7 @@ describe('ThemesPage', () => {
       await user.click(activateButton);
 
       await waitFor(() => {
-        expect(themeApi.setActiveTheme).toHaveBeenCalledWith(2); // Custom Blue theme id
+        expect(themeApi.setActiveTheme).toHaveBeenCalledWith('2'); // Custom Blue theme id
       });
     });
 
@@ -421,7 +419,7 @@ describe('ThemesPage', () => {
       await user.click(exportButtons[0]); // Export first theme (Dark Chocolate)
 
       await waitFor(() => {
-        expect(themeApi.exportTheme).toHaveBeenCalledWith(1);
+        expect(themeApi.exportTheme).toHaveBeenCalledWith('1');
       });
     });
 
@@ -485,10 +483,8 @@ describe('ThemesPage', () => {
   });
 
   describe('Delete Theme', () => {
-    it('should show confirmation before deleting', async () => {
+    it('should show confirmation dialog before deleting', async () => {
       const user = userEvent.setup();
-      const confirmSpy = vi.fn().mockReturnValue(false);
-      window.confirm = confirmSpy;
 
       render(<ThemesPage />);
 
@@ -499,14 +495,15 @@ describe('ThemesPage', () => {
       const deleteButton = screen.getByRole('button', { name: 'Delete' });
       await user.click(deleteButton);
 
+      // Dialog should appear with confirmation message
       await waitFor(() => {
-        expect(confirmSpy).toHaveBeenCalledWith('Delete this theme?');
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        expect(screen.getByText(/Are you sure you want to delete/)).toBeInTheDocument();
       });
     });
 
     it('should call deleteTheme API when confirmed', async () => {
       const user = userEvent.setup();
-      window.confirm = vi.fn().mockReturnValue(true);
       vi.mocked(themeApi.deleteTheme).mockResolvedValue(undefined as any);
 
       render(<ThemesPage />);
@@ -515,17 +512,27 @@ describe('ThemesPage', () => {
         expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
       });
 
+      // Click the initial delete button to open dialog
       const deleteButton = screen.getByRole('button', { name: 'Delete' });
       await user.click(deleteButton);
 
+      // Wait for dialog and click confirm delete button
       await waitFor(() => {
-        expect(themeApi.deleteTheme).toHaveBeenCalledWith(2); // Custom Blue theme id
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      // Find and click the confirm Delete button inside the dialog
+      const confirmDeleteButtons = screen.getAllByRole('button', { name: 'Delete' });
+      const confirmButton = confirmDeleteButtons.find(btn => btn.closest('[role="dialog"]'));
+      await user.click(confirmButton!);
+
+      await waitFor(() => {
+        expect(themeApi.deleteTheme).toHaveBeenCalledWith('2'); // Custom Blue theme id
       });
     });
 
     it('should not call deleteTheme if user cancels', async () => {
       const user = userEvent.setup();
-      window.confirm = vi.fn().mockReturnValue(false);
 
       render(<ThemesPage />);
 
@@ -533,15 +540,23 @@ describe('ThemesPage', () => {
         expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
       });
 
+      // Click the initial delete button to open dialog
       const deleteButton = screen.getByRole('button', { name: 'Delete' });
       await user.click(deleteButton);
+
+      // Wait for dialog and click Cancel
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      const cancelButton = screen.getByRole('button', { name: 'Cancel' });
+      await user.click(cancelButton);
 
       expect(themeApi.deleteTheme).not.toHaveBeenCalled();
     });
 
     it('should reload themes after deletion', async () => {
       const user = userEvent.setup();
-      window.confirm = vi.fn().mockReturnValue(true);
       vi.mocked(themeApi.deleteTheme).mockResolvedValue(undefined as any);
 
       render(<ThemesPage />);
@@ -553,8 +568,18 @@ describe('ThemesPage', () => {
       // Clear previous calls
       vi.mocked(themeApi.listThemes).mockClear();
 
+      // Click the initial delete button to open dialog
       const deleteButton = screen.getByRole('button', { name: 'Delete' });
       await user.click(deleteButton);
+
+      // Wait for dialog and click confirm
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      const confirmDeleteButtons = screen.getAllByRole('button', { name: 'Delete' });
+      const confirmButton = confirmDeleteButtons.find(btn => btn.closest('[role="dialog"]'));
+      await user.click(confirmButton!);
 
       await waitFor(() => {
         expect(themeApi.listThemes).toHaveBeenCalledTimes(1);
@@ -564,7 +589,6 @@ describe('ThemesPage', () => {
     it('should log error when deletion fails', async () => {
       const user = userEvent.setup();
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      window.confirm = vi.fn().mockReturnValue(true);
       vi.mocked(themeApi.deleteTheme).mockRejectedValue(new Error('Delete failed'));
 
       render(<ThemesPage />);
@@ -573,8 +597,18 @@ describe('ThemesPage', () => {
         expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
       });
 
+      // Click the initial delete button to open dialog
       const deleteButton = screen.getByRole('button', { name: 'Delete' });
       await user.click(deleteButton);
+
+      // Wait for dialog and click confirm
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      const confirmDeleteButtons = screen.getAllByRole('button', { name: 'Delete' });
+      const confirmButton = confirmDeleteButtons.find(btn => btn.closest('[role="dialog"]'));
+      await user.click(confirmButton!);
 
       await waitFor(() => {
         expect(consoleErrorSpy).toHaveBeenCalled();
@@ -640,8 +674,8 @@ describe('ThemesPage', () => {
 
     it('should handle missing theme descriptions gracefully', async () => {
       const themeWithoutDesc = { ...mockCustomTheme, description: undefined };
-      vi.mocked(themeApi.listThemes).mockResolvedValue({ 
-        themes: [mockSystemTheme, themeWithoutDesc as Theme], 
+      vi.mocked(themeApi.listThemes).mockResolvedValue({
+        themes: [mockSystemTheme, themeWithoutDesc as Theme],
         total: 2,
         page: 1,
         page_size: 50

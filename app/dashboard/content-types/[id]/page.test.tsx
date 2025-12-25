@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ContentTypeDetailPage from './page';
 import { contentApi } from '@/lib/api';
 import { ContentType } from '@/types';
+import { toast } from 'sonner';
 
 // Mock Next.js navigation
 const mockPush = vi.fn();
@@ -22,9 +23,13 @@ vi.mock('@/lib/api', () => ({
   },
 }));
 
-// Mock window.confirm and window.alert
-global.confirm = vi.fn();
-global.alert = vi.fn();
+// Mock toast
+vi.mock('sonner', () => ({
+  toast: {
+    error: vi.fn(),
+    success: vi.fn(),
+  },
+}));
 
 describe('ContentTypeDetailPage', () => {
   const mockContentType: ContentType = {
@@ -340,7 +345,6 @@ describe('ContentTypeDetailPage', () => {
   describe('Delete Functionality', () => {
     it('should show confirmation dialog when delete button clicked', async () => {
       const user = userEvent.setup();
-      vi.mocked(global.confirm).mockReturnValue(false);
 
       render(<ContentTypeDetailPage />);
 
@@ -351,14 +355,14 @@ describe('ContentTypeDetailPage', () => {
       const deleteButton = screen.getByRole('button', { name: /Delete/i });
       await user.click(deleteButton);
 
-      expect(global.confirm).toHaveBeenCalledWith(
-        'Are you sure you want to delete this content type? This action cannot be undone.'
-      );
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        expect(screen.getByText(/are you sure/i)).toBeInTheDocument();
+      });
     });
 
     it('should not delete when confirmation is cancelled', async () => {
       const user = userEvent.setup();
-      vi.mocked(global.confirm).mockReturnValue(false);
 
       render(<ContentTypeDetailPage />);
 
@@ -368,6 +372,15 @@ describe('ContentTypeDetailPage', () => {
 
       const deleteButton = screen.getByRole('button', { name: /Delete/i });
       await user.click(deleteButton);
+
+      // Wait for dialog and cancel
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      const dialog = screen.getByRole('dialog');
+      const cancelButton = within(dialog).getByRole('button', { name: /cancel/i });
+      await user.click(cancelButton);
 
       expect(contentApi.deleteContentType).not.toHaveBeenCalled();
       expect(mockPush).not.toHaveBeenCalled();
@@ -375,7 +388,6 @@ describe('ContentTypeDetailPage', () => {
 
     it('should delete content type when confirmed', async () => {
       const user = userEvent.setup();
-      vi.mocked(global.confirm).mockReturnValue(true);
       vi.mocked(contentApi.deleteContentType).mockResolvedValue(undefined);
 
       render(<ContentTypeDetailPage />);
@@ -387,15 +399,23 @@ describe('ContentTypeDetailPage', () => {
       const deleteButton = screen.getByRole('button', { name: /Delete/i });
       await user.click(deleteButton);
 
+      // Wait for dialog and confirm
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      const dialog = screen.getByRole('dialog');
+      const confirmButton = within(dialog).getByRole('button', { name: /delete/i });
+      await user.click(confirmButton);
+
       await waitFor(() => {
         expect(contentApi.deleteContentType).toHaveBeenCalledWith('550e8400-e29b-41d4-a716-446655440001');
         expect(mockPush).toHaveBeenCalledWith('/dashboard/content-types');
       });
     });
 
-    it('should show alert on delete error', async () => {
+    it('should show toast error on delete error', async () => {
       const user = userEvent.setup();
-      vi.mocked(global.confirm).mockReturnValue(true);
       vi.mocked(contentApi.deleteContentType).mockRejectedValue({
         response: { data: { detail: 'Cannot delete: content entries exist' } },
       });
@@ -409,8 +429,17 @@ describe('ContentTypeDetailPage', () => {
       const deleteButton = screen.getByRole('button', { name: /Delete/i });
       await user.click(deleteButton);
 
+      // Wait for dialog and confirm
       await waitFor(() => {
-        expect(global.alert).toHaveBeenCalledWith(
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      const dialog = screen.getByRole('dialog');
+      const confirmButton = within(dialog).getByRole('button', { name: /delete/i });
+      await user.click(confirmButton);
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith(
           'Failed to delete content type: Cannot delete: content entries exist'
         );
       });

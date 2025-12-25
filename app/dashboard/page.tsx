@@ -26,6 +26,8 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/auth-context';
+import { LowStockWidget } from '@/components/admin/low-stock-widget';
+import { InventorySyncStatus } from '@/components/admin/inventory-sync-status';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
@@ -462,6 +464,16 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Inventory Section */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <LowStockWidget maxItems={5} showOutOfStock={true} />
+        </div>
+        <div>
+          <InventorySyncStatus showDetails={true} autoRefresh={true} refreshInterval={30} />
+        </div>
       </div>
     </div>
   );

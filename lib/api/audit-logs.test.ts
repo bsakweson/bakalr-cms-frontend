@@ -1,8 +1,25 @@
 import { auditLogApi } from './audit-logs';
-import { apiClient } from './client';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('./client');
+// Mock the apiClient
+vi.mock('./client', () => ({
+  default: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+  },
+  apiClient: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
+
+import { apiClient } from './client';
 
 describe('Audit Log API', () => {
   beforeEach(() => {

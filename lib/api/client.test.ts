@@ -153,4 +153,104 @@ describe('API Client', () => {
       await expect(graphqlClient('{ invalid }')).rejects.toThrow('Error 1');
     });
   });
+
+  describe('Runtime Config Integration', () => {
+    it('should export getApiConfig function', async () => {
+      const { getApiConfig } = await import('./client');
+      expect(typeof getApiConfig).toBe('function');
+    });
+
+    it('should return config with BASE_URL and CONTEXT_PATH', async () => {
+      const { getApiConfig } = await import('./client');
+      const config = getApiConfig();
+      
+      expect(config).toHaveProperty('BASE_URL');
+      expect(config).toHaveProperty('CONTEXT_PATH');
+      expect(config.CONTEXT_PATH).toBe('/api/v1');
+    });
+
+    it('should export API_CONFIG for backward compatibility', async () => {
+      const { API_CONFIG } = await import('./client');
+      
+      expect(API_CONFIG).toBeDefined();
+      expect(API_CONFIG.BASE_URL).toBeDefined();
+      expect(API_CONFIG.CONTEXT_PATH).toBe('/api/v1');
+    });
+
+    it('should export getMediaUrl function', async () => {
+      const { getMediaUrl } = await import('./client');
+      expect(typeof getMediaUrl).toBe('function');
+    });
+
+    it('should export resolveMediaUrl function', async () => {
+      const { resolveMediaUrl } = await import('./client');
+      expect(typeof resolveMediaUrl).toBe('function');
+    });
+  });
+
+  describe('getMediaUrl', () => {
+    it('should return undefined for null or undefined input', async () => {
+      const { getMediaUrl } = await import('./client');
+      
+      expect(getMediaUrl(null)).toBeUndefined();
+      expect(getMediaUrl(undefined)).toBeUndefined();
+      expect(getMediaUrl('')).toBeUndefined();
+    });
+
+    it('should return absolute URLs unchanged', async () => {
+      const { getMediaUrl } = await import('./client');
+      
+      const httpUrl = 'http://example.com/image.jpg';
+      const httpsUrl = 'https://example.com/image.jpg';
+      
+      expect(getMediaUrl(httpUrl)).toBe(httpUrl);
+      expect(getMediaUrl(httpsUrl)).toBe(httpsUrl);
+    });
+
+    it('should prepend base URL to relative paths starting with /api/', async () => {
+      const { getMediaUrl, getApiConfig } = await import('./client');
+      const config = getApiConfig();
+      
+      const relativePath = '/api/v1/media/file/123';
+      const result = getMediaUrl(relativePath);
+      
+      expect(result).toBe(`${config.BASE_URL}${relativePath}`);
+    });
+
+    it('should construct full path for media IDs', async () => {
+      const { getMediaUrl, getApiConfig } = await import('./client');
+      const config = getApiConfig();
+      
+      const mediaId = 'abc123';
+      const result = getMediaUrl(mediaId);
+      
+      expect(result).toBe(`${config.BASE_URL}${config.CONTEXT_PATH}/media/proxy/${mediaId}`);
+    });
+  });
+
+  describe('resolveMediaUrl', () => {
+    it('should return empty string for null/undefined input', async () => {
+      const { resolveMediaUrl } = await import('./client');
+      
+      expect(resolveMediaUrl(null)).toBe('');
+      expect(resolveMediaUrl(undefined)).toBe('');
+    });
+
+    it('should prepend base URL to relative URLs', async () => {
+      const { resolveMediaUrl, getApiConfig } = await import('./client');
+      const config = getApiConfig();
+      
+      const relativePath = '/uploads/image.jpg';
+      const result = resolveMediaUrl(relativePath);
+      
+      expect(result).toBe(`${config.BASE_URL}${relativePath}`);
+    });
+
+    it('should return absolute URLs unchanged', async () => {
+      const { resolveMediaUrl } = await import('./client');
+      
+      const absoluteUrl = 'https://cdn.example.com/image.jpg';
+      expect(resolveMediaUrl(absoluteUrl)).toBe(absoluteUrl);
+    });
+  });
 });

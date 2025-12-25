@@ -454,16 +454,49 @@ export interface DashboardOverview {
   activity_stats: ActivityStats;
 }
 
-// API Response Types
+// ============================================================================
+// Pagination Types - Re-exported from @/lib/pagination for convenience
+// ============================================================================
+// For new code, prefer importing directly from '@/lib/pagination'
+export type {
+  PageRequest,
+  PageInfo,
+  PagedResponse,
+} from '@/lib/pagination';
+
+export {
+  DEFAULT_PAGE_SIZE,
+  DEFAULT_PAGE,
+  MAX_PAGE_SIZE,
+  createPageRequest,
+  calculateOffset,
+  calculateTotalPages,
+  createPageInfo,
+  createPagedResponse,
+  hasNextPage,
+  hasPreviousPage,
+  getItemRange,
+  getPageNumbers,
+  normalizePagedResponse,
+  toSearchParams,
+  fromSearchParams,
+  isPagedResponse,
+  emptyPagedResponse,
+} from '@/lib/pagination';
+
+/**
+ * @deprecated Use PagedResponse from '@/lib/pagination' instead.
+ * This interface is kept for backward compatibility only.
+ */
 export interface PaginatedResponse<T> {
   items: T[];
-  total?: number; // Optional for test compat
-  page?: number; // Optional for test compat
-  page_size?: number;  // Backend uses page_size, not per_page (optional for test compat)
-  pages?: number;  // Backend uses 'pages', not 'total_pages' (optional for test compat)
-  // Aliases for backwards compatibility
+  total?: number;
+  page?: number;
+  page_size?: number;
+  pages?: number;
+  // Legacy aliases - will be removed in future versions
   total_pages?: number;
-  per_page?: number; // Legacy alias for page_size
+  per_page?: number;
 }
 
 export interface ApiError {

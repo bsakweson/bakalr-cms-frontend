@@ -1,24 +1,46 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import OrganizationSettingsPage from './page';
 import { organizationApi } from '@/lib/api';
+import { translationApi } from '@/lib/api/translation';
+import { apiKeysApi } from '@/lib/api/api-keys';
+import { apiScopesApi } from '@/lib/api/api-scopes';
 import type { OrganizationProfile, Locale } from '@/types';
 
-// Mock the API
+// Mock the APIs used by the page
 vi.mock('@/lib/api', () => ({
   organizationApi: {
     getProfile: vi.fn(),
     updateProfile: vi.fn(),
-    listLocales: vi.fn(),
+  },
+}));
+
+vi.mock('@/lib/api/translation', () => ({
+  translationApi: {
+    getLocales: vi.fn(),
     createLocale: vi.fn(),
     updateLocale: vi.fn(),
     deleteLocale: vi.fn(),
   },
 }));
 
-// Mock window.confirm
-const originalConfirm = window.confirm;
+vi.mock('@/lib/api/api-keys', () => ({
+  apiKeysApi: {
+    listAPIKeys: vi.fn(),
+    createApiKey: vi.fn(),
+    updateApiKey: vi.fn(),
+    deleteApiKey: vi.fn(),
+    regenerateApiKeySecret: vi.fn(),
+  },
+}));
+
+vi.mock('@/lib/api/api-scopes', () => ({
+  apiScopesApi: {
+    list: vi.fn(),
+    getForDropdown: vi.fn(),
+  },
+}));
 
 describe('OrganizationSettingsPage', () => {
   const mockProfile: OrganizationProfile = {
@@ -76,18 +98,20 @@ describe('OrganizationSettingsPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    window.confirm = originalConfirm;
-    
+
     // Default successful responses
     vi.mocked(organizationApi.getProfile).mockResolvedValue(mockProfile);
-    vi.mocked(organizationApi.listLocales).mockResolvedValue({ locales: mockLocales, total: mockLocales.length });
+    vi.mocked(translationApi.getLocales).mockResolvedValue(mockLocales);
+    vi.mocked(apiKeysApi.listAPIKeys).mockResolvedValue({ items: [], total: 0, page: 1, page_size: 10 });
+    vi.mocked(apiScopesApi.list).mockResolvedValue({ items: [], total: 0, page: 1, page_size: 10 });
+    vi.mocked(apiScopesApi.getForDropdown).mockResolvedValue([]);
   });
 
   describe('Initial Rendering', () => {
     it('should show loading state initially', async () => {
       render(<OrganizationSettingsPage />);
       expect(screen.getByText('Loading settings...')).toBeInTheDocument();
-      
+
       // Wait for loading to complete to avoid act() warnings
       await waitFor(() => {
         expect(screen.queryByText('Loading settings...')).not.toBeInTheDocument();
@@ -99,7 +123,7 @@ describe('OrganizationSettingsPage', () => {
 
       await waitFor(() => {
         expect(organizationApi.getProfile).toHaveBeenCalledTimes(1);
-        expect(organizationApi.listLocales).toHaveBeenCalledTimes(1);
+        expect(translationApi.getLocales).toHaveBeenCalledTimes(1);
       });
     });
 
@@ -110,7 +134,7 @@ describe('OrganizationSettingsPage', () => {
         expect(screen.getByText('Organization Settings')).toBeInTheDocument();
       });
 
-      expect(screen.getByText('Manage your organization profile and preferences')).toBeInTheDocument();
+      expect(screen.getByText('Manage your organization profile, languages, and API access')).toBeInTheDocument();
     });
 
     it('should display tabs for Profile, Languages, and API Keys', async () => {
@@ -464,7 +488,7 @@ describe('OrganizationSettingsPage', () => {
 
     it('should display empty state when no locales', async () => {
       const user = userEvent.setup();
-      vi.mocked(organizationApi.listLocales).mockResolvedValue({ locales: [], total: 0 });
+      vi.mocked(translationApi.getLocales).mockResolvedValue([]);
 
       render(<OrganizationSettingsPage />);
 
@@ -556,9 +580,9 @@ describe('OrganizationSettingsPage', () => {
       });
     });
 
-    it('should call updateLocale when toggling active status', async () => {
+    it('should call updateLocale when toggling enabled status', async () => {
       const user = userEvent.setup();
-      vi.mocked(organizationApi.updateLocale).mockResolvedValue({ ...mockLocales[1], is_active: false });
+      vi.mocked(translationApi.updateLocale).mockResolvedValue({ ...mockLocales[1], is_enabled: false });
 
       render(<OrganizationSettingsPage />);
 
@@ -574,18 +598,18 @@ describe('OrganizationSettingsPage', () => {
         expect(switches.length).toBe(3);
       });
 
-      // Click the second switch (French, which is active)
+      // Click the second switch (French, which is enabled)
       const switches = screen.getAllByRole('switch');
       await user.click(switches[1]);
 
       await waitFor(() => {
-        expect(organizationApi.updateLocale).toHaveBeenCalledWith(2, { is_active: false });
+        expect(translationApi.updateLocale).toHaveBeenCalledWith('2', { is_enabled: false });
       });
     });
 
     it('should call updateLocale when setting default', async () => {
       const user = userEvent.setup();
-      vi.mocked(organizationApi.updateLocale).mockResolvedValue({ ...mockLocales[1], is_default: true });
+      vi.mocked(translationApi.updateLocale).mockResolvedValue({ ...mockLocales[1], is_default: true });
 
       render(<OrganizationSettingsPage />);
 
@@ -607,14 +631,12 @@ describe('OrganizationSettingsPage', () => {
       await user.click(enabledSetDefaultButtons[0]); // Click first enabled non-default (French)
 
       await waitFor(() => {
-        expect(organizationApi.updateLocale).toHaveBeenCalledWith(2, { is_default: true });
+        expect(translationApi.updateLocale).toHaveBeenCalledWith('2', { is_default: true });
       });
     });
 
-    it('should show confirmation before deleting locale', async () => {
+    it('should show confirmation dialog before deleting locale', async () => {
       const user = userEvent.setup();
-      const confirmSpy = vi.fn().mockReturnValue(false);
-      window.confirm = confirmSpy;
 
       render(<OrganizationSettingsPage />);
 
@@ -633,15 +655,20 @@ describe('OrganizationSettingsPage', () => {
       const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
       await user.click(deleteButtons[0]);
 
-      expect(confirmSpy).toHaveBeenCalledWith(
-        'Are you sure you want to delete this locale? All translations will remain but will not be accessible.'
-      );
+      // Dialog should open with confirmation message
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      const dialog = screen.getByRole('dialog');
+      expect(within(dialog).getByText(/Are you sure you want to delete the locale/i)).toBeInTheDocument();
+      expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+      expect(within(dialog).getByRole('button', { name: 'Delete Locale' })).toBeInTheDocument();
     });
 
-    it('should call deleteLocale API when confirmed', async () => {
+    it('should call deleteLocale API when confirmed via dialog', async () => {
       const user = userEvent.setup();
-      window.confirm = vi.fn().mockReturnValue(true);
-      vi.mocked(organizationApi.deleteLocale).mockResolvedValue({ message: 'Locale deleted' });
+      vi.mocked(translationApi.deleteLocale).mockResolvedValue(undefined);
 
       render(<OrganizationSettingsPage />);
 
@@ -660,14 +687,23 @@ describe('OrganizationSettingsPage', () => {
       const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
       await user.click(deleteButtons[0]); // Delete French (id: 2)
 
+      // Wait for dialog to open
       await waitFor(() => {
-        expect(organizationApi.deleteLocale).toHaveBeenCalledWith(2);
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      // Click the confirm button in the dialog
+      const dialog = screen.getByRole('dialog');
+      const confirmButton = within(dialog).getByRole('button', { name: 'Delete Locale' });
+      await user.click(confirmButton);
+
+      await waitFor(() => {
+        expect(translationApi.deleteLocale).toHaveBeenCalledWith('2');
       });
     });
 
-    it('should not call deleteLocale if user cancels', async () => {
+    it('should not call deleteLocale if user cancels via dialog', async () => {
       const user = userEvent.setup();
-      window.confirm = vi.fn().mockReturnValue(false);
 
       render(<OrganizationSettingsPage />);
 
@@ -686,13 +722,28 @@ describe('OrganizationSettingsPage', () => {
       const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
       await user.click(deleteButtons[0]);
 
-      expect(organizationApi.deleteLocale).not.toHaveBeenCalled();
+      // Wait for dialog to open
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      // Click the cancel button in the dialog
+      const dialog = screen.getByRole('dialog');
+      const cancelButton = within(dialog).getByRole('button', { name: 'Cancel' });
+      await user.click(cancelButton);
+
+      // Dialog should close and deleteLocale should NOT be called
+      await waitFor(() => {
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      });
+
+      expect(translationApi.deleteLocale).not.toHaveBeenCalled();
     });
 
     it('should log error when locale update fails', async () => {
       const user = userEvent.setup();
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      vi.mocked(organizationApi.updateLocale).mockRejectedValue(new Error('Update failed'));
+      vi.mocked(translationApi.updateLocale).mockRejectedValue(new Error('Update failed'));
 
       render(<OrganizationSettingsPage />);
 
@@ -721,8 +772,7 @@ describe('OrganizationSettingsPage', () => {
     it('should log error when locale deletion fails', async () => {
       const user = userEvent.setup();
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      window.confirm = vi.fn().mockReturnValue(true);
-      vi.mocked(organizationApi.deleteLocale).mockRejectedValue(new Error('Delete failed'));
+      vi.mocked(translationApi.deleteLocale).mockRejectedValue(new Error('Delete failed'));
 
       render(<OrganizationSettingsPage />);
 
@@ -740,6 +790,16 @@ describe('OrganizationSettingsPage', () => {
 
       const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
       await user.click(deleteButtons[0]);
+
+      // Wait for dialog to open
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      // Click the confirm button in the dialog
+      const dialog = screen.getByRole('dialog');
+      const confirmButton = within(dialog).getByRole('button', { name: 'Delete Locale' });
+      await user.click(confirmButton);
 
       await waitFor(() => {
         expect(consoleErrorSpy).toHaveBeenCalled();
@@ -780,7 +840,8 @@ describe('OrganizationSettingsPage', () => {
       await user.click(apiKeysTab);
 
       await waitFor(() => {
-        expect(screen.getByText(/API key management coming soon/)).toBeInTheDocument();
+        // API keys tab now shows actual content - check for 'No API keys yet' message
+        expect(screen.getByText(/No API keys yet/)).toBeInTheDocument();
       });
     });
   });
@@ -801,7 +862,7 @@ describe('OrganizationSettingsPage', () => {
 
     it('should still render page when data load fails', async () => {
       vi.mocked(organizationApi.getProfile).mockRejectedValue(new Error('Load failed'));
-      vi.mocked(organizationApi.listLocales).mockRejectedValue(new Error('Load failed'));
+      vi.mocked(translationApi.getLocales).mockRejectedValue(new Error('Load failed'));
 
       render(<OrganizationSettingsPage />);
 

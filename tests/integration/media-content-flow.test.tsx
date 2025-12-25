@@ -1,6 +1,6 @@
 /**
  * Integration Test: Media Upload → Content Attachment → Preview Workflow
- * 
+ *
  * Tests the complete workflow of:
  * 1. Uploading media files
  * 2. Retrieving uploaded media
@@ -141,9 +141,9 @@ describe('Integration: Media Upload → Content Attachment → Preview', () => {
 
       const result = await mediaApi.getMediaItem("1");
 
-      expect(mediaApi.getMediaItem).toHaveBeenCalledWith(1);
+      expect(mediaApi.getMediaItem).toHaveBeenCalledWith("1");
       expect(result).toEqual(mockImageMedia);
-      expect(result.id).toBe(1);
+      expect(result.id).toBe('1');
       expect(result.filename).toBe('hero-image.jpg');
     });
 
@@ -158,9 +158,9 @@ describe('Integration: Media Upload → Content Attachment → Preview', () => {
 
       vi.mocked(mediaApi.getMedia).mockResolvedValue(paginatedResponse);
 
-      const result = await mediaApi.getMedia({ page: 1, per_page: 10 });
+      const result = await mediaApi.getMedia({ page: 1, page_size: 10 });
 
-      expect(mediaApi.getMedia).toHaveBeenCalledWith({ page: 1, per_page: 10 });
+      expect(mediaApi.getMedia).toHaveBeenCalledWith({ page: 1, page_size: 10 });
       expect(result.items).toHaveLength(2);
       expect(result.total).toBe(2);
       expect(result.items[0].file_type).toBe('image');

@@ -1,8 +1,25 @@
 import { userApi } from './users';
-import apiClient from './client';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('./client');
+// Mock the apiClient
+vi.mock('./client', () => ({
+  default: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+  },
+  apiClient: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
+
+import apiClient from './client';
 
 describe('User API', () => {
   beforeEach(() => {
@@ -104,7 +121,7 @@ describe('User API', () => {
 
       expect(result).toEqual(mockResponse);
       expect(apiClient.post).toHaveBeenCalledWith('/users/invite', inviteData);
-      expect(result.user_id).toBe(3);
+      expect(result.user_id).toBe("3");
     });
 
     it('should invite user with send_invite_email option', async () => {
@@ -125,7 +142,7 @@ describe('User API', () => {
 
       const result = await userApi.inviteUser(inviteData);
 
-      expect(result.user_id).toBe(4);
+      expect(result.user_id).toBe("4");
       expect(apiClient.post).toHaveBeenCalledWith('/users/invite', inviteData);
     });
 

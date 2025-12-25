@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 export default function ContentTypeDetailPage() {
   const params = useParams();
@@ -18,6 +19,7 @@ export default function ContentTypeDetailPage() {
   const [contentType, setContentType] = useState<ContentType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const loadContentType = useCallback(async () => {
     try {
@@ -39,12 +41,9 @@ export default function ContentTypeDetailPage() {
   }, [id, loadContentType]);
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this content type? This action cannot be undone.')) {
-      return;
-    }
-
     try {
       await contentApi.deleteContentType(id);
+      setDeleteDialogOpen(false);
       router.push('/dashboard/content-types');
     } catch (err: any) {
       toast.error('Failed to delete content type: ' + (err.response?.data?.detail || err.message));
@@ -86,7 +85,7 @@ export default function ContentTypeDetailPage() {
           <Button variant="outline" asChild>
             <Link href={`/dashboard/content-types/${id}/edit`}>Edit</Link>
           </Button>
-          <Button variant="destructive" onClick={handleDelete}>
+          <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
             Delete
           </Button>
         </div>
@@ -210,6 +209,16 @@ export default function ContentTypeDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Content Type"
+        description={`Are you sure you want to delete "${contentType.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

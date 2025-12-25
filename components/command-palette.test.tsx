@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { useRouter, usePathname } from 'next/navigation';
 import { CommandPalette } from './command-palette';
+import { LayoutDashboard, FileText, Users } from 'lucide-react';
 
 // Mock Next.js navigation
 vi.mock('next/navigation', () => ({
@@ -12,9 +13,9 @@ vi.mock('next/navigation', () => ({
 describe('CommandPalette', () => {
   const mockPush = vi.fn();
   const mockNavigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: '📊' },
-    { name: 'Content', href: '/dashboard/content', icon: '📝' },
-    { name: 'Users', href: '/dashboard/users', icon: '👥' },
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Content', href: '/dashboard/content', icon: FileText },
+    { name: 'Users', href: '/dashboard/users', icon: Users },
   ];
 
   beforeEach(() => {

@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import TemplatesPage from './page';
 import * as templateApi from '@/lib/api/templates';
 import * as contentApi from '@/lib/api/content';
+import { toast } from 'sonner';
 
 // Mock the API modules
 vi.mock('@/lib/api/templates', () => ({
@@ -19,6 +20,14 @@ vi.mock('@/lib/api/templates', () => ({
 vi.mock('@/lib/api/content', () => ({
   contentApi: {
     getContentTypes: vi.fn(),
+  },
+}));
+
+// Mock toast
+vi.mock('sonner', () => ({
+  toast: {
+    error: vi.fn(),
+    success: vi.fn(),
   },
 }));
 
@@ -534,7 +543,7 @@ describe('TemplatesPage', () => {
 
       await waitFor(() => {
         expect(templateApi.templateApi.updateTemplate).toHaveBeenCalledWith(
-          1,
+          '1',
           expect.objectContaining({
             name: 'Updated Template',
           })
@@ -546,7 +555,6 @@ describe('TemplatesPage', () => {
   describe('Delete Template', () => {
     it('should show confirmation dialog when Delete button is clicked', async () => {
       const user = userEvent.setup();
-      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
 
       render(<TemplatesPage />);
 
@@ -557,14 +565,15 @@ describe('TemplatesPage', () => {
       const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
       await user.click(deleteButtons[0]);
 
-      expect(confirmSpy).toHaveBeenCalledWith('Delete this template?');
-
-      confirmSpy.mockRestore();
+      // Should show the confirmation dialog
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        expect(screen.getByText(/are you sure/i)).toBeInTheDocument();
+      });
     });
 
     it('should delete template when confirmed', async () => {
       const user = userEvent.setup();
-      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
       vi.mocked(templateApi.templateApi.deleteTemplate).mockResolvedValue(undefined);
 
       render(<TemplatesPage />);
@@ -576,16 +585,22 @@ describe('TemplatesPage', () => {
       const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
       await user.click(deleteButtons[0]);
 
+      // Wait for dialog and confirm
       await waitFor(() => {
-        expect(templateApi.templateApi.deleteTemplate).toHaveBeenCalledWith(1);
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
 
-      confirmSpy.mockRestore();
+      const dialog = screen.getByRole('dialog');
+      const confirmButton = within(dialog).getByRole('button', { name: /delete/i });
+      await user.click(confirmButton);
+
+      await waitFor(() => {
+        expect(templateApi.templateApi.deleteTemplate).toHaveBeenCalledWith('1');
+      });
     });
 
     it('should not delete template when cancelled', async () => {
       const user = userEvent.setup();
-      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
 
       render(<TemplatesPage />);
 
@@ -596,9 +611,16 @@ describe('TemplatesPage', () => {
       const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
       await user.click(deleteButtons[0]);
 
-      expect(templateApi.templateApi.deleteTemplate).not.toHaveBeenCalled();
+      // Wait for dialog and cancel
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
 
-      confirmSpy.mockRestore();
+      const dialog = screen.getByRole('dialog');
+      const cancelButton = within(dialog).getByRole('button', { name: /cancel/i });
+      await user.click(cancelButton);
+
+      expect(templateApi.templateApi.deleteTemplate).not.toHaveBeenCalled();
     });
   });
 
@@ -654,9 +676,8 @@ describe('TemplatesPage', () => {
       consoleErrorSpy.mockRestore();
     });
 
-    it('should show alert when template creation fails', async () => {
+    it('should show toast error when template creation fails', async () => {
       const user = userEvent.setup();
-      const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
       vi.mocked(templateApi.templateApi.createTemplate).mockRejectedValue({
         response: { data: { detail: 'Creation failed' } },
       });
@@ -681,15 +702,12 @@ describe('TemplatesPage', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(alertSpy).toHaveBeenCalledWith('Creation failed');
+        expect(toast.error).toHaveBeenCalledWith('Creation failed');
       });
-
-      alertSpy.mockRestore();
     });
 
     it('should handle delete failure gracefully', async () => {
       const user = userEvent.setup();
-      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       vi.mocked(templateApi.templateApi.deleteTemplate).mockRejectedValue(new Error('Delete failed'));
 
@@ -702,11 +720,19 @@ describe('TemplatesPage', () => {
       const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
       await user.click(deleteButtons[0]);
 
+      // Wait for dialog and confirm
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      const dialog = screen.getByRole('dialog');
+      const confirmButton = within(dialog).getByRole('button', { name: /delete/i });
+      await user.click(confirmButton);
+
       await waitFor(() => {
         expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to delete:', expect.any(Error));
       });
 
-      confirmSpy.mockRestore();
       consoleErrorSpy.mockRestore();
     });
   });

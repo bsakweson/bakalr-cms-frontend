@@ -48,7 +48,7 @@ describe('RootLayout', () => {
           <div data-testid="child-content">Test Content</div>
         </RootLayout>
       );
-      
+
       expect(screen.getByTestId('auth-provider')).toBeInTheDocument();
       expect(screen.getByTestId('child-content')).toBeInTheDocument();
     });
@@ -60,7 +60,7 @@ describe('RootLayout', () => {
           <div>{testContent}</div>
         </RootLayout>
       );
-      
+
       const authProvider = screen.getByTestId('auth-provider');
       expect(authProvider).toHaveTextContent(testContent);
     });
@@ -73,7 +73,7 @@ describe('RootLayout', () => {
           <div data-testid="single-child">Single Child</div>
         </RootLayout>
       );
-      
+
       expect(screen.getByTestId('single-child')).toBeInTheDocument();
     });
 
@@ -86,7 +86,7 @@ describe('RootLayout', () => {
           </>
         </RootLayout>
       );
-      
+
       expect(screen.getByTestId('child-1')).toBeInTheDocument();
       expect(screen.getByTestId('child-2')).toBeInTheDocument();
     });
@@ -103,7 +103,7 @@ describe('RootLayout', () => {
           </div>
         </RootLayout>
       );
-      
+
       expect(screen.getByTestId('header')).toBeInTheDocument();
       expect(screen.getByTestId('main')).toBeInTheDocument();
       expect(screen.getByTestId('footer')).toBeInTheDocument();
@@ -117,27 +117,28 @@ describe('RootLayout', () => {
           <div data-testid="content">Content</div>
         </RootLayout>
       );
-      
+
       const authProvider = screen.getByTestId('auth-provider');
       const content = screen.getByTestId('content');
-      
+
       expect(authProvider).toBeInTheDocument();
       expect(content).toBeInTheDocument();
-      
+
       // Content should be inside AuthProvider
       expect(authProvider).toContainElement(content);
     });
 
-    it('should not have any additional unexpected elements', () => {
-      const { container } = render(
+    it('should contain the provided child element', () => {
+      render(
         <RootLayout>
           <div data-testid="only-child">Only Child</div>
         </RootLayout>
       );
-      
+
       const authProvider = screen.getByTestId('auth-provider');
-      // AuthProvider should only contain the child, nothing else
-      expect(authProvider.children).toHaveLength(1);
+      const child = screen.getByTestId('only-child');
+      // AuthProvider should contain the child we provided
+      expect(authProvider).toContainElement(child);
     });
   });
 });

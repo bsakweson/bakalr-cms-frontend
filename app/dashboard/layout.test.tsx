@@ -79,8 +79,8 @@ describe('DashboardLayout', () => {
 
     expect(screen.getByText('Bakalr CMS')).toBeInTheDocument();
     expect(screen.getByText('Test Content')).toBeInTheDocument();
-    // Check for Dashboard link in navigation (not the header)
-    expect(screen.getByRole('link', { name: /📊Dashboard/i })).toBeInTheDocument();
+    // Check for Dashboard link in navigation (now using Lucide icons, not emojis)
+    expect(screen.getByRole('link', { name: /Dashboard/i })).toBeInTheDocument();
   });
 
   it('should show loading state while checking auth', () => {
@@ -92,7 +92,7 @@ describe('DashboardLayout', () => {
       </DashboardLayout>
     );
 
-    expect(screen.getByText('Loading...')).toBeInTheDocument();
+    expect(screen.getByText('Loading dashboard...')).toBeInTheDocument();
     expect(screen.queryByText('Test Content')).not.toBeInTheDocument();
   });
 
@@ -103,20 +103,17 @@ describe('DashboardLayout', () => {
       </DashboardLayout>
     );
 
-    // Check main navigation items using role and accessible names
-    expect(screen.getByRole('link', { name: /📊Dashboard/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /📝Content/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /📋Content Types/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /🖼️Media/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /👥Users/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /🔐Roles/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /🌍Translations/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /📄Templates/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /🎨Themes/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /🏢Organization/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /📋Audit Logs/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /📚Documentation/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /⚙️Settings/i })).toBeInTheDocument();
+    // Check main navigation items (top-level, always visible)
+    expect(screen.getByRole('link', { name: /Dashboard/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /^Content$/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Content Types/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Media/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Templates/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Themes/i })).toBeInTheDocument();
+
+    // Navigation sections (collapsed by default) - check section buttons exist
+    expect(screen.getByRole('button', { name: /Store Management/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Administration/i })).toBeInTheDocument();
   });
 
   it('should highlight active navigation item', () => {
@@ -128,8 +125,8 @@ describe('DashboardLayout', () => {
       </DashboardLayout>
     );
 
-    // Find the Content navigation link (no space after emoji)
-    const contentLink = screen.getByRole('link', { name: /📝Content/i });
+    // Find the Content navigation link (now using Lucide icons, not emojis)
+    const contentLink = screen.getByRole('link', { name: /^Content$/i });
     expect(contentLink).toHaveClass('bg-primary');
     expect(contentLink).toHaveClass('text-primary-foreground');
   });
@@ -146,12 +143,12 @@ describe('DashboardLayout', () => {
       expect(screen.getByText('Bakalr CMS')).toBeInTheDocument();
     });
 
-    // The avatar shows initials (TU for Test User)
-    const avatarButton = screen.getByRole('button', { name: /TU/i });
+    // The avatar button has aria-label with user display name
+    const avatarButton = screen.getByRole('button', { name: /User menu for Test User/i });
     expect(avatarButton).toBeInTheDocument();
-    
+
     // Note: DropdownMenu content is not visible until clicked, and may require userEvent
-    // For now, we'll just verify the button exists with correct initials
+    // For now, we'll just verify the button exists with correct label
   });
 
   it('should display user initials correctly', () => {
@@ -185,8 +182,8 @@ describe('DashboardLayout', () => {
       expect(screen.getByText('Bakalr CMS')).toBeInTheDocument();
     });
 
-    // Email 'john@example.com' -> prefix 'john' -> getUserInitials -> 'J' (single word = single char)
-    const avatarButton = screen.getByRole('button', { name: /^J$/i });
+    // Email 'john@example.com' -> display name 'john' (local part)
+    const avatarButton = screen.getByRole('button', { name: /User menu for john/i });
     expect(avatarButton).toBeInTheDocument();
   });
 
@@ -197,7 +194,7 @@ describe('DashboardLayout', () => {
       </DashboardLayout>
     );
 
-    const avatarButton = screen.getByRole('button', { name: /TU/i });
+    const avatarButton = screen.getByRole('button', { name: /User menu for Test User/i });
     fireEvent.click(avatarButton);
 
     await waitFor(() => {
@@ -219,9 +216,9 @@ describe('DashboardLayout', () => {
     });
 
     // Verify user avatar is present (logout is in its dropdown)
-    const avatarButton = screen.getByRole('button', { name: /TU/i });
+    const avatarButton = screen.getByRole('button', { name: /User menu for Test User/i });
     expect(avatarButton).toBeInTheDocument();
-    
+
     // Note: Testing actual dropdown interaction requires userEvent library
     // For now we verify the component renders correctly
   });
@@ -297,8 +294,8 @@ describe('DashboardLayout', () => {
       </DashboardLayout>
     );
 
-    // Mobile menu button should be present
-    const mobileButton = screen.getByRole('button', { name: '☰' });
+    // Mobile menu button has accessible aria-label
+    const mobileButton = screen.getByRole('button', { name: /Open navigation menu/i });
     expect(mobileButton).toBeInTheDocument();
   });
 
@@ -323,7 +320,7 @@ describe('DashboardLayout', () => {
       </DashboardLayout>
     );
 
-    const mediaLink = screen.getByRole('link', { name: /🖼️Media/i });
+    const mediaLink = screen.getByRole('link', { name: /Media/i });
     expect(mediaLink.className).toContain('bg-primary');
   });
 
@@ -337,7 +334,7 @@ describe('DashboardLayout', () => {
     );
 
     // Content should be highlighted even on /dashboard/content/new
-    const contentLink = screen.getByRole('link', { name: /📝Content/i });
+    const contentLink = screen.getByRole('link', { name: /^Content$/i });
     expect(contentLink.className).toContain('bg-primary');
   });
 
@@ -353,7 +350,9 @@ describe('DashboardLayout', () => {
       </DashboardLayout>
     );
 
-    expect(screen.getByText('Default Org')).toBeInTheDocument();
+    // Component still renders when no organization is provided
+    // The OrganizationSelector component handles the display
+    expect(screen.getByText('Organization Selector')).toBeInTheDocument();
   });
 
   it('should handle user with only first name', () => {
@@ -401,8 +400,8 @@ describe('DashboardLayout', () => {
       expect(screen.getByText('Bakalr CMS')).toBeInTheDocument();
     });
 
-    // Username 'johndoe' (no spaces) -> getUserInitials -> 'J' (single char, then slice(0,2) = 'J')
-    const avatarButton = screen.getByRole('button', { name: /^J$/i });
+    // Username 'johndoe' -> display name 'johndoe'
+    const avatarButton = screen.getByRole('button', { name: /User menu for johndoe/i });
     expect(avatarButton).toBeInTheDocument();
   });
 

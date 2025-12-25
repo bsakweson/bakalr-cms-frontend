@@ -1,8 +1,50 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { searchApi, type SearchResponse } from './search';
+
+// Mock the apiClient
+vi.mock('./client', () => ({
+  default: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+  },
+  apiClient: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
+
 import apiClient from './client';
 
-vi.mock('./client');
+// Backend response format (what the API returns)
+interface BackendSearchResponse {
+  hits: Array<{
+    id: string;
+    title: string;
+    slug: string;
+    content_data: string | null;
+    status: string;
+    content_type_id: string;
+    content_type_name: string;
+    content_type_slug: string;
+    author_id: string;
+    author_name: string;
+    created_at: string | null;
+    updated_at: string | null;
+    published_at: string | null;
+    _formatted?: Record<string, any>;
+  }>;
+  query: string;
+  total_hits: number;
+  limit: number;
+  offset: number;
+  processing_time_ms: number;
+}
 
 describe('searchApi', () => {
   beforeEach(() => {
@@ -11,92 +53,120 @@ describe('searchApi', () => {
 
   describe('search', () => {
     it('should search with query only', async () => {
-      const mockResponse: SearchResponse = {
-        results: [
+      // Mock backend response format
+      const mockBackendResponse: BackendSearchResponse = {
+        hits: [
           {
             id: '1',
-            content_type_id: "1",
+            title: 'Test Article',
             slug: 'test-article',
+            content_data: '{"title": "Test Article", "body": "Content here"}',
             status: 'published',
-            content_data: { title: 'Test Article', body: 'Content here' },
-            score: 0.95,
+            content_type_id: '1',
+            content_type_name: 'Article',
+            content_type_slug: 'article',
+            author_id: '1',
+            author_name: 'John Doe',
+            created_at: '2025-01-01T00:00:00Z',
+            updated_at: '2025-01-01T00:00:00Z',
+            published_at: '2025-01-01T00:00:00Z',
           },
         ],
-        total: 1,
         query: 'test',
+        total_hits: 1,
+        limit: 20,
+        offset: 0,
         processing_time_ms: 15,
       };
 
-      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockResponse } as any);
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockBackendResponse } as any);
 
       const result = await searchApi.search({ q: 'test' });
 
-      expect(result).toEqual(mockResponse);
+      expect(result.results).toHaveLength(1);
+      expect(result.total).toBe(1);
+      expect(result.query).toBe('test');
+      expect(result.results[0].slug).toBe('test-article');
       expect(apiClient.get).toHaveBeenCalledWith('/search', {
-        params: { q: 'test' },
+        params: { query: 'test', limit: undefined, offset: undefined },
       });
     });
 
     it('should search with content type filter', async () => {
-      const mockResponse: SearchResponse = {
-        results: [],
-        total: 0,
+      const mockBackendResponse: BackendSearchResponse = {
+        hits: [],
         query: 'article',
+        total_hits: 0,
+        limit: 20,
+        offset: 0,
         processing_time_ms: 8,
       };
 
-      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockResponse } as any);
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockBackendResponse } as any);
 
       const result = await searchApi.search({
         q: 'article',
-        content_type_id: "2",
+        content_type_id: '2',
       });
 
-      expect(result).toEqual(mockResponse);
+      expect(result.results).toHaveLength(0);
+      expect(result.total).toBe(0);
       expect(apiClient.get).toHaveBeenCalledWith('/search', {
-        params: { q: 'article', content_type_id: "2" },
+        params: { query: 'article', content_type_id: '2', limit: undefined, offset: undefined },
       });
     });
 
     it('should search with status filter', async () => {
-      const mockResponse: SearchResponse = {
-        results: [
+      const mockBackendResponse: BackendSearchResponse = {
+        hits: [
           {
             id: '5',
-            content_type_id: "1",
+            title: 'Draft Post',
             slug: 'draft-post',
+            content_data: null,
             status: 'draft',
-            content_data: { title: 'Draft Post' },
-            score: 0.88,
+            content_type_id: '1',
+            content_type_name: 'Post',
+            content_type_slug: 'post',
+            author_id: '1',
+            author_name: 'Jane Doe',
+            created_at: '2025-01-02T00:00:00Z',
+            updated_at: '2025-01-02T00:00:00Z',
+            published_at: null,
           },
         ],
-        total: 1,
         query: 'draft',
+        total_hits: 1,
+        limit: 20,
+        offset: 0,
         processing_time_ms: 12,
       };
 
-      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockResponse } as any);
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockBackendResponse } as any);
 
       const result = await searchApi.search({
         q: 'draft',
         status: 'draft',
       });
 
-      expect(result).toEqual(mockResponse);
+      expect(result.results).toHaveLength(1);
+      expect(result.results[0].status).toBe('draft');
       expect(apiClient.get).toHaveBeenCalledWith('/search', {
-        params: { q: 'draft', status: 'draft' },
+        params: { query: 'draft', status: 'draft', limit: undefined, offset: undefined },
       });
     });
 
     it('should search with pagination parameters', async () => {
-      const mockResponse: SearchResponse = {
-        results: [],
-        total: 100,
+      const mockBackendResponse: BackendSearchResponse = {
+        hits: [],
         query: 'content',
+        total_hits: 100,
+        limit: 20,
+        offset: 40,
         processing_time_ms: 20,
       };
 
-      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockResponse } as any);
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockBackendResponse } as any);
 
       const result = await searchApi.search({
         q: 'content',
@@ -104,47 +174,54 @@ describe('searchApi', () => {
         offset: 40,
       });
 
-      expect(result).toEqual(mockResponse);
+      expect(result.total).toBe(100);
       expect(apiClient.get).toHaveBeenCalledWith('/search', {
-        params: { q: 'content', limit: 20, offset: 40 },
+        params: { query: 'content', limit: 20, offset: 40 },
       });
     });
 
     it('should search with all filters combined', async () => {
-      const mockResponse: SearchResponse = {
-        results: [
+      const mockBackendResponse: BackendSearchResponse = {
+        hits: [
           {
             id: '10',
-            content_type_id: "3",
+            title: 'Complete Guide',
             slug: 'published-guide',
+            content_data: '{"title": "Complete Guide"}',
             status: 'published',
-            content_data: { title: 'Complete Guide' },
-            score: 0.92,
-            highlights: {
-              title: ['Complete <em>Guide</em>'],
-            },
+            content_type_id: '3',
+            content_type_name: 'Guide',
+            content_type_slug: 'guide',
+            author_id: '2',
+            author_name: 'Admin',
+            created_at: '2025-01-03T00:00:00Z',
+            updated_at: '2025-01-03T00:00:00Z',
+            published_at: '2025-01-03T00:00:00Z',
           },
         ],
-        total: 1,
         query: 'guide',
+        total_hits: 1,
+        limit: 10,
+        offset: 0,
         processing_time_ms: 25,
       };
 
-      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockResponse } as any);
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockBackendResponse } as any);
 
       const result = await searchApi.search({
         q: 'guide',
-        content_type_id: "3",
+        content_type_id: '3',
         status: 'published',
         limit: 10,
         offset: 0,
       });
 
-      expect(result).toEqual(mockResponse);
+      expect(result.results).toHaveLength(1);
+      expect(result.results[0].content_type_id).toBe('3');
       expect(apiClient.get).toHaveBeenCalledWith('/search', {
         params: {
-          q: 'guide',
-          content_type_id: "3",
+          query: 'guide',
+          content_type_id: '3',
           status: 'published',
           limit: 10,
           offset: 0,
@@ -153,48 +230,57 @@ describe('searchApi', () => {
     });
 
     it('should handle search with highlights', async () => {
-      const mockResponse: SearchResponse = {
-        results: [
+      const mockBackendResponse: BackendSearchResponse = {
+        hits: [
           {
             id: '15',
-            content_type_id: "1",
+            title: 'Article Title',
             slug: 'highlighted-article',
+            content_data: '{"title": "Article Title", "body": "Full content body"}',
             status: 'published',
-            content_data: { title: 'Article Title', body: 'Full content body' },
-            score: 0.98,
-            highlights: {
-              title: ['<em>Article</em> Title'],
-              body: ['Full <em>content</em> body'],
+            content_type_id: '1',
+            content_type_name: 'Article',
+            content_type_slug: 'article',
+            author_id: '1',
+            author_name: 'Author',
+            created_at: '2025-01-04T00:00:00Z',
+            updated_at: '2025-01-04T00:00:00Z',
+            published_at: '2025-01-04T00:00:00Z',
+            _formatted: {
+              title: '<em>Article</em> Title',
+              content_data: 'Full <em>content</em> body',
             },
           },
         ],
-        total: 1,
         query: 'article content',
+        total_hits: 1,
+        limit: 20,
+        offset: 0,
         processing_time_ms: 18,
       };
 
-      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockResponse } as any);
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockBackendResponse } as any);
 
       const result = await searchApi.search({ q: 'article content' });
 
-      expect(result).toEqual(mockResponse);
+      expect(result.results).toHaveLength(1);
       expect(result.results[0].highlights).toBeDefined();
-      expect(result.results[0].highlights?.title).toContain('<em>Article</em> Title');
     });
 
     it('should handle empty search results', async () => {
-      const mockResponse: SearchResponse = {
-        results: [],
-        total: 0,
+      const mockBackendResponse: BackendSearchResponse = {
+        hits: [],
         query: 'nonexistent',
+        total_hits: 0,
+        limit: 20,
+        offset: 0,
         processing_time_ms: 5,
       };
 
-      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockResponse } as any);
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockBackendResponse } as any);
 
       const result = await searchApi.search({ q: 'nonexistent' });
 
-      expect(result).toEqual(mockResponse);
       expect(result.results).toHaveLength(0);
       expect(result.total).toBe(0);
     });

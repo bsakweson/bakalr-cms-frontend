@@ -84,7 +84,7 @@ describe('MediaPage', () => {
       render(<MediaPage />);
 
       await waitFor(() => {
-        expect(mediaApi.getMedia).toHaveBeenCalledWith({});
+        expect(mediaApi.getMedia).toHaveBeenCalledWith({ page: 1, size: 24 });
       });
     });
 
@@ -124,14 +124,14 @@ describe('MediaPage', () => {
   });
 
   // ============================================================================
-  // UNIT TEST LIMITATION - Media Display Tests  
+  // UNIT TEST LIMITATION - Media Display Tests
   // ============================================================================
   // These tests are skipped due to async state update timing issues in the test
-  // environment. The useEffect with router dependency causes the component to 
+  // environment. The useEffect with router dependency causes the component to
   // remain in loading state during tests, even though it works correctly in the
   // actual application. These behaviors are better validated through E2E tests
   // where the full React lifecycle and routing work as expected.
-  
+
   describe.skip('Media Grid Display', () => {
     beforeEach(() => {
       // Reset to default mock data for these tests
@@ -297,7 +297,7 @@ describe('MediaPage', () => {
   // ============================================================================
   // Note: "should handle media load failure gracefully" test is skipped due to
   // the same async state timing issues as Media Grid Display tests.
-  
+
   describe('Error Handling', () => {
     it.skip('should handle media load failure gracefully', async () => {
       const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -329,7 +329,7 @@ describe('MediaPage', () => {
 
       expect(screen.getByText('Media Library')).toBeInTheDocument();
       expect(screen.getByText('Filters')).toBeInTheDocument();
-      
+
       consoleError.mockRestore();
     });
   });
@@ -338,7 +338,7 @@ describe('MediaPage', () => {
   // UNIT TEST LIMITATION - Media Card Interactions Tests
   // ============================================================================
   // These tests are skipped due to the same async state timing issues.
-  
+
   describe.skip('Media Card Interactions', () => {
     it('should render clickable media cards', async () => {
       render(<MediaPage />);
@@ -369,7 +369,7 @@ describe('MediaPage', () => {
   // UNIT TEST LIMITATION - File Size Formatting Tests
   // ============================================================================
   // These tests are skipped due to the same async state timing issues.
-  
+
   describe.skip('File Size Formatting', () => {
     it('should format bytes correctly', async () => {
       const smallFile = {
@@ -379,8 +379,8 @@ describe('MediaPage', () => {
         file_size: 512, // bytes
       };
 
-      vi.mocked(mediaApi.getMedia).mockResolvedValue({ 
-        items: [smallFile] 
+      vi.mocked(mediaApi.getMedia).mockResolvedValue({
+        items: [smallFile]
       });
 
       render(<MediaPage />);
@@ -400,8 +400,8 @@ describe('MediaPage', () => {
         file_size: 2048, // 2 KB
       };
 
-      vi.mocked(mediaApi.getMedia).mockResolvedValue({ 
-        items: [mediumFile] 
+      vi.mocked(mediaApi.getMedia).mockResolvedValue({
+        items: [mediumFile]
       });
 
       render(<MediaPage />);

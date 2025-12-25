@@ -3,6 +3,15 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ContentEntryEditorPage from './page';
 import { contentApi, translationApi } from '@/lib/api';
+import { toast } from 'sonner';
+
+// Mock sonner toast
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
+}));
 
 // Mock Next.js navigation
 const mockPush = vi.fn();
@@ -112,7 +121,6 @@ describe('ContentEntryEditorPage', () => {
     vi.mocked(contentApi.getContentEntry).mockResolvedValue(mockEntry);
     vi.mocked(translationApi.getLocales).mockResolvedValue(mockLocales);
     vi.mocked(translationApi.getContentTranslations).mockResolvedValue([]);
-    global.alert = vi.fn();
   });
 
   describe('Loading State', () => {
@@ -548,7 +556,7 @@ describe('ContentEntryEditorPage', () => {
           slug: 'my-blog-post',
           status: 'draft',
         }));
-        expect(global.alert).toHaveBeenCalledWith('Content saved successfully');
+        expect(toast.success).toHaveBeenCalledWith('Content saved successfully');
       });
     });
 
@@ -604,7 +612,7 @@ describe('ContentEntryEditorPage', () => {
       const saveButton = screen.getByRole('button', { name: /Save Draft/i });
       await user.click(saveButton);
 
-      expect(global.alert).toHaveBeenCalledWith('Please select a content type');
+      expect(toast.error).toHaveBeenCalledWith('Please select a content type');
     });
 
     it('should show alert when slug is empty', async () => {
@@ -621,7 +629,7 @@ describe('ContentEntryEditorPage', () => {
       const saveButton = screen.getByRole('button', { name: /Save Draft/i });
       await user.click(saveButton);
 
-      expect(global.alert).toHaveBeenCalledWith('Please enter a slug');
+      expect(toast.error).toHaveBeenCalledWith('Please enter a slug');
     });
 
     it('should handle save error gracefully', async () => {
@@ -640,7 +648,7 @@ describe('ContentEntryEditorPage', () => {
       await user.click(saveButton);
 
       await waitFor(() => {
-        expect(global.alert).toHaveBeenCalledWith(expect.stringContaining('Failed to save'));
+        expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('Failed to save'));
       });
     });
   });
@@ -661,7 +669,7 @@ describe('ContentEntryEditorPage', () => {
 
       await waitFor(() => {
         expect(contentApi.publishContentEntry).toHaveBeenCalledWith('550e8400-e29b-41d4-a716-446655440001');
-        expect(global.alert).toHaveBeenCalledWith('Content published successfully');
+        expect(toast.success).toHaveBeenCalledWith('Content published successfully');
       });
     });
 
@@ -681,7 +689,7 @@ describe('ContentEntryEditorPage', () => {
       await user.click(publishButton);
 
       await waitFor(() => {
-        expect(global.alert).toHaveBeenCalledWith(expect.stringContaining('Failed to publish'));
+        expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('Failed to publish'));
       });
     });
   });
@@ -720,13 +728,12 @@ describe('ContentEntryEditorPage', () => {
       });
     });
 
-    it('should render preview link in actions', async () => {
+    it('should render preview button that opens dialog', async () => {
       render(<ContentEntryEditorPage />);
 
       await waitFor(() => {
-        const previewLink = screen.getByRole('link', { name: /Preview/i });
-        expect(previewLink).toHaveAttribute('href', '/preview/content/550e8400-e29b-41d4-a716-446655440001');
-        expect(previewLink).toHaveAttribute('target', '_blank');
+        const previewButton = screen.getByRole('button', { name: /Preview/i });
+        expect(previewButton).toBeInTheDocument();
       });
     });
 

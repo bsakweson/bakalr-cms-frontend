@@ -3,11 +3,33 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import SettingsPage from './page';
 import { useAuth } from '@/contexts/auth-context';
-import { authApi } from '@/lib/api';
+import { usePreferences } from '@/contexts/preferences-context';
+import { authApi, deviceApi, sessionApi } from '@/lib/api';
 
 // Mock dependencies
 vi.mock('@/contexts/auth-context');
-vi.mock('@/lib/api');
+vi.mock('@/contexts/preferences-context');
+vi.mock('@/lib/api', () => ({
+  authApi: {
+    updateProfile: vi.fn(),
+    changePassword: vi.fn(),
+    get2FAStatus: vi.fn(),
+    enable2FA: vi.fn(),
+    verifySetup2FA: vi.fn(),
+    disable2FA: vi.fn(),
+    regenerateBackupCodes: vi.fn(),
+  },
+  deviceApi: {
+    listDevices: vi.fn(),
+    removeDevice: vi.fn(),
+  },
+  sessionApi: {
+    listSessions: vi.fn(),
+    revokeSession: vi.fn(),
+    getLoginActivity: vi.fn(),
+    getSecurityOverview: vi.fn(),
+  },
+}));
 
 const mockUser = {
   id: '1',
@@ -35,6 +57,53 @@ const mockTwoFactorSetup = {
   message: '2FA setup initiated',
 };
 
+const mockPreferences = {
+  pageSize: 12,
+  theme: 'system' as const,
+  primaryColor: '#8b4513',
+  compactView: false,
+  showDescriptions: true,
+};
+
+const mockThemeColors = {
+  primary: '#8b4513',
+  primaryForeground: '#ffffff',
+  secondary: '#a0522d',
+  secondaryForeground: '#ffffff',
+  accent: '#cd853f',
+  accentForeground: '#ffffff',
+  background: '#ffffff',
+  foreground: '#1f1f1f',
+  card: '#ffffff',
+  cardForeground: '#1f1f1f',
+  muted: '#f5f5f5',
+  mutedForeground: '#6b7280',
+  border: '#e5e7eb',
+  ring: '#8b4513',
+  sidebar: '#f5f5f5',
+  sidebarForeground: '#1f1f1f',
+  sidebarPrimary: '#8b4513',
+  sidebarPrimaryForeground: '#ffffff',
+  sidebarAccent: '#cd853f',
+  sidebarAccentForeground: '#ffffff',
+  sidebarBorder: '#e5e7eb',
+};
+
+const mockGeneratedTheme = {
+  name: 'Custom',
+  light: mockThemeColors,
+  dark: {
+    ...mockThemeColors,
+    background: '#1f1f1f',
+    foreground: '#ffffff',
+    card: '#2a2a2a',
+    cardForeground: '#ffffff',
+    muted: '#374151',
+    sidebar: '#1f1f1f',
+    sidebarForeground: '#ffffff',
+  },
+};
+
 describe('SettingsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -46,6 +115,45 @@ describe('SettingsPage', () => {
       refreshUser: vi.fn(),
       isAuthenticated: true,
       isLoading: false,
+    });
+
+    vi.mocked(usePreferences).mockReturnValue({
+      preferences: mockPreferences,
+      generatedTheme: mockGeneratedTheme,
+      updatePreference: vi.fn(),
+      updatePreferences: vi.fn(),
+      resetPreferences: vi.fn(),
+      applyCurrentTheme: vi.fn(),
+    });
+
+    // Mock device and session APIs
+    vi.mocked(deviceApi.listDevices).mockResolvedValue({
+      devices: [],
+      total: 0,
+    });
+    vi.mocked(sessionApi.listSessions).mockResolvedValue({
+      sessions: [],
+      current_session_id: 'current-session-123',
+      total: 0,
+    });
+    vi.mocked(sessionApi.getLoginActivity).mockResolvedValue({
+      activities: [],
+      total: 0,
+      page: 1,
+      per_page: 10,
+      total_pages: 0,
+    });
+    vi.mocked(sessionApi.getSecurityOverview).mockResolvedValue({
+      total_sessions: 0,
+      active_sessions: 0,
+      suspicious_sessions: 0,
+      devices_count: 0,
+      trusted_devices_count: 0,
+      mfa_enabled: false,
+      last_password_change: null,
+      recent_suspicious_activities: [],
+      login_methods_used: [],
+      countries_logged_in: [],
     });
 
     // Mock fetch for 2FA status
@@ -65,26 +173,32 @@ describe('SettingsPage', () => {
       render(<SettingsPage />);
 
       expect(screen.getByText('Account Settings')).toBeInTheDocument();
-      expect(screen.getByText('Manage your account preferences and security')).toBeInTheDocument();
+      expect(screen.getByText('Manage your account preferences, security, and connected devices')).toBeInTheDocument();
     });
 
     it('should render all tabs', async () => {
       render(<SettingsPage />);
 
+      expect(screen.getByRole('tab', { name: 'Display' })).toBeInTheDocument();
       expect(screen.getByRole('tab', { name: 'Profile' })).toBeInTheDocument();
       expect(screen.getByRole('tab', { name: 'Password' })).toBeInTheDocument();
       expect(screen.getByRole('tab', { name: 'Security' })).toBeInTheDocument();
     });
 
-    it('should display profile tab by default', async () => {
+    it('should display display tab by default', async () => {
       render(<SettingsPage />);
 
-      expect(screen.getByText('Profile Information')).toBeInTheDocument();
-      expect(screen.getByText('Update your personal details')).toBeInTheDocument();
+      // Display tab is now the default tab
+      expect(screen.getByText('Theme & Appearance')).toBeInTheDocument();
     });
 
     it('should load user data into profile form', async () => {
+      const user = userEvent.setup();
       render(<SettingsPage />);
+
+      // Click Profile tab first since Display is now default
+      const profileTab = screen.getByRole('tab', { name: 'Profile' });
+      await user.click(profileTab);
 
       await waitFor(() => {
         const firstNameInput = screen.getByLabelText('First Name') as HTMLInputElement;
@@ -103,6 +217,10 @@ describe('SettingsPage', () => {
       const user = userEvent.setup();
       render(<SettingsPage />);
 
+      // Click Profile tab first since Display is now default
+      const profileTab = screen.getByRole('tab', { name: 'Profile' });
+      await user.click(profileTab);
+
       const firstNameInput = screen.getByLabelText('First Name');
       await user.clear(firstNameInput);
       await user.type(firstNameInput, 'Jane');
@@ -115,6 +233,10 @@ describe('SettingsPage', () => {
       vi.mocked(authApi.updateProfile).mockResolvedValue(mockUser);
 
       render(<SettingsPage />);
+
+      // Click Profile tab first since Display is now default
+      const profileTab = screen.getByRole('tab', { name: 'Profile' });
+      await user.click(profileTab);
 
       const firstNameInput = screen.getByLabelText('First Name');
       await user.clear(firstNameInput);
@@ -142,6 +264,10 @@ describe('SettingsPage', () => {
 
       render(<SettingsPage />);
 
+      // Click Profile tab first since Display is now default
+      const profileTab = screen.getByRole('tab', { name: 'Profile' });
+      await user.click(profileTab);
+
       const saveButton = screen.getByRole('button', { name: /save changes/i });
       await user.click(saveButton);
 
@@ -158,6 +284,10 @@ describe('SettingsPage', () => {
 
       render(<SettingsPage />);
 
+      // Click Profile tab first since Display is now default
+      const profileTab = screen.getByRole('tab', { name: 'Profile' });
+      await user.click(profileTab);
+
       const saveButton = screen.getByRole('button', { name: /save changes/i });
       await user.click(saveButton);
 
@@ -173,6 +303,10 @@ describe('SettingsPage', () => {
       );
 
       render(<SettingsPage />);
+
+      // Click Profile tab first since Display is now default
+      const profileTab = screen.getByRole('tab', { name: 'Profile' });
+      await user.click(profileTab);
 
       const saveButton = screen.getByRole('button', { name: /save changes/i });
       await user.click(saveButton);
@@ -547,6 +681,10 @@ describe('SettingsPage', () => {
       });
 
       render(<SettingsPage />);
+
+      // Click Profile tab first since Display is now default
+      const profileTab = screen.getByRole('tab', { name: 'Profile' });
+      await user.click(profileTab);
 
       const saveButton = screen.getByRole('button', { name: /save changes/i });
       await user.click(saveButton);

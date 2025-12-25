@@ -87,13 +87,13 @@ describe('RolesPage', () => {
     },
     {
       id: '5',
-      name: 'users.read',
+      name: 'user.read',
       description: 'View users',
       category: 'Users',
     },
     {
       id: '6',
-      name: 'users.manage',
+      name: 'user.manage.full',
       description: 'Manage users',
       category: 'Users',
     },

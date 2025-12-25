@@ -24,6 +24,13 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Build arguments for Next.js public environment variables
+# These are baked into the JS bundle at build time
+ARG NEXT_PUBLIC_API_URL=http://localhost:8000
+ARG NEXT_PUBLIC_PLATFORM_API_URL=http://localhost:8080
+ARG NEXT_PUBLIC_INVENTORY_QUERY_URL=http://localhost:8080
+ARG NEXT_PUBLIC_INVENTORY_COMMAND_URL=http://localhost:8080
+
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 
@@ -31,8 +38,13 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Set environment variables for build
+# NEXT_PUBLIC_* vars must be set during build for Next.js to inline them
 ENV NEXT_TELEMETRY_DISABLED=1 \
-    NODE_ENV=production
+    NODE_ENV=production \
+    NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL} \
+    NEXT_PUBLIC_PLATFORM_API_URL=${NEXT_PUBLIC_PLATFORM_API_URL} \
+    NEXT_PUBLIC_INVENTORY_QUERY_URL=${NEXT_PUBLIC_INVENTORY_QUERY_URL} \
+    NEXT_PUBLIC_INVENTORY_COMMAND_URL=${NEXT_PUBLIC_INVENTORY_COMMAND_URL}
 
 # Build Next.js application with optimizations
 RUN npm run build && \

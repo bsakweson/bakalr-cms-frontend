@@ -19,7 +19,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-const ITEMS_PER_PAGE = 12;
+const PAGE_SIZE_OPTIONS = [12, 24, 48, 100];
+const DEFAULT_PAGE_SIZE = 24;
 
 export default function MediaPage() {
   const router = useRouter();
@@ -33,10 +34,11 @@ export default function MediaPage() {
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
   const [showMediaModal, setShowMediaModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [totalItems, setTotalItems] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(totalItems / pageSize);
 
   useEffect(() => {
     loadMedia();
@@ -48,10 +50,10 @@ export default function MediaPage() {
     router.push(`/dashboard/media${queryString ? `?${queryString}` : ''}`);
   }, [selectedType, currentPage, router]);
 
-  // Reset to page 1 when search or type changes
+  // Reset to page 1 when search, type, or page size changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedType]);
+  }, [searchQuery, selectedType, pageSize]);
 
   // Debounced search effect
   useEffect(() => {
@@ -66,7 +68,7 @@ export default function MediaPage() {
       setIsLoading(true);
       const params: any = {
         page: currentPage,
-        page_size: ITEMS_PER_PAGE,
+        size: pageSize,
       };
       
       if (selectedType !== 'all') {
@@ -240,6 +242,19 @@ export default function MediaPage() {
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Items per page</label>
+              <Select value={pageSize.toString()} onValueChange={(v) => setPageSize(Number(v))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="24" />
+                </SelectTrigger>
+                <SelectContent>
+                  {PAGE_SIZE_OPTIONS.map((size) => (
+                    <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -250,7 +265,7 @@ export default function MediaPage() {
           <div className="text-lg">Loading media...</div>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4" data-testid="media-grid">
+        <div className={`grid gap-4 ${pageSize > 24 ? 'md:grid-cols-4 lg:grid-cols-6' : 'md:grid-cols-3 lg:grid-cols-4'}`} data-testid="media-grid">
           {media.length > 0 ? (
             media.map((file) => (
               <Card 
@@ -310,7 +325,7 @@ export default function MediaPage() {
       {totalPages > 1 && (
         <div className="flex items-center justify-between border-t pt-4">
           <p className="text-sm text-muted-foreground">
-            Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, totalItems)} of {totalItems} items
+            Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalItems)} of {totalItems} items
           </p>
           <div className="flex items-center gap-2">
             <Button

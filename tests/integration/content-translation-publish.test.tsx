@@ -1,6 +1,6 @@
 /**
  * Integration Test: Content Creation → Translation → Publishing Flow
- * 
+ *
  * Tests the complete workflow from content creation through multi-language translation to publishing:
  * 1. User creates a content type (blog post)
  * 2. User creates a content entry with default locale content
@@ -302,7 +302,7 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
         excerpt: 'Introducción a mi blog',
       });
 
-      expect(createTranslationSpy).toHaveBeenCalledWith(1, 'es', {
+      expect(createTranslationSpy).toHaveBeenCalledWith('1', 'es', {
         title: 'Hola Mundo',
         body: 'Esta es mi primera entrada de blog.',
         excerpt: 'Introducción a mi blog',
@@ -320,7 +320,7 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
         excerpt: 'Introduction à mon blog',
       });
 
-      expect(createTranslationSpy).toHaveBeenCalledWith(1, 'fr', {
+      expect(createTranslationSpy).toHaveBeenCalledWith('1', 'fr', {
         title: 'Bonjour le Monde',
         body: 'Ceci est mon premier article de blog.',
         excerpt: 'Introduction à mon blog',
@@ -364,7 +364,7 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
 
       const result = await contentApi.publishContentEntry("1");
 
-      expect(publishSpy).toHaveBeenCalledWith(1);
+      expect(publishSpy).toHaveBeenCalledWith('1');
       expect(result.status).toBe('published');
       expect(result.published_at).toBeTruthy();
     });
@@ -399,7 +399,7 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
 
       const result = await contentApi.getContentEntry("1");
 
-      expect(getEntrySpy).toHaveBeenCalledWith(1);
+      expect(getEntrySpy).toHaveBeenCalledWith('1');
       expect(result.status).toBe('published');
       expect(result.published_at).toBeTruthy();
     });
@@ -411,10 +411,10 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
 
       const result = await translationApi.getContentTranslations("1");
 
-      expect(getTranslationsSpy).toHaveBeenCalledWith(1);
+      expect(getTranslationsSpy).toHaveBeenCalledWith('1');
       expect(result).toHaveLength(2);
-      expect(result.find(t => t.locale!.id === '2')).toBeDefined();
-      expect(result.find(t => t.locale!.id === '3')).toBeDefined();
+      expect(result.find(t => t.locale_id === '2')).toBeDefined();
+      expect(result.find(t => t.locale_id === '3')).toBeDefined();
     });
 
     it('should verify Spanish translation is available', async () => {
@@ -423,7 +423,7 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
       );
 
       const result = await translationApi.getContentTranslations("1");
-      const spanish = result.find(t => t.locale!.id === '2');
+      const spanish = result.find(t => t.locale_id === '2');
 
       expect(spanish).toBeDefined();
       expect(spanish?.translated_data.title).toBe('Hola Mundo');
@@ -435,7 +435,7 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
       );
 
       const result = await translationApi.getContentTranslations("1");
-      const french = result.find(t => t.locale!.id === '3');
+      const french = result.find(t => t.locale_id === '3');
 
       expect(french).toBeDefined();
       expect(french?.translated_data.title).toBe('Bonjour le Monde');
@@ -451,7 +451,7 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
         slug: 'blog-post',
         schema: mockContentType.schema,
       });
-      expect(contentType.id).toBe(1);
+      expect(contentType.id).toBe('1');
 
       // Step 2: Create content entry
       vi.spyOn(contentApi, 'createContentEntry').mockResolvedValue(mockContentEntry);
@@ -475,7 +475,7 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
         'es',
         mockSpanishTranslation.translated_data
       );
-      expect(spanish.locale_id).toBe(2);
+      expect(spanish.locale_id).toBe('2');
 
       // Step 5: Create French translation
       vi.spyOn(translationApi, 'createOrUpdateTranslation').mockResolvedValue(mockFrenchTranslation);
@@ -484,7 +484,7 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
         'fr',
         mockFrenchTranslation.translated_data
       );
-      expect(french.locale_id).toBe(3);
+      expect(french.locale_id).toBe('3');
 
       // Step 6: Publish content
       vi.spyOn(contentApi, 'publishContentEntry').mockResolvedValue(mockPublishedEntry);
@@ -574,8 +574,8 @@ describe('Integration: Content → Translation → Publishing Flow', () => {
 
       expect(published.status).toBe('published');
       expect(translations).toHaveLength(2);
-      expect(translations.map(t => t.locale_id)).toContain(2);
-      expect(translations.map(t => t.locale_id)).toContain(3);
+      expect(translations.map(t => t.locale_id)).toContain('2');
+      expect(translations.map(t => t.locale_id)).toContain('3');
     });
   });
 });

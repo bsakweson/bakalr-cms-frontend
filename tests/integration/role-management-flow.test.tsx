@@ -1,6 +1,6 @@
 /**
  * Integration Test: Role Creation → Permission Assignment → Access Control Workflow
- * 
+ *
  * Tests the complete workflow of:
  * 1. Creating custom roles with permissions
  * 2. Assigning permissions to roles
@@ -328,7 +328,7 @@ describe('Integration: Role Creation → Permission Assignment → Access Contro
 
       const result = await userApi.updateUserRole("10", updateRequest);
 
-      expect(userApi.updateUserRole).toHaveBeenCalledWith(10, updateRequest);
+      expect(userApi.updateUserRole).toHaveBeenCalledWith("10", updateRequest);
       expect(result.message).toBe('User role updated successfully');
     });
 

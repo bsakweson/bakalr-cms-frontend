@@ -3,32 +3,12 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import { authApi } from '@/lib/api';
 import { User, LoginRequest, RegisterRequest } from '@/types';
+import { getTokenExpiration, isTokenExpired } from '@/lib/jwt';
 
 // Token expiration buffer (refresh 5 minutes before expiration)
 const TOKEN_REFRESH_BUFFER_MS = 5 * 60 * 1000;
 // Minimum time between refresh attempts
 const MIN_REFRESH_INTERVAL_MS = 30 * 1000;
-
-/**
- * Parse JWT token to get expiration time
- */
-function getTokenExpiration(token: string): number | null {
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.exp ? payload.exp * 1000 : null; // Convert to milliseconds
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Check if token is expired or about to expire
- */
-function isTokenExpired(token: string, bufferMs: number = 0): boolean {
-  const expiration = getTokenExpiration(token);
-  if (!expiration) return true;
-  return Date.now() >= expiration - bufferMs;
-}
 
 interface AuthContextType {
   user: User | null;
@@ -56,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');
     setUser(null);
-    
+
     // Only redirect if not already on login page
     if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
       window.location.href = '/login';
@@ -68,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * Uses a ref to store the refresh function to avoid circular dependencies
    */
   const refreshAccessTokenRef = useRef<((silent?: boolean) => Promise<boolean>) | null>(null);
-  
+
   const scheduleTokenRefresh = useCallback((token: string) => {
     // Clear any existing timeout
     if (refreshTimeoutRef.current) {
@@ -80,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!expiration) return;
 
     const timeUntilRefresh = expiration - Date.now() - TOKEN_REFRESH_BUFFER_MS;
-    
+
     if (timeUntilRefresh <= 0) {
       // Token already needs refresh
       refreshAccessTokenRef.current?.();
@@ -131,10 +111,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
       localStorage.setItem('access_token', data.access_token);
       localStorage.setItem('refresh_token', data.refresh_token);
-      
+
       // Schedule next refresh
       scheduleTokenRefresh(data.access_token);
-      
+
       return true;
     } catch (error) {
       console.error('Token refresh failed:', error);
@@ -200,15 +180,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (credentials: LoginRequest) => {
     try {
       const response = await authApi.login(credentials);
-      
+
       // Store tokens and user
       localStorage.setItem('access_token', response.access_token);
       localStorage.setItem('refresh_token', response.refresh_token);
       localStorage.setItem('user', JSON.stringify(response.user));
-      
+
       // Schedule token refresh
       scheduleTokenRefresh(response.access_token);
-      
+
       setUser(response.user);
     } catch (error) {
       console.error('Login failed:', error);
@@ -219,15 +199,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (data: RegisterRequest) => {
     try {
       const response = await authApi.register(data);
-      
+
       // Store tokens and user
       localStorage.setItem('access_token', response.access_token);
       localStorage.setItem('refresh_token', response.refresh_token);
       localStorage.setItem('user', JSON.stringify(response.user));
-      
+
       // Schedule token refresh
       scheduleTokenRefresh(response.access_token);
-      
+
       setUser(response.user);
     } catch (error) {
       console.error('Registration failed:', error);
@@ -241,7 +221,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearTimeout(refreshTimeoutRef.current);
       refreshTimeoutRef.current = null;
     }
-    
+
     try {
       await authApi.logout();
     } catch (error) {

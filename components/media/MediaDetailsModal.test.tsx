@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MediaDetailsModal } from './MediaDetailsModal';
 import { mediaApi } from '@/lib/api';
+import { toast } from 'sonner';
 
 // Mock the API
 vi.mock('@/lib/api', () => ({
@@ -12,9 +13,13 @@ vi.mock('@/lib/api', () => ({
   },
 }));
 
-// Mock window.alert
-const alertMock = vi.fn();
-global.alert = alertMock;
+// Mock toast
+vi.mock('sonner', () => ({
+  toast: {
+    error: vi.fn(),
+    success: vi.fn(),
+  },
+}));
 
 describe('MediaDetailsModal', () => {
   const mockOnClose = vi.fn();
@@ -79,7 +84,6 @@ describe('MediaDetailsModal', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    alertMock.mockClear();
   });
 
   afterEach(() => {
@@ -664,7 +668,7 @@ describe('MediaDetailsModal', () => {
       await user.click(saveButton);
 
       await waitFor(() => {
-        expect(alertMock).toHaveBeenCalledWith('Failed to update media');
+        expect(toast.error).toHaveBeenCalledWith('Failed to update media');
         expect(consoleError).toHaveBeenCalledWith('Failed to update media:', expect.any(Error));
       });
 
@@ -693,7 +697,7 @@ describe('MediaDetailsModal', () => {
       await user.click(saveButton);
 
       await waitFor(() => {
-        expect(alertMock).toHaveBeenCalled();
+        expect(toast.error).toHaveBeenCalled();
       });
 
       // Should still be in edit mode
@@ -902,7 +906,7 @@ describe('MediaDetailsModal', () => {
       await user.click(deleteButtons[deleteButtons.length - 1]);
 
       await waitFor(() => {
-        expect(alertMock).toHaveBeenCalledWith('Failed to delete media');
+        expect(toast.error).toHaveBeenCalledWith('Failed to delete media');
         expect(consoleError).toHaveBeenCalledWith('Failed to delete media:', expect.any(Error));
       });
 
@@ -935,7 +939,7 @@ describe('MediaDetailsModal', () => {
       await user.click(deleteButtons[deleteButtons.length - 1]);
 
       await waitFor(() => {
-        expect(alertMock).toHaveBeenCalled();
+        expect(toast.error).toHaveBeenCalled();
       });
 
       // Modal should still be open

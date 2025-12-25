@@ -1,8 +1,25 @@
 import { mediaApi } from './media';
-import apiClient from './client';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('./client');
+// Mock the apiClient
+vi.mock('./client', () => ({
+  default: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+  },
+  apiClient: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
+
+import apiClient from './client';
 
 describe('Media API', () => {
   beforeEach(() => {
@@ -27,7 +44,7 @@ describe('Media API', () => {
 
       expect(result).toEqual(mockResponse);
       expect(apiClient.get).toHaveBeenCalledWith('/media', {
-        params: undefined,
+        params: { page: 1, size: 20 },
       });
     });
 
@@ -49,7 +66,15 @@ describe('Media API', () => {
       const result = await mediaApi.getMedia(params);
 
       expect(result).toEqual(mockResponse);
-      expect(apiClient.get).toHaveBeenCalledWith('/media', { params });
+      // Note: Implementation converts page_size to size for backend
+      expect(apiClient.get).toHaveBeenCalledWith('/media', {
+        params: {
+          page: 2,
+          size: 10,
+          file_type: 'image',
+          search: 'logo',
+        },
+      });
     });
   });
 

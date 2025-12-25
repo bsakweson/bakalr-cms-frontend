@@ -137,8 +137,9 @@ describe('ContentTypesPage', () => {
       render(<ContentTypesPage />);
 
       await waitFor(() => {
+        // The empty state has two paragraphs - check for the main description
         expect(
-          screen.getByText('Get started by creating your first content type to structure your content.')
+          screen.getByText(/Content types define the structure of your content/)
         ).toBeInTheDocument();
       });
     });
@@ -333,7 +334,8 @@ describe('ContentTypesPage', () => {
       render(<ContentTypesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Showing 3 content types')).toBeInTheDocument();
+        // Format is "Showing X of Y content type(s)"
+        expect(screen.getByText(/Showing.*3.*of.*3.*content types/)).toBeInTheDocument();
       });
     });
 
@@ -343,7 +345,8 @@ describe('ContentTypesPage', () => {
       render(<ContentTypesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Showing 1 content type')).toBeInTheDocument();
+        // Format is "Showing 1 of 1 content type"
+        expect(screen.getByText(/Showing.*1.*of.*1.*content type/)).toBeInTheDocument();
       });
     });
 

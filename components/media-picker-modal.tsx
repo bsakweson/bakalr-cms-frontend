@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { mediaApi } from '@/lib/api/media';
+import { mediaApi, MediaListParams } from '@/lib/api/media';
 import { resolveMediaUrl } from '@/lib/api/client';
 import { Media } from '@/types';
 import {
@@ -30,6 +30,8 @@ interface MediaPickerModalProps {
   fileType?: 'image' | 'video' | 'audio' | 'document';
 }
 
+const PAGE_SIZE = 12;
+
 export default function MediaPickerModal({
   open,
   onClose,
@@ -43,7 +45,6 @@ export default function MediaPickerModal({
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const perPage = 12;
 
   useEffect(() => {
     if (open) {
@@ -54,15 +55,15 @@ export default function MediaPickerModal({
   const loadMedia = async () => {
     try {
       setIsLoading(true);
-      const params: any = {
+      const params: MediaListParams = {
         page,
-        per_page: perPage,
+        page_size: PAGE_SIZE,
       };
-      
+
       if (filter !== 'all') {
         params.file_type = filter;
       }
-      
+
       if (search) {
         params.search = search;
       }
@@ -115,7 +116,7 @@ export default function MediaPickerModal({
     return resolveMediaUrl(url);
   };
 
-  const totalPages = Math.ceil(total / perPage);
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>

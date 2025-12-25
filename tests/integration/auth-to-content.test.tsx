@@ -1,6 +1,6 @@
 /**
  * Integration Test: User Registration → Login → Content Creation Flow
- * 
+ *
  * Tests the complete workflow from user registration through content creation:
  * 1. User registers a new account with organization
  * 2. User logs in with credentials
@@ -199,8 +199,8 @@ describe('Integration: Auth to Content Creation Flow', () => {
       });
 
       // Verify user data is available for session persistence
-      expect(result.user.id).toBe(1);
-      expect(result.user.organization_id).toBe(1);
+      expect(result.user.id).toBe('1');
+      expect(result.user.organization_id).toBe('1');
     });
 
     it('should handle invalid credentials', async () => {
@@ -423,7 +423,7 @@ describe('Integration: Auth to Content Creation Flow', () => {
           body: { type: 'textarea', required: true },
         },
       });
-      expect(contentType.id).toBe(1);
+      expect(contentType.id).toBe('1');
 
       // Step 4: Create content entry
       vi.spyOn(contentApi, 'createContentEntry').mockResolvedValue(mockContentEntry);
@@ -436,7 +436,7 @@ describe('Integration: Auth to Content Creation Flow', () => {
           body: 'This is my first post.',
         },
       });
-      expect(entry.id).toBe(1);
+      expect(entry.id).toBe('1');
 
       // Step 5: Verify in list
       vi.spyOn(contentApi, 'getContentEntries').mockResolvedValue({
@@ -480,7 +480,7 @@ describe('Integration: Auth to Content Creation Flow', () => {
         status: 'draft',
         content_data: {},
       });
-      
+
       // Verify data isolation by organization
       expect(entry.content_type_id).toBe(contentType.id);
     });
